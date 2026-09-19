@@ -99,6 +99,15 @@ export const RoomGrid: React.FC<RoomGridProps> = ({
           } else if (entity.renderable.shape === "door") {
             const isOpen = entity.collider ? !entity.collider.isSolid : false;
             content = <DoorWay size={cellSize} isOpen={isOpen} />;
+          } else if (entity.renderable.shape === "wall") {
+            content = (
+              <div
+                style={{ width: cellSize - 6, height: cellSize - 6 }}
+                className="rounded-xl bg-slate-700 border-2 border-slate-800 shadow-md flex items-center justify-center select-none"
+              >
+                <div className="w-1/2 h-1/2 rounded-md bg-slate-600/70 border border-slate-500/50" />
+              </div>
+            );
           }
 
           return (
@@ -117,11 +126,11 @@ export const RoomGrid: React.FC<RoomGridProps> = ({
               }}
               transition={{
                 duration: entity.pushable?.isSliding
-                  ? 0.12
+                  ? 0.35
                   : entity.movement?.isMoving
                   ? (entity.movement.stepIntervalMs ? entity.movement.stepIntervalMs / 1000 : 0.15)
                   : 0.22,
-                ease: entity.movement?.isMoving ? "linear" : "easeInOut",
+                ease: entity.pushable?.isSliding ? "easeOut" : entity.movement?.isMoving ? "linear" : "easeInOut",
               }}
             >
               {content}

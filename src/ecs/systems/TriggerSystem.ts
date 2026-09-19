@@ -7,40 +7,57 @@ export interface TriggerEvaluationResult {
 }
 
 export class TriggerSystem {
+  /**
+   * Evaluates all pressure plates and sanctuary doors in the world.
+   * Activates plates when occupied by Zyra, StoneBlock, or IceBlock.
+   * Unlocks doors when all targeting plates are depressed.
+   */
   static evaluate(allEntities: Entity[]): TriggerEvaluationResult {
     const plates = allEntities.filter((e) => e.trigger !== undefined);
     const doors = allEntities.filter((e) => e.renderable.shape === "door");
-    const blocks = allEntities.filter((e) => e.pushable !== undefined);
 
     const depressedPlates: string[] = [];
     const doorsUnlocked: string[] = [];
 
+    // Evaluate pressure plates: occupied by Zyra (avatar), StoneBlock, or IceBlock
     for (const plate of plates) {
       if (!plate.trigger) continue;
 
-      // Check if any block rests on this plate's coordinates
-      const hasBlock = blocks.some(
-        (b) => b.position.x === plate.position.x && b.position.y === plate.position.y
+      const isOccupied = allEntities.some(
+        (e) =>
+          e.id !== plate.id &&
+          (e.renderable.shape === "avatar" || e.pushable !== undefined) &&
+          e.position.x === plate.position.x &&
+          e.position.y === plate.position.y
       );
 
-      plate.trigger.isDepressed = hasBlock;
-      if (hasBlock) {
+      plate.trigger.isDepressed = isOccupied;
+      if (isOccupied) {
         depressedPlates.push(plate.id);
-        if (plate.trigger.activatesTargetId) {
-          doorsUnlocked.push(plate.trigger.activatesTargetId);
-        }
       }
     }
 
-    // A door is unlocked if any trigger points to it (or in multi-trigger, all required)
+    // Evaluate doors: a door unlocks when ALL pressure plates targeting it are depressed
     for (const door of doors) {
-      const isUnlocked = doorsUnlocked.includes(door.id);
-      if (isUnlocked && door.collider) {
-        door.collider.isSolid = false;
-        door.renderable.colorToken = "storybook-magic-soft";
-      } else if (door.collider) {
-        door.collider.isSolid = true;
-        door.renderable.colorToken = "storybook-muted";
+      const targetingPlates = plates.filter(
+        (p) => p.trigger && p.trigger.activatesTargetId === door.id
+      );
+
+      if (targetingPlates.length > 0) {
+        const isUnlocked = targetingPlates.every((p) => p.trigger?.isDepressed);
+        if (isUnlocked) {
+          doorsUnlocked.push(door.id);
+        }
+
+        if (door.collider) {
+          door.collider.isSolid = !isUnlocked;
+          door.renderable.colorToken = isUnlocked ? "storybook-magic-soft" : "storybook-muted";
+        }
+      } else {
+        // Standalone door without targeting triggers
+        if (door.collider && !door.collider.isSolid) {
+          doorsUnlocked.push(door.id);
+        }
       }
     }
 
