@@ -78,7 +78,7 @@ See [GitHub Milestones](https://github.com/zsh04/ztlo/milestones) and [Issues](h
 1. **Phase 1: Prototype (Active)**
    - [x] Scaffold touch-first responsive viewport (PR #15 / PR #16)
    - [x] NavMesh / A* tap-to-move pathfinding with touch ripples (PR #17)
-   - [ ] Grid physics entities: `StoneBlock`, `IceBlock`, `PressurePlate` (Issue #3)
+   - [x] Grid physics entities: `StoneBlock`, `IceBlock`, `PressurePlate` (PR #20)
    - [ ] Socratic Light Orb mentor V1 state machine (Issue #4)
    - [ ] iPad touch-friction validation gate (Issue #5)
 2. **Phase 2: Engine & AI Migration** — Phaser 3 integration + local WebLLM companion.
