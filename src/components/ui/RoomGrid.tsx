@@ -30,9 +30,9 @@ export const RoomGrid: React.FC<RoomGridProps> = ({
     x: number,
     y: number
   ) => {
-    const rect = e.currentTarget.getBoundingClientRect();
-    const clickX = rect.left + rect.width / 2;
-    const clickY = rect.top + rect.height / 2;
+    e.preventDefault();
+    const clickX = typeof e.clientX === "number" ? e.clientX : e.currentTarget.getBoundingClientRect().left;
+    const clickY = typeof e.clientY === "number" ? e.clientY : e.currentTarget.getBoundingClientRect().top;
     onCellTap({ x, y }, clickX, clickY);
   };
 
@@ -42,6 +42,7 @@ export const RoomGrid: React.FC<RoomGridProps> = ({
       style={{
         width: width * cellSize + 32,
         height: height * cellSize + 32,
+        touchAction: "none",
       }}
     >
       {/* 16x9 CSS Grid Floor Tiles */}
@@ -52,6 +53,7 @@ export const RoomGrid: React.FC<RoomGridProps> = ({
           gridTemplateRows: `repeat(${height}, ${cellSize}px)`,
           width: width * cellSize,
           height: height * cellSize,
+          touchAction: "none",
         }}
       >
         {Array.from({ length: height }).map((_, y) =>
