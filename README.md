@@ -35,6 +35,8 @@
 - **Framework:** Next.js 15 (React 19), TypeScript
 - **Rendering & Layout:** CSS Grid, CSS Transform / Framer Motion, absolute positioning
 - **State & Logic:** Entity-Component-System (ECS) architecture (`/src/ecs`)
+- **Navigation & Pathfinding:** Discrete A* shortest-path solver (`/src/lib/pathfinding.ts`, `MovementSystem.ts`) avoiding dynamic colliders with Fitts's Law touch ripples ($\ge 80\text{px}$)
+- **Interactive Tablet Mockup:** Prototype preview available at `/mockup` and `public/mockup.html`
 - **Offline Mentor:** Deterministic Socratic state machine ("Light Orb Companion")
 
 ### Phase 2 (Target Architecture)
@@ -73,7 +75,12 @@ npm run build
 
 ## 🗺️ Project Milestones & Roadmap
 See [GitHub Milestones](https://github.com/zsh04/ztlo/milestones) and [Issues](https://github.com/zsh04/ztlo/issues) for active roadmap tracking:
-1. **Phase 1: Prototype** — Touch-first CSS Grid sandbox, ECS movement, grid physics, deterministic Socratic mentor.
+1. **Phase 1: Prototype (Active)**
+   - [x] Scaffold touch-first responsive viewport (PR #15 / PR #16)
+   - [x] NavMesh / A* tap-to-move pathfinding with touch ripples (PR #17)
+   - [ ] Grid physics entities: `StoneBlock`, `IceBlock`, `PressurePlate` (Issue #3)
+   - [ ] Socratic Light Orb mentor V1 state machine (Issue #4)
+   - [ ] iPad touch-friction validation gate (Issue #5)
 2. **Phase 2: Engine & AI Migration** — Phaser 3 integration + local WebLLM companion.
 3. **Phase 3: Curriculum & NPC Empathy** — Mood auras, empathy mapping, optics reflection puzzles.
 4. **Phase 4: Production & PWA Packaging** — Offline asset pre-caching, full tablet optimization.

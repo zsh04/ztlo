@@ -69,5 +69,7 @@ graph TD
 * [Execution Synthesis v03](https://github.com/zsh04/ztlo/blob/main/docs/ENG_ZTLO_Execution-Synthesis_20260919_v03.md)
 * [Local AI & Aesthetic Spec v02](https://github.com/zsh04/ztlo/blob/main/docs/ENG_ZTLO_LocalAI-Aesthetic-Spec_20260919_v02.md)
 * [Prototype Kickoff Spec v01](https://github.com/zsh04/ztlo/blob/main/docs/ENG_ZTLO_Prototype-Kickoff-Spec_20260919_v01.md)
-* [Task Tracker v01](https://github.com/zsh04/ztlo/blob/main/docs/ENG_ZTLO_Task-Tracker_20260919_v01.md)
+* [Task Tracker v02](https://github.com/zsh04/ztlo/blob/main/docs/ENG_ZTLO_Task-Tracker_20260919_v02.md)
+* [Level 1-1 Specification: Shrine of Equilibrium](https://github.com/zsh04/ztlo/blob/main/docs/ENG_ZTLO_Level-Design-Shrine-01_20260919_v01.md)
+* [WebLLM iPad Feasibility Spike](https://github.com/zsh04/ztlo/blob/main/docs/ENG_ZTLO_WebLLM-Feasibility-Spike_20260919_v01.md)
 * [Project Readme v01](https://github.com/zsh04/ztlo/blob/main/docs/ENG_ZTLO_Project-Readme_20260919_v01.md)
