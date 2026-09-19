@@ -69,12 +69,14 @@ export class GameWorld {
   public pushBlock(blockId: string, direction: GridPoint): { success: boolean; newPath: GridPoint[] } {
     const block = this.entities.get(blockId);
     if (!block) return { success: false, newPath: [] };
-    return PhysicsSystem.attemptPush(
+    const player = this.getPlayer();
+    return PhysicsSystem.executePush(
       block,
       direction,
       this.width,
       this.height,
-      this.getEntityList()
+      this.getEntityList(),
+      player
     );
   }
 

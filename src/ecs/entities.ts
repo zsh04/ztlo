@@ -81,3 +81,12 @@ export function createDoorEntity(id: string, x: number, y: number): Entity {
     renderable: { type: "renderable", shape: "door", colorToken: "storybook-muted", zIndex: 2 },
   };
 }
+
+export function createWallEntity(id: string, x: number, y: number): Entity {
+  return {
+    id,
+    position: { type: "position", x, y, previousX: x, previousY: y },
+    collider: { type: "collider", isSolid: true, passableByPlayer: false },
+    renderable: { type: "renderable", shape: "wall", colorToken: "storybook-stone-dark", zIndex: 3 },
+  };
+}

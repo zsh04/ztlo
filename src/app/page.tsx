@@ -8,6 +8,7 @@ import {
   createIceBlockEntity,
   createPressurePlateEntity,
   createDoorEntity,
+  createWallEntity,
   Entity,
 } from "../ecs/entities";
 import { RoomGrid } from "../components/ui/RoomGrid";
@@ -44,7 +45,7 @@ const SHRINE_ROOMS: RoomDefinition[] = [
     entities: [
       createPlayerEntity("player-1", 2, 4),
       createIceBlockEntity("ice-1", 6, 4),
-      createPressurePlateEntity("plate-2", 12, 4, "door-2"),
+      createPressurePlateEntity("plate-2", 13, 4, "door-2"),
       createDoorEntity("door-2", 14, 4),
     ],
   },
@@ -60,7 +61,8 @@ const SHRINE_ROOMS: RoomDefinition[] = [
       createStoneBlockEntity("stone-2", 5, 2),
       createIceBlockEntity("ice-2", 5, 6),
       createPressurePlateEntity("plate-3a", 12, 2, "door-3"),
-      createPressurePlateEntity("plate-3b", 12, 6, "door-3"),
+      createPressurePlateEntity("plate-3b", 13, 6, "door-3"),
+      createWallEntity("wall-3", 14, 6),
       createDoorEntity("door-3", 14, 4),
     ],
   },
@@ -178,17 +180,20 @@ export default function GamePage() {
       };
       const pushResult = world.pushBlock(targetBlock.id, pushDirection);
       if (pushResult.success && pushResult.newPath.length > 0) {
-        const finalPos = pushResult.newPath[pushResult.newPath.length - 1];
-        targetBlock.position.x = finalPos.x;
-        targetBlock.position.y = finalPos.y;
-
-        // Player moves into the block's old spot
-        player.position.x = point.x;
-        player.position.y = point.y;
-
-        // Evaluate triggers
         world.evaluateTriggers();
         setEntities([...world.getEntityList()]);
+
+        if (targetBlock.pushable?.isSliding) {
+          const slideDistance = pushResult.newPath.length;
+          const slideDurationMs = Math.max(350, slideDistance * 80);
+          setTimeout(() => {
+            if (targetBlock.pushable) {
+              targetBlock.pushable.isSliding = false;
+            }
+            world.evaluateTriggers();
+            setEntities([...world.getEntityList()]);
+          }, slideDurationMs);
+        }
         return;
       }
     }
@@ -236,6 +241,36 @@ export default function GamePage() {
         if (moveTimerRef.current) {
           clearInterval(moveTimerRef.current);
           moveTimerRef.current = null;
+        }
+
+        // If player walked into a pushable block, trigger push upon arrival
+        const p = world.getPlayer();
+        if (p && targetBlock && targetBlock.position.x === point.x && targetBlock.position.y === point.y) {
+          const isNowAdjacent =
+            Math.abs(point.x - p.position.x) + Math.abs(point.y - p.position.y) === 1;
+          if (isNowAdjacent) {
+            const pushDirection: GridPoint = {
+              x: point.x - p.position.x,
+              y: point.y - p.position.y,
+            };
+            const pushResult = world.pushBlock(targetBlock.id, pushDirection);
+            if (pushResult.success && pushResult.newPath.length > 0) {
+              world.evaluateTriggers();
+              setEntities([...world.getEntityList()]);
+
+              if (targetBlock.pushable?.isSliding) {
+                const slideDistance = pushResult.newPath.length;
+                const slideDurationMs = Math.max(350, slideDistance * 80);
+                setTimeout(() => {
+                  if (targetBlock.pushable) {
+                    targetBlock.pushable.isSliding = false;
+                  }
+                  world.evaluateTriggers();
+                  setEntities([...world.getEntityList()]);
+                }, slideDurationMs);
+              }
+            }
+          }
         }
       }
     };
