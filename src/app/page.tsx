@@ -75,19 +75,34 @@ export default function GamePage() {
   const [touchEvents, setTouchEvents] = useState<TouchFeedbackEvent[]>([]);
   const [inactiveSeconds, setInactiveSeconds] = useState(0);
   const [cellSize, setCellSize] = useState(80); // Strict >= 80px touch target default
+  const moveTimerRef = useRef<NodeJS.Timeout | null>(null);
+
+  const stopPlayerMovement = useCallback(() => {
+    if (moveTimerRef.current) {
+      clearInterval(moveTimerRef.current);
+      moveTimerRef.current = null;
+    }
+    worldRef.current.cancelPlayerMovement();
+  }, []);
 
   // Synchronize world entities on room load
   const loadRoom = useCallback((room: RoomDefinition) => {
+    stopPlayerMovement();
     const world = new GameWorld(room);
     // Clone entities so resets work cleanly
     world.setEntities(JSON.parse(JSON.stringify(room.entities)));
     worldRef.current = world;
     setEntities(world.getEntityList());
     setInactiveSeconds(0);
-  }, []);
+  }, [stopPlayerMovement]);
 
   useEffect(() => {
     loadRoom(currentRoom);
+    return () => {
+      if (moveTimerRef.current) {
+        clearInterval(moveTimerRef.current);
+      }
+    };
   }, [currentRoom, loadRoom]);
 
   // Scale the 16:9 room to fit the landscape viewport while preserving square cells.
@@ -154,6 +169,8 @@ export default function GamePage() {
       .find((e) => e.position.x === point.x && e.position.y === point.y && e.pushable);
 
     if (isAdjacent && targetBlock) {
+      stopPlayerMovement();
+
       // Execute push
       const pushDirection: GridPoint = {
         x: point.x - player.position.x,
@@ -176,21 +193,34 @@ export default function GamePage() {
       }
     }
 
-    // Otherwise, plan unimanual A* pathfinding
-    const path = world.planMove(point);
-    if (path.length > 1) {
-      // Step player to destination
-      const destination = path[path.length - 1];
+    // Otherwise, plan unimanual A* tap-to-move pathfinding avoiding obstacles
+    // (or routing to the closest adjacent open tile if target is solid)
+    stopPlayerMovement();
 
-      // Check if destination is the open door
+    const path = world.planMove(point);
+    if (path.length <= 1) {
+      return;
+    }
+
+    world.startPlayerMovement(path);
+
+    const stepInterval = player.movement?.stepIntervalMs || 150;
+
+    const advanceStep = () => {
+      const stepResult = world.stepPlayerMovement();
+      setEntities([...world.getEntityList()]);
+      world.evaluateTriggers();
+
+      // Check if player reached the open exit door
       const door = world.getEntityList().find((e) => e.renderable.shape === "door");
       const isDoorOpen = door?.collider && !door.collider.isSolid;
-
-      player.position.x = destination.x;
-      player.position.y = destination.y;
-
-      if (door && isDoorOpen && destination.x === door.position.x && destination.y === door.position.y) {
-        // Advance to next shrine room
+      if (
+        door &&
+        isDoorOpen &&
+        stepResult.currentPos.x === door.position.x &&
+        stepResult.currentPos.y === door.position.y
+      ) {
+        stopPlayerMovement();
         setTimeout(() => {
           if (currentRoomIndex < SHRINE_ROOMS.length - 1) {
             setCurrentRoomIndex((prev) => prev + 1);
@@ -199,14 +229,29 @@ export default function GamePage() {
             setCurrentRoomIndex(0);
           }
         }, 300);
+        return;
       }
 
-      world.evaluateTriggers();
-      setEntities([...world.getEntityList()]);
+      if (stepResult.finished) {
+        if (moveTimerRef.current) {
+          clearInterval(moveTimerRef.current);
+          moveTimerRef.current = null;
+        }
+      }
+    };
+
+    // Execute first step immediately for zero latency feedback
+    advanceStep();
+
+    // If more waypoints remain, step along path with interval
+    const updatedPlayer = world.getPlayer();
+    if (updatedPlayer?.movement?.isMoving) {
+      moveTimerRef.current = setInterval(advanceStep, stepInterval);
     }
   };
 
   const handleResetRoom = () => {
+    stopPlayerMovement();
     loadRoom(currentRoom);
   };
 
