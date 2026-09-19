@@ -1,6 +1,21 @@
+---
+title: "Operational & Academic Constraints"
+version: "1.0.0"
+revision_date: "2026-09-19"
+last_updated: "2026-09-19"
+status: "Active"
+standard: "Google OKF / langchain/openwiki"
+document_id: "WIKI_ZTLO_Constraints_20260919_v01"
+---
+
 # Operational & Academic Constraints
 
-**Standard:** langchain/openwiki / Google OKF Standard  
+**Document ID:** `WIKI_ZTLO_Constraints_20260919_v01`  
+**Version:** `1.0.0`  
+**Revision Date:** `2026-09-19`  
+**Last Updated:** `2026-09-19`  
+**Status:** Active  
+**Standard:** Google OKF / langchain/openwiki Standard  
 **Cross-References:** [[Home]], [[Architecture]], [[Curriculum]], [[Directives]]  
 
 ---

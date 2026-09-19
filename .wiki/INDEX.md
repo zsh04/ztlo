@@ -1,7 +1,21 @@
+---
+title: "Project ZTLO OpenWiki Hub"
+version: "1.0.0"
+revision_date: "2026-09-19"
+last_updated: "2026-09-19"
+status: "Active"
+standard: "Google OKF / langchain/openwiki"
+document_id: "WIKI_ZTLO_Home_20260919_v01"
+---
+
 # Project ZTLO OpenWiki Hub
 
+**Document ID:** `WIKI_ZTLO_Home_20260919_v01`  
+**Version:** `1.0.0`  
+**Revision Date:** `2026-09-19`  
+**Last Updated:** `2026-09-19`  
 **Status:** Active  
-**Standard:** langchain/openwiki & Google OKF Standard  
+**Standard:** Google OKF / langchain/openwiki Standard  
 **Subject:** Zyra & The Light Orb (ZTLO) Engineering & Pedagogical Documentation  
 **Primary Target:** 6-Year-Old Early Childhood Learner (Zyra)  
 **Primary Hardware:** Apple iPad (Touch-First PWA Environment)  
