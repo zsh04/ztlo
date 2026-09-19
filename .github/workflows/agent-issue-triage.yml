@@ -1,0 +1,44 @@
+name: Agent Issue Triage
+
+on:
+  issues:
+    types: [opened]
+
+permissions:
+  issues: write
+
+jobs:
+  triage:
+    name: Autonomous Issue Triage
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Triage and Acknowledge Issue
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const issue = context.payload.issue;
+            
+            // Check if issue has labels, if not apply status:ready
+            if (!issue.labels || issue.labels.length === 0) {
+              await github.rest.issues.addLabels({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: issue.number,
+                labels: ['status:ready'],
+              });
+            }
+            
+            const comment = `👋 Thanks for opening this issue!
+            
+            ### 🤖 Agent Triage Context
+            - **Project Board:** [Zyra & The Light Orb Roadmap](https://github.com/users/${context.repo.owner}/projects/3)
+            - **Directives:** All pull requests resolving this issue must adhere to the [Agent Protocol](https://github.com/${context.repo.owner}/${context.repo.repo}/blob/main/.github/AGENT_PROTOCOL.md) and [Pediatric HCI Constraints](https://github.com/${context.repo.owner}/${context.repo.repo}/wiki/Constraints).
+            - **Traceability:** When submitting a PR, include \`Closes #${issue.number}\` in the description.`;
+            
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: issue.number,
+              body: comment,
+            });
