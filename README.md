@@ -75,13 +75,13 @@ npm run build
 
 ## 🗺️ Project Milestones & Roadmap
 See [GitHub Milestones](https://github.com/zsh04/ztlo/milestones) and [Issues](https://github.com/zsh04/ztlo/issues) for active roadmap tracking:
-1. **Phase 1: Prototype (Active)**
+1. **Phase 1: Prototype (Completed — 100%)**
    - [x] Scaffold touch-first responsive viewport (PR #15 / PR #16)
    - [x] NavMesh / A* tap-to-move pathfinding with touch ripples (PR #17)
    - [x] Grid physics entities: `StoneBlock`, `IceBlock`, `PressurePlate` (PR #20)
    - [x] Socratic Light Orb mentor V1 state machine (PR #23)
-   - [ ] iPad touch-friction validation gate (Issue #5)
-2. **Phase 2: Engine & AI Migration** — Phaser 3 integration + local WebLLM companion.
+   - [x] iPad touch-friction validation gate (Issue #5 / PR #25)
+2. **Phase 2: Engine & AI Migration (Active)** — Phaser 3 integration + local WebLLM companion.
 3. **Phase 3: Curriculum & NPC Empathy** — Mood auras, empathy mapping, optics reflection puzzles.
 4. **Phase 4: Production & PWA Packaging** — Offline asset pre-caching, full tablet optimization.
 
