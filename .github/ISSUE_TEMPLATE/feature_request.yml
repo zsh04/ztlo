@@ -1,0 +1,40 @@
+name: Feature Request
+description: Propose a new gameplay mechanic, educational puzzle, or architectural enhancement.
+title: "[Feature]: "
+labels: ["type:feature", "status:ready"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for contributing to **Zyra & The Light Orb**! Please provide the details of your feature proposal below.
+  - type: textarea
+    id: feature-description
+    attributes:
+      label: Feature Summary
+      description: What mechanic, puzzle, or capability should be added?
+      placeholder: Describe the gameplay or system feature...
+    validations:
+      required: true
+  - type: dropdown
+    id: curriculum-vector
+    attributes:
+      label: Educational Curriculum Vector
+      description: Which learning discipline does this mechanic reinforce?
+      options:
+        - "STEM / Logic (Sequencing, AND/OR logic)"
+        - "Physics (Friction, mass, optics)"
+        - "Psychology (Emotion regulation, mood auras, empathy)"
+        - "Sociology / Philosophy (Resource stewardship, cooperation)"
+        - "System / Architectural (Engine, PWA, ECS)"
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance-criteria
+    attributes:
+      label: Acceptance Criteria
+      description: How do we know this feature is complete and verified?
+      placeholder: |
+        - [ ] Criterion 1
+        - [ ] Criterion 2
+    validations:
+      required: true
