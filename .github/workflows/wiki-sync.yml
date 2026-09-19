@@ -1,0 +1,56 @@
+name: Wiki Sync
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.wiki/**'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  sync-wiki:
+    name: Sync Documentation to GitHub Wiki
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Sync Wiki Pages
+        run: |
+          set -e
+          WIKI_REPO="https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.wiki.git"
+          TEMP_DIR="/tmp/wiki-sync"
+          
+          echo "Checking wiki availability..."
+          if ! git ls-remote "${WIKI_REPO}" &>/dev/null; then
+            echo "Wiki repository is not initialized on GitHub yet."
+            echo "Please initialize by saving the first page at https://github.com/${{ github.repository }}/wiki/_new"
+            exit 0
+          fi
+
+          git clone "${WIKI_REPO}" "${TEMP_DIR}"
+          cd "${TEMP_DIR}"
+
+          cp "${GITHUB_WORKSPACE}/.wiki/Home.md" ./Home.md
+          cp "${GITHUB_WORKSPACE}/.wiki/Architecture.md" ./Architecture.md
+          cp "${GITHUB_WORKSPACE}/.wiki/Constraints.md" ./Constraints.md
+          cp "${GITHUB_WORKSPACE}/.wiki/Curriculum.md" ./Curriculum.md
+          cp "${GITHUB_WORKSPACE}/.wiki/Directives.md" ./Directives.md
+          cp "${GITHUB_WORKSPACE}/.wiki/_Sidebar.md" ./_Sidebar.md
+          cp "${GITHUB_WORKSPACE}/.wiki/_Footer.md" ./_Footer.md
+
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add .
+
+          if git diff-index --quiet HEAD --; then
+            echo "Wiki is already up to date."
+          else
+            git commit -m "docs(wiki): synchronize wiki from .wiki/ [skip ci]"
+            git push origin HEAD
+            echo "Wiki published successfully."
+          fi

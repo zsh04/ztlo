@@ -1,8 +1,7 @@
 # Antigravity Agent Directives & Lifecycle Protocol
 
-**Document:** `.wiki/DIRECTIVES.md`  
 **Standard:** langchain/openwiki / Google OKF Standard  
-**Cross-References:** [INDEX.md](file:///.wiki/INDEX.md), [ARCHITECTURE.md](file:///.wiki/ARCHITECTURE.md), [CONSTRAINTS.md](file:///.wiki/CONSTRAINTS.md)  
+**Cross-References:** [[Home]], [[Architecture]], [[Constraints]], [[Curriculum]]  
 
 ---
 
@@ -24,7 +23,7 @@ Every code change must strictly adhere to this sequence:
 commit --> message --> pr --> review --> validate --> merge
 ```
 
-* **Branching Strategy:** Never push directly to `master` / `main`. Isolate all features in feature branches (e.g., `feat/phase1-ecs-scaffold`).
+* **Branching Strategy:** Never push directly to `main`. Isolate all features in feature branches (e.g., `feat/phase1-ecs-scaffold`).
 * **Issue Linkage:** Create discrete GitHub issues for every micro-task. Link every PR directly to an issue.
 
 ---

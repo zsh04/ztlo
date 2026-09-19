@@ -1,8 +1,7 @@
 # Systems Architecture & Implementation Roadmap
 
-**Document:** `.wiki/ARCHITECTURE.md`  
 **Standard:** langchain/openwiki / Google OKF Standard  
-**Cross-References:** [INDEX.md](file:///.wiki/INDEX.md), [CONSTRAINTS.md](file:///.wiki/CONSTRAINTS.md), [CURRICULUM.md](file:///.wiki/CURRICULUM.md)  
+**Cross-References:** [[Home]], [[Constraints]], [[Curriculum]], [[Directives]]  
 
 ---
 

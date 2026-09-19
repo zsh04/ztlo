@@ -1,8 +1,7 @@
 # Subconscious Pedagogical Curriculum Matrix
 
-**Document:** `.wiki/CURRICULUM.md`  
 **Standard:** langchain/openwiki / Google OKF Standard  
-**Cross-References:** [INDEX.md](file:///.wiki/INDEX.md), [ARCHITECTURE.md](file:///.wiki/ARCHITECTURE.md), [CONSTRAINTS.md](file:///.wiki/CONSTRAINTS.md)  
+**Cross-References:** [[Home]], [[Architecture]], [[Constraints]], [[Directives]]  
 
 ---
 

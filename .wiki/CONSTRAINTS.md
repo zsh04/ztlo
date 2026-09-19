@@ -1,8 +1,7 @@
 # Operational & Academic Constraints
 
-**Document:** `.wiki/CONSTRAINTS.md`  
 **Standard:** langchain/openwiki / Google OKF Standard  
-**Cross-References:** [INDEX.md](file:///.wiki/INDEX.md), [ARCHITECTURE.md](file:///.wiki/ARCHITECTURE.md), [DIRECTIVES.md](file:///.wiki/DIRECTIVES.md)  
+**Cross-References:** [[Home]], [[Architecture]], [[Curriculum]], [[Directives]]  
 
 ---
 
