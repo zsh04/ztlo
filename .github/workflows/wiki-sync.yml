@@ -36,10 +36,10 @@ jobs:
           cd "${TEMP_DIR}"
 
           cp "${GITHUB_WORKSPACE}/.wiki/Home.md" ./Home.md
-          cp "${GITHUB_WORKSPACE}/.wiki/Architecture.md" ./Architecture.md
-          cp "${GITHUB_WORKSPACE}/.wiki/Constraints.md" ./Constraints.md
-          cp "${GITHUB_WORKSPACE}/.wiki/Curriculum.md" ./Curriculum.md
-          cp "${GITHUB_WORKSPACE}/.wiki/Directives.md" ./Directives.md
+          cp "${GITHUB_WORKSPACE}/.wiki/ARCHITECTURE.md" ./Architecture.md
+          cp "${GITHUB_WORKSPACE}/.wiki/CONSTRAINTS.md" ./Constraints.md
+          cp "${GITHUB_WORKSPACE}/.wiki/CURRICULUM.md" ./Curriculum.md
+          cp "${GITHUB_WORKSPACE}/.wiki/DIRECTIVES.md" ./Directives.md
           cp "${GITHUB_WORKSPACE}/.wiki/_Sidebar.md" ./_Sidebar.md
           cp "${GITHUB_WORKSPACE}/.wiki/_Footer.md" ./_Footer.md
 

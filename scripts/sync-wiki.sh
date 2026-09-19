@@ -24,10 +24,10 @@ cd "${TEMP_DIR}"
 
 # Copy wiki pages
 cp "${SOURCE_DIR}/Home.md" ./Home.md
-cp "${SOURCE_DIR}/Architecture.md" ./Architecture.md
-cp "${SOURCE_DIR}/Constraints.md" ./Constraints.md
-cp "${SOURCE_DIR}/Curriculum.md" ./Curriculum.md
-cp "${SOURCE_DIR}/Directives.md" ./Directives.md
+cp "${SOURCE_DIR}/ARCHITECTURE.md" ./Architecture.md
+cp "${SOURCE_DIR}/CONSTRAINTS.md" ./Constraints.md
+cp "${SOURCE_DIR}/CURRICULUM.md" ./Curriculum.md
+cp "${SOURCE_DIR}/DIRECTIVES.md" ./Directives.md
 cp "${SOURCE_DIR}/_Sidebar.md" ./_Sidebar.md
 cp "${SOURCE_DIR}/_Footer.md" ./_Footer.md
 
