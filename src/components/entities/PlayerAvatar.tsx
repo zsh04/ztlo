@@ -5,9 +5,10 @@ import { motion } from "framer-motion";
 
 interface PlayerAvatarProps {
   size: number;
+  isMoving?: boolean;
 }
 
-export const PlayerAvatar: React.FC<PlayerAvatarProps> = ({ size }) => {
+export const PlayerAvatar: React.FC<PlayerAvatarProps> = ({ size, isMoving = false }) => {
   return (
     <motion.svg
       width={size}
@@ -17,8 +18,16 @@ export const PlayerAvatar: React.FC<PlayerAvatarProps> = ({ size }) => {
       xmlns="http://www.w3.org/2000/svg"
       className="drop-shadow-sm select-none"
       initial={{ scale: 0.9 }}
-      animate={{ scale: [0.98, 1.02, 0.98] }}
-      transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+      animate={
+        isMoving
+          ? { scale: [0.95, 1.05, 0.95], y: [0, -3, 0] }
+          : { scale: [0.98, 1.02, 0.98], y: 0 }
+      }
+      transition={
+        isMoving
+          ? { duration: 0.25, repeat: Infinity, ease: "easeInOut" }
+          : { duration: 2, repeat: Infinity, ease: "easeInOut" }
+      }
     >
       {/* Soft Ground Shadow */}
       <ellipse cx="40" cy="72" rx="24" ry="6" fill="#000000" fillOpacity="0.12" />

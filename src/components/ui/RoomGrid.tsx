@@ -79,7 +79,12 @@ export const RoomGrid: React.FC<RoomGridProps> = ({
 
           let content: React.ReactNode = null;
           if (entity.renderable.shape === "avatar") {
-            content = <PlayerAvatar size={cellSize} />;
+            content = (
+              <PlayerAvatar
+                size={cellSize}
+                isMoving={entity.movement?.isMoving}
+              />
+            );
           } else if (entity.renderable.shape === "stone") {
             content = <StoneBlock size={cellSize} />;
           } else if (entity.renderable.shape === "ice") {
@@ -111,8 +116,12 @@ export const RoomGrid: React.FC<RoomGridProps> = ({
                 y: top,
               }}
               transition={{
-                duration: entity.pushable?.isSliding ? 0.12 : 0.22,
-                ease: "easeInOut",
+                duration: entity.pushable?.isSliding
+                  ? 0.12
+                  : entity.movement?.isMoving
+                  ? (entity.movement.stepIntervalMs ? entity.movement.stepIntervalMs / 1000 : 0.15)
+                  : 0.22,
+                ease: entity.movement?.isMoving ? "linear" : "easeInOut",
               }}
             >
               {content}

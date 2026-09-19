@@ -10,24 +10,48 @@ interface TouchFeedbackProps {
 
 export const TouchFeedback: React.FC<TouchFeedbackProps> = ({ events }) => {
   return (
-    <div className="absolute inset-0 pointer-events-none overflow-hidden z-30">
+    <div className="fixed inset-0 pointer-events-none overflow-hidden z-30">
       <AnimatePresence>
         {events.map((evt) => (
-          <motion.div
+          <div
             key={evt.id}
-            initial={{ scale: 0.2, opacity: 0.8 }}
-            animate={{ scale: 1.4, opacity: 0 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.5, ease: "easeOut" }}
             style={{
               position: "absolute",
-              left: evt.screenX - 32,
-              top: evt.screenY - 32,
-              width: 64,
-              height: 64,
+              left: evt.screenX,
+              top: evt.screenY,
             }}
-            className="rounded-full border-4 border-storybook-interactable bg-storybook-interactable-soft/30"
-          />
+          >
+            {/* Outer expanding ripple ring */}
+            <motion.div
+              initial={{ scale: 0.2, opacity: 0.85 }}
+              animate={{ scale: 1.7, opacity: 0 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.55, ease: "easeOut" }}
+              style={{
+                position: "absolute",
+                left: -40,
+                top: -40,
+                width: 80,
+                height: 80,
+              }}
+              className="rounded-full border-2 border-storybook-interactable bg-storybook-interactable-soft/35 shadow-md shadow-storybook-interactable/25"
+            />
+            {/* Inner radiant focal pulse */}
+            <motion.div
+              initial={{ scale: 0.3, opacity: 0.9 }}
+              animate={{ scale: 0.9, opacity: 0 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.35, ease: "easeOut" }}
+              style={{
+                position: "absolute",
+                left: -14,
+                top: -14,
+                width: 28,
+                height: 28,
+              }}
+              className="rounded-full bg-storybook-interactable shadow-sm"
+            />
+          </div>
         ))}
       </AnimatePresence>
     </div>

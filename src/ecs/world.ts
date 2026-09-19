@@ -1,6 +1,6 @@
 import { Entity } from "./entities";
 import { GridPoint, RoomDefinition } from "../types/game";
-import { MovementSystem } from "./systems/MovementSystem";
+import { MovementSystem, StepResult } from "./systems/MovementSystem";
 import { PhysicsSystem } from "./systems/PhysicsSystem";
 import { TriggerSystem, TriggerEvaluationResult } from "./systems/TriggerSystem";
 
@@ -44,6 +44,26 @@ export class GameWorld {
       this.height,
       this.getEntityList()
     );
+  }
+
+  public startPlayerMovement(path: GridPoint[]): void {
+    const player = this.getPlayer();
+    if (!player) return;
+    MovementSystem.startMovement(player, path);
+  }
+
+  public stepPlayerMovement(): StepResult {
+    const player = this.getPlayer();
+    if (!player) {
+      return { moved: false, finished: true, currentPos: { x: 0, y: 0 } };
+    }
+    return MovementSystem.step(player, this.width, this.height, this.getEntityList());
+  }
+
+  public cancelPlayerMovement(): void {
+    const player = this.getPlayer();
+    if (!player) return;
+    MovementSystem.cancelMovement(player);
   }
 
   public pushBlock(blockId: string, direction: GridPoint): { success: boolean; newPath: GridPoint[] } {

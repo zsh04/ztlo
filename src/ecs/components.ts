@@ -18,6 +18,14 @@ export interface ColliderComponent extends Component {
   passableByPlayer: boolean;
 }
 
+export interface MovementComponent extends Component {
+  type: "movement";
+  path: GridPoint[];
+  target: GridPoint | null;
+  isMoving: boolean;
+  stepIntervalMs: number;
+}
+
 export interface PushableComponent extends Component {
   type: "pushable";
   behavior: "discrete" | "continuous";

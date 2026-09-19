@@ -1,5 +1,6 @@
 import {
   PositionComponent,
+  MovementComponent,
   ColliderComponent,
   PushableComponent,
   TriggerComponent,
@@ -9,6 +10,7 @@ import {
 export interface Entity {
   id: string;
   position: PositionComponent;
+  movement?: MovementComponent;
   collider?: ColliderComponent;
   pushable?: PushableComponent;
   trigger?: TriggerComponent;
@@ -19,6 +21,13 @@ export function createPlayerEntity(id: string, x: number, y: number): Entity {
   return {
     id,
     position: { type: "position", x, y, previousX: x, previousY: y },
+    movement: {
+      type: "movement",
+      path: [],
+      target: null,
+      isMoving: false,
+      stepIntervalMs: 150,
+    },
     collider: { type: "collider", isSolid: true, passableByPlayer: true },
     renderable: { type: "renderable", shape: "avatar", colorToken: "storybook-text", zIndex: 10 },
   };
