@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-label="ZTLO icon">
+  <defs>
+    <linearGradient id="bg" x1="0%" x2="100%" y1="0%" y2="100%">
+      <stop offset="0%" stop-color="#F0F4F8"/>
+      <stop offset="100%" stop-color="#D9E2EC"/>
+    </linearGradient>
+  </defs>
+  <rect width="128" height="128" rx="28" fill="url(#bg)"/>
+  <circle cx="64" cy="64" r="34" fill="#F97316" opacity="0.9"/>
+  <circle cx="64" cy="64" r="18" fill="#F59E0B"/>
+  <path d="M64 18 L76 48 L98 64 L76 80 L64 110 L52 80 L30 64 L52 48 Z" fill="#FFFFFF" opacity="0.9"/>
+</svg>

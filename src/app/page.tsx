@@ -16,51 +16,52 @@ import { HudOverlay } from "../components/ui/HudOverlay";
 import { LightOrbCompanion } from "../components/mentor/LightOrbCompanion";
 import { SocraticEngine } from "../lib/socraticEngine";
 import { GridPoint, TouchFeedbackEvent, RoomDefinition } from "../types/game";
+import { calculateGridCellSize } from "../lib/viewport";
 
-// 3 Micro-Dungeon Shrines conforming to the Path 3 Prototype Spec
+// 3 Micro-Dungeon Shrines conforming to the 16:9 landscape prototype spec
 const SHRINE_ROOMS: RoomDefinition[] = [
   {
     id: "shrine-01",
     name: "Shrine of Still Weight",
-    width: 12,
-    height: 7,
+    width: 16,
+    height: 9,
     objective: "Push the heavy stone block onto the round pressure plate",
     hintKey: "stone_hint",
     entities: [
-      createPlayerEntity("player-1", 2, 3),
-      createStoneBlockEntity("stone-1", 5, 3),
-      createPressurePlateEntity("plate-1", 8, 3, "door-1"),
-      createDoorEntity("door-1", 11, 3),
+      createPlayerEntity("player-1", 2, 4),
+      createStoneBlockEntity("stone-1", 6, 4),
+      createPressurePlateEntity("plate-1", 12, 4, "door-1"),
+      createDoorEntity("door-1", 14, 4),
     ],
   },
   {
     id: "shrine-02",
     name: "Shrine of Glacial Flow",
-    width: 12,
-    height: 7,
+    width: 16,
+    height: 9,
     objective: "Slide the frictionless ice block across the room",
     hintKey: "ice_hint",
     entities: [
-      createPlayerEntity("player-1", 2, 2),
-      createIceBlockEntity("ice-1", 4, 2),
-      createPressurePlateEntity("plate-2", 10, 2, "door-2"),
-      createDoorEntity("door-2", 11, 2),
+      createPlayerEntity("player-1", 2, 4),
+      createIceBlockEntity("ice-1", 6, 4),
+      createPressurePlateEntity("plate-2", 12, 4, "door-2"),
+      createDoorEntity("door-2", 14, 4),
     ],
   },
   {
     id: "shrine-03",
     name: "Shrine of Harmony Gates",
-    width: 12,
-    height: 7,
+    width: 16,
+    height: 9,
     objective: "Position both blocks to complete the dual-switch circuit",
     hintKey: "dual_hint",
     entities: [
-      createPlayerEntity("player-1", 1, 3),
-      createStoneBlockEntity("stone-2", 4, 2),
-      createIceBlockEntity("ice-2", 4, 4),
-      createPressurePlateEntity("plate-3a", 8, 2, "door-3"),
-      createPressurePlateEntity("plate-3b", 8, 4, "door-3"),
-      createDoorEntity("door-3", 11, 3),
+      createPlayerEntity("player-1", 1, 4),
+      createStoneBlockEntity("stone-2", 5, 2),
+      createIceBlockEntity("ice-2", 5, 6),
+      createPressurePlateEntity("plate-3a", 12, 2, "door-3"),
+      createPressurePlateEntity("plate-3b", 12, 6, "door-3"),
+      createDoorEntity("door-3", 14, 4),
     ],
   },
 ];
@@ -89,16 +90,19 @@ export default function GamePage() {
     loadRoom(currentRoom);
   }, [currentRoom, loadRoom]);
 
-  // Adjust cell size dynamically based on window dimensions, keeping >= 64px-88px
+  // Scale the 16:9 room to fit the landscape viewport while preserving square cells.
   useEffect(() => {
     const updateSize = () => {
-      const availWidth = window.innerWidth - 64;
-      const availHeight = window.innerHeight - 120;
-      const calculatedW = Math.floor(availWidth / currentRoom.width);
-      const calculatedH = Math.floor(availHeight / currentRoom.height);
-      const optimal = Math.max(64, Math.min(96, Math.min(calculatedW, calculatedH)));
-      setCellSize(optimal);
+      setCellSize(
+        calculateGridCellSize(currentRoom.width, currentRoom.height, window.innerWidth, window.innerHeight, {
+          minCellSize: 64,
+          maxCellSize: 96,
+          paddingX: 96,
+          paddingY: 180,
+        })
+      );
     };
+
     updateSize();
     window.addEventListener("resize", updateSize);
     return () => window.removeEventListener("resize", updateSize);
@@ -209,7 +213,7 @@ export default function GamePage() {
   const currentDialog = SocraticEngine.evaluateState(entities, inactiveSeconds);
 
   return (
-    <main className="relative w-screen h-screen flex flex-col items-center justify-center p-4 bg-storybook-bg overflow-hidden select-none">
+    <main className="relative flex h-screen w-screen items-center justify-center overflow-hidden bg-storybook-bg p-4 select-none">
       {/* HUD Bar */}
       <HudOverlay
         roomName={currentRoom.name}
