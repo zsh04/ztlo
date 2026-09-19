@@ -1,7 +1,25 @@
-import { GridPoint } from "../types/game";
+import { GridPoint, SocraticDialog } from "../types/game";
+
+export type MentorState =
+  | "idle_observing"
+  | "idle_nudge"
+  | "block_failed_push"
+  | "plate_curiosity"
+  | "direct_hint_request"
+  | "success_affirmation";
 
 export interface Component {
   type: string;
+}
+
+export interface MentorComponent extends Component {
+  type: "mentor";
+  state: MentorState;
+  idleSeconds: number;
+  unproductivePushCount: number;
+  standingOnPlateSeconds: number;
+  isBubbleOpen: boolean;
+  currentDialog: SocraticDialog;
 }
 
 export interface PositionComponent extends Component {

@@ -5,6 +5,7 @@ import {
   PushableComponent,
   TriggerComponent,
   RenderableComponent,
+  MentorComponent,
 } from "./components";
 
 export interface Entity {
@@ -14,6 +15,7 @@ export interface Entity {
   collider?: ColliderComponent;
   pushable?: PushableComponent;
   trigger?: TriggerComponent;
+  mentor?: MentorComponent;
   renderable: RenderableComponent;
 }
 

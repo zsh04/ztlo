@@ -1,8 +1,10 @@
 import { Entity } from "./entities";
-import { GridPoint, RoomDefinition } from "../types/game";
+import { GridPoint, RoomDefinition, SocraticDialog } from "../types/game";
 import { MovementSystem, StepResult } from "./systems/MovementSystem";
 import { PhysicsSystem } from "./systems/PhysicsSystem";
 import { TriggerSystem, TriggerEvaluationResult } from "./systems/TriggerSystem";
+import { MentorSystem } from "./systems/MentorSystem";
+import { MentorComponent } from "./components";
 
 export class GameWorld {
   public width: number;
@@ -10,6 +12,7 @@ export class GameWorld {
   public entities: Map<string, Entity>;
   public currentRoomId: string;
   public objective: string;
+  public mentor: MentorComponent;
 
   constructor(room: RoomDefinition) {
     this.width = room.width;
@@ -17,6 +20,7 @@ export class GameWorld {
     this.currentRoomId = room.id;
     this.objective = room.objective;
     this.entities = new Map();
+    this.mentor = MentorSystem.createInitialState();
   }
 
   public setEntities(entitiesList: Entity[]) {
@@ -82,6 +86,39 @@ export class GameWorld {
 
   public evaluateTriggers(): TriggerEvaluationResult {
     return TriggerSystem.evaluate(this.getEntityList());
+  }
+
+  public tickMentor(dtSeconds: number = 1): SocraticDialog {
+    return MentorSystem.update(this.mentor, this.getEntityList(), dtSeconds);
+  }
+
+  public recordMentorPlayerMove(): void {
+    MentorSystem.recordPlayerMove(this.mentor);
+  }
+
+  public recordMentorFailedPush(): void {
+    MentorSystem.recordFailedPush(this.mentor);
+    MentorSystem.update(this.mentor, this.getEntityList(), 0);
+  }
+
+  public recordMentorSuccessfulPush(): void {
+    MentorSystem.recordSuccessfulPush(this.mentor);
+  }
+
+  public requestMentorDirectHint(): SocraticDialog {
+    return MentorSystem.requestDirectHint(this.mentor, this.getEntityList());
+  }
+
+  public getMentorDialog(): SocraticDialog {
+    return this.mentor.currentDialog;
+  }
+
+  public isMentorBubbleOpen(): boolean {
+    return this.mentor.isBubbleOpen;
+  }
+
+  public setMentorBubbleOpen(open: boolean): void {
+    MentorSystem.setBubbleOpen(this.mentor, open);
   }
 
   public serializeForMentor(): Record<string, unknown> {
