@@ -12,7 +12,7 @@
 - [x] **Scaffold Sandbox:** Initialize Next.js PWA with offline support, locked landscape viewport, and CSS Grid layout. *(Completed: PR #15 / PR #16)*
 - [x] **Movement Mechanics (Issue #2):** Implement touch-to-move NavMesh/A* pathfinding on CSS Grid. Zero virtual D-pads. *(Completed: PR #17, Merged to main)*
 - [x] **Physics Entities (Issue #3):** Build `StoneBlock` (grid-snap push), `IceBlock` (continuous slide), and `PressurePlate` (trigger). *(Completed: PR #20, Merged to main)*
-- [ ] **Mentor AI V1 (Issue #4):** Build deterministic state-machine "Light Orb" for Socratic hinting. *(Ready for Dispatch)*
+- [x] **Mentor AI V1 (Issue #4):** Build deterministic state-machine "Light Orb" for Socratic hinting. *(Completed: PR #23, Merged to main)*
 - [ ] **GATE - Prototype Validation (Issue #5):** Deploy to iPad. Require >5 min engagement with zero motor-control frustration before proceeding.
 
 ---
@@ -47,4 +47,4 @@
 | #1 | Scaffold responsive viewport | Antigravity | **MERGED** | PR #15 / PR #16 |
 | #2 | NavMesh / A* Tap-to-Move | Antigravity | **MERGED** | PR #17 |
 | #3 | Grid Physics Entities | Antigravity | **MERGED** | PR #20 |
-| #4 | Socratic Light Orb FSM V1 | Antigravity | **READY** | Awaiting dispatch |
+| #4 | Socratic Light Orb FSM V1 | Antigravity | **MERGED** | PR #23 |
