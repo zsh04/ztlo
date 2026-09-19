@@ -16,7 +16,7 @@ import { TouchFeedback } from "../components/ui/TouchFeedback";
 import { HudOverlay } from "../components/ui/HudOverlay";
 import { LightOrbCompanion } from "../components/mentor/LightOrbCompanion";
 import { SocraticEngine } from "../lib/socraticEngine";
-import { GridPoint, TouchFeedbackEvent, RoomDefinition } from "../types/game";
+import { GridPoint, TouchFeedbackEvent, RoomDefinition, SocraticDialog } from "../types/game";
 import { calculateGridCellSize } from "../lib/viewport";
 
 // 3 Micro-Dungeon Shrines conforming to the 16:9 landscape prototype spec
@@ -78,6 +78,10 @@ export default function GamePage() {
   const [inactiveSeconds, setInactiveSeconds] = useState(0);
   const [cellSize, setCellSize] = useState(80); // Strict >= 80px touch target default
   const moveTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const [mentorDialog, setMentorDialog] = useState<SocraticDialog>(
+    worldRef.current.getMentorDialog()
+  );
+  const [isMentorOpen, setIsMentorOpen] = useState(false);
 
   const stopPlayerMovement = useCallback(() => {
     if (moveTimerRef.current) {
@@ -96,6 +100,8 @@ export default function GamePage() {
     worldRef.current = world;
     setEntities(world.getEntityList());
     setInactiveSeconds(0);
+    setMentorDialog(world.getMentorDialog());
+    setIsMentorOpen(world.isMentorBubbleOpen());
   }, [stopPlayerMovement]);
 
   useEffect(() => {
@@ -125,10 +131,16 @@ export default function GamePage() {
     return () => window.removeEventListener("resize", updateSize);
   }, [currentRoom.width, currentRoom.height]);
 
-  // Inactivity tracking timer
+  // Inactivity tracking and mentor state machine tick
   useEffect(() => {
     const interval = setInterval(() => {
-      setInactiveSeconds((prev) => prev + 1);
+      setInactiveSeconds((prev) => {
+        const nextSec = prev + 1;
+        const dialog = worldRef.current.tickMentor(1);
+        setMentorDialog(dialog);
+        setIsMentorOpen(worldRef.current.isMentorBubbleOpen());
+        return nextSec;
+      });
     }, 1000);
     return () => clearInterval(interval);
   }, []);
@@ -145,6 +157,11 @@ export default function GamePage() {
   const handleCellTap = (point: GridPoint, screenX: number, screenY: number) => {
     setInactiveSeconds(0);
 
+    const world = worldRef.current;
+    world.recordMentorPlayerMove();
+    setMentorDialog(world.getMentorDialog());
+    setIsMentorOpen(world.isMentorBubbleOpen());
+
     // 1. Immediate visual feedback event (<16.7ms)
     setTouchEvents((prev) => [
       ...prev,
@@ -158,7 +175,6 @@ export default function GamePage() {
       },
     ]);
 
-    const world = worldRef.current;
     const player = world.getPlayer();
     if (!player) return;
 
@@ -180,8 +196,11 @@ export default function GamePage() {
       };
       const pushResult = world.pushBlock(targetBlock.id, pushDirection);
       if (pushResult.success && pushResult.newPath.length > 0) {
+        world.recordMentorSuccessfulPush();
         world.evaluateTriggers();
         setEntities([...world.getEntityList()]);
+        setMentorDialog(world.getMentorDialog());
+        setIsMentorOpen(world.isMentorBubbleOpen());
 
         if (targetBlock.pushable?.isSliding) {
           const slideDistance = pushResult.newPath.length;
@@ -195,6 +214,11 @@ export default function GamePage() {
           }, slideDurationMs);
         }
         return;
+      } else {
+        // Blocked push attempt against wall or obstacle
+        world.recordMentorFailedPush();
+        setMentorDialog(world.getMentorDialog());
+        setIsMentorOpen(world.isMentorBubbleOpen());
       }
     }
 
@@ -226,6 +250,9 @@ export default function GamePage() {
         stepResult.currentPos.y === door.position.y
       ) {
         stopPlayerMovement();
+        world.tickMentor(0);
+        setMentorDialog(world.getMentorDialog());
+        setIsMentorOpen(world.isMentorBubbleOpen());
         setTimeout(() => {
           if (currentRoomIndex < SHRINE_ROOMS.length - 1) {
             setCurrentRoomIndex((prev) => prev + 1);
@@ -255,8 +282,11 @@ export default function GamePage() {
             };
             const pushResult = world.pushBlock(targetBlock.id, pushDirection);
             if (pushResult.success && pushResult.newPath.length > 0) {
+              world.recordMentorSuccessfulPush();
               world.evaluateTriggers();
               setEntities([...world.getEntityList()]);
+              setMentorDialog(world.getMentorDialog());
+              setIsMentorOpen(world.isMentorBubbleOpen());
 
               if (targetBlock.pushable?.isSliding) {
                 const slideDistance = pushResult.newPath.length;
@@ -269,6 +299,10 @@ export default function GamePage() {
                   setEntities([...world.getEntityList()]);
                 }, slideDurationMs);
               }
+            } else {
+              world.recordMentorFailedPush();
+              setMentorDialog(world.getMentorDialog());
+              setIsMentorOpen(world.isMentorBubbleOpen());
             }
           }
         }
@@ -290,7 +324,22 @@ export default function GamePage() {
     loadRoom(currentRoom);
   };
 
-  const currentDialog = SocraticEngine.evaluateState(entities, inactiveSeconds);
+  const handleOrbTap = () => {
+    const world = worldRef.current;
+    if (isMentorOpen) {
+      world.setMentorBubbleOpen(false);
+      setIsMentorOpen(false);
+    } else {
+      const hint = world.requestMentorDirectHint();
+      setMentorDialog(hint);
+      setIsMentorOpen(true);
+    }
+  };
+
+  const handleCloseMentorBubble = () => {
+    worldRef.current.setMentorBubbleOpen(false);
+    setIsMentorOpen(false);
+  };
 
   return (
     <main className="relative flex h-screen w-screen items-center justify-center overflow-hidden bg-storybook-bg p-4 select-none">
@@ -303,8 +352,11 @@ export default function GamePage() {
 
       {/* Socratic Mentor Companion */}
       <LightOrbCompanion
-        dialog={currentDialog}
+        dialog={mentorDialog}
         inactiveSeconds={inactiveSeconds}
+        isOpen={isMentorOpen}
+        onOrbTap={handleOrbTap}
+        onCloseBubble={handleCloseMentorBubble}
       />
 
       {/* 16x9 Interactive CSS Grid Room */}
