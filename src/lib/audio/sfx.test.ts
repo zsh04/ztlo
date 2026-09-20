@@ -8,6 +8,7 @@ import {
   playIceSlideSound,
   playPlateClickSound,
   playGateOpenSound,
+  playNightChimeSound,
 } from "./sfx";
 
 test("SoundFxManager: graceful degradation in Node/headless environment without window", () => {
@@ -21,6 +22,7 @@ test("SoundFxManager: graceful degradation in Node/headless environment without 
     sfx.playIceSlide();
     sfx.playPlateClick();
     sfx.playGateOpen();
+    sfx.synthesizeNightChime();
   });
 
   assert.doesNotThrow(() => {
@@ -29,6 +31,7 @@ test("SoundFxManager: graceful degradation in Node/headless environment without 
     playIceSlideSound();
     playPlateClickSound();
     playGateOpenSound();
+    playNightChimeSound();
   });
 });
 
@@ -200,6 +203,11 @@ test("SoundFxManager with Mock AudioContext: synthesizes plate click and gate ch
     sfx.playGateOpen();
     const chordNotesCreated = mockCtx.createdOscillators.length - oscCountBeforeGate;
     assert.equal(chordNotesCreated, 4, "Gate open creates 4 harmonic chord notes (C5, E5, G5, C6)");
+
+    const oscCountBeforeNight = mockCtx.createdOscillators.length;
+    sfx.synthesizeNightChime();
+    const nightNotesCreated = mockCtx.createdOscillators.length - oscCountBeforeNight;
+    assert.equal(nightNotesCreated, 4, "Night chime creates 4 warm lullaby notes (E5, B4, G#4, E4)");
   } finally {
     (globalThis as unknown as { window: unknown }).window = originalWindow;
   }

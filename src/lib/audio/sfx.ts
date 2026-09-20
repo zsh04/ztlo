@@ -247,6 +247,44 @@ export class SoundFxManager {
       // Audio operation error safe catch
     }
   }
+
+  /**
+   * Night Twilight Chime: Soothing descending lullaby bells with gentle warm shimmer for bedtime off-ramp.
+   */
+  public synthesizeNightChime(): void {
+    const ctx = this.getAudioContext();
+    if (!ctx || !this.masterGain || this.muted) return;
+
+    try {
+      const now = ctx.currentTime;
+      // Warm descending lullaby tones: E5 (659Hz), B4 (494Hz), G#4 (415Hz), E4 (330Hz)
+      const lullabyNotes = [659.25, 493.88, 415.3, 329.63];
+
+      lullabyNotes.forEach((freq, idx) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+
+        osc.type = "sine";
+        const noteStart = now + idx * 0.28;
+        const noteDuration = 1.4;
+
+        osc.frequency.setValueAtTime(freq, noteStart);
+        osc.frequency.exponentialRampToValueAtTime(freq * 0.995, noteStart + noteDuration);
+
+        gain.gain.setValueAtTime(0.001, noteStart);
+        gain.gain.linearRampToValueAtTime(0.14 * this.volume, noteStart + 0.08);
+        gain.gain.exponentialRampToValueAtTime(0.0005, noteStart + noteDuration);
+
+        osc.connect(gain);
+        gain.connect(this.masterGain!);
+
+        osc.start(noteStart);
+        osc.stop(noteStart + noteDuration);
+      });
+    } catch {
+      // Audio operation error safe catch
+    }
+  }
 }
 
 // Global singleton instance for easy app-wide consumption
@@ -258,3 +296,4 @@ export const playStonePushSound = () => sfx.playStonePush();
 export const playIceSlideSound = () => sfx.playIceSlide();
 export const playPlateClickSound = () => sfx.playPlateClick();
 export const playGateOpenSound = () => sfx.playGateOpen();
+export const playNightChimeSound = () => sfx.synthesizeNightChime();

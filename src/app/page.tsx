@@ -11,6 +11,9 @@ import { Entity } from "../ecs/entities";
 import { TouchFeedback } from "../components/ui/TouchFeedback";
 import { useWebLLM } from "../hooks/useWebLLM";
 import { GridPoint, TouchFeedbackEvent, RoomDefinition, SocraticDialog } from "../types/game";
+import { TwilightOverlay } from "../components/bedtime/TwilightOverlay";
+import { useBedtime } from "../lib/bedtime/useBedtime";
+import { BEDTIME_PROMPT } from "../lib/bedtime/bedtimeManager";
 
 // Next.js dynamic import with ssr: false for client-only Phaser 3 canvas initialization
 const DynamicPhaserContainer = dynamic(
@@ -45,6 +48,19 @@ export default function GamePage() {
 
   const { generateHint: generateWebLLMHint, status: webLLMStatus } = useWebLLM({
     autoInit: true,
+  });
+
+  const { state: bedtimeState, extendSession, resetSession } = useBedtime({
+    onPhaseChange: (newPhase) => {
+      if (newPhase === "twilight" || newPhase === "bedtime") {
+        setMentorDialog({
+          speaker: "Light Orb",
+          text: BEDTIME_PROMPT,
+          promptType: "encourage",
+        });
+        setIsMentorOpen(true);
+      }
+    },
   });
 
   const stopPlayerMovement = useCallback(() => {
@@ -503,6 +519,14 @@ export default function GamePage() {
         onClose={() => setActiveNpcModal(null)}
         onCompleteBreathing={handleCompleteBreathing}
         onOfferGift={handleOfferGift}
+      />
+
+      {/* Bedtime Twilight Transition & Gentle Off-ramp */}
+      <TwilightOverlay
+        phase={bedtimeState.phase}
+        remainingSeconds={bedtimeState.remainingSeconds}
+        onExtend={() => extendSession(300)}
+        onClose={() => resetSession()}
       />
 
       {/* Visual Touch Ripple Layer (zero-blocking touch pass-through) */}
