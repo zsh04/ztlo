@@ -150,3 +150,45 @@ test("Texture Atlas Pipeline: WebP files exist and total compressed payload sati
     `Total WebP atlas size (${(totalBytes / 1024).toFixed(1)} KB) exceeds 2MB limit`
   );
 });
+
+test("Texture Atlas Pipeline: zero-padded animation frames exist for all 6 required Phaser animations", () => {
+  const jsonPath = path.join(ATLAS_DIR, "atlas-global-entities.json");
+  const raw = fs.readFileSync(jsonPath, "utf-8");
+  const data = JSON.parse(raw) as AtlasJson;
+
+  // 1. zyra_idle: 6 frames @ 8fps repeat -1
+  for (let i = 1; i <= 6; i++) {
+    const pad = String(i).padStart(2, "0");
+    assert.ok(data.frames[`zyra-idle-${pad}`], `Missing frame zyra-idle-${pad}`);
+  }
+
+  // 2. zyra_walk: 8 frames @ 12fps repeat -1
+  for (let i = 1; i <= 8; i++) {
+    const pad = String(i).padStart(2, "0");
+    assert.ok(data.frames[`zyra-walk-${pad}`], `Missing frame zyra-walk-${pad}`);
+  }
+
+  // 3. zyra_push: 6 frames @ 12fps
+  for (let i = 1; i <= 6; i++) {
+    const pad = String(i).padStart(2, "0");
+    assert.ok(data.frames[`zyra-push-${pad}`], `Missing frame zyra-push-${pad}`);
+  }
+
+  // 4. zyra_celebrate: 8 frames @ 12fps
+  for (let i = 1; i <= 8; i++) {
+    const pad = String(i).padStart(2, "0");
+    assert.ok(data.frames[`zyra-celebrate-${pad}`], `Missing frame zyra-celebrate-${pad}`);
+  }
+
+  // 5. sprout_anxious: 8 frames @ 8fps repeat -1
+  for (let i = 1; i <= 8; i++) {
+    const pad = String(i).padStart(2, "0");
+    assert.ok(data.frames[`sprout-anxious-${pad}`], `Missing frame sprout-anxious-${pad}`);
+  }
+
+  // 6. sprout_breathe: 8 frames @ 8fps repeat -1
+  for (let i = 1; i <= 8; i++) {
+    const pad = String(i).padStart(2, "0");
+    assert.ok(data.frames[`sprout-breathe-${pad}`], `Missing frame sprout-breathe-${pad}`);
+  }
+});

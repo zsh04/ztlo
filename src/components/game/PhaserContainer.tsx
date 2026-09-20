@@ -75,6 +75,9 @@ export const PhaserContainer: React.FC<PhaserContainerProps> = ({
       const sceneInstance = new ShrineScene();
       sceneRef.current = sceneInstance;
 
+      const dpr = typeof window !== "undefined" ? window.devicePixelRatio : 1;
+      const resolution = Math.min(dpr, 2);
+
       const config: Phaser.Types.Core.GameConfig = {
         type: Phaser.AUTO,
         parent: container,
@@ -87,11 +90,14 @@ export const PhaserContainer: React.FC<PhaserContainerProps> = ({
           width: 1280,
           height: 720,
         },
+        roundPixels: true,
         render: {
           pixelArt: false,
           antialias: true,
+          roundPixels: true,
         },
         scene: [sceneInstance],
+        ...({ resolution, roundPixels: true } as object),
       };
 
       localGame = new Phaser.Game(config);
