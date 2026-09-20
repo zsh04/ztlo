@@ -4,28 +4,29 @@
 [![PWA Build](https://github.com/zsh04/ztlo/actions/workflows/deploy.yml/badge.svg)](https://github.com/zsh04/ztlo/actions/workflows/deploy.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-**Zyra & The Light Orb** is a stealth-educational, touch-first puzzle adventure designed for early childhood cognitive development (targeting Age 6). It fosters critical thinking, problem-solving, emotional regulation, and ethical reasoning without explicit didactic lecturing.
+Zyra and The Light Orb is a touch-first educational puzzle adventure for children aged six. The game nurtures problem solving, spatial reasoning, emotional regulation, and ethical reflection without lectures or scores.
 
 ---
 
-## 🎯 Core Educational Curriculum Matrix
+## 🎯 Educational Curriculum Matrix
 
 | Discipline | In-Game Mechanic | Subconscious Learning Outcome |
 | :--- | :--- | :--- |
 | **STEM / Logic** | Activating switches in sequential numeric or geometric order | Pattern recognition, Boolean logic gating (AND/OR), algorithm sequencing |
 | **Physics (Optics)** | Angling mirrors to bounce light beams across rooms to receptors | Spatial reasoning, trajectory prediction, reflection angles |
-| **Physics (Mass & Friction)**| Pushing `StoneBlock` (grid-snap friction) vs. `IceBlock` (momentum slide) | Friction, momentum, causality, kinematic prediction |
-| **Psychology** | NPC "mood auras" (Frustrated, Sad, Anxious); calming them via items | Emotion regulation, Theory of Mind, empathy mapping |
-| **Sociology** | Restoring paths/bridges to connect isolated NPC camps for trade | Interdependency, community roles, cooperative solutions |
-| **Philosophy & Ethics** | Choices to harvest resources completely vs. leaving regenerative seeds | Stewardship, delayed gratification, ethical environmentalism |
+| **Physics (Mass & Friction)** | Pushing stone blocks (friction snap) versus ice blocks (momentum slide) | Friction, momentum, causality, kinematic prediction |
+| **Psychology** | Non-Player Character (NPC) mood auras; calming them via items and breathing | Emotion regulation, Theory of Mind, empathy mapping |
+| **Sociology** | Restoring paths and bridges to connect isolated NPC camps | Interdependency, community roles, cooperative solutions |
+| **Philosophy & Ethics** | Harvesting resources completely versus leaving regenerative seeds | Environmental stewardship, delayed gratification, ethical choices |
 
 ---
 
 ## 🕹️ Tablet & Touch-First Design Philosophy
 
-- **Zero Virtual D-Pads:** Virtual joysticks create severe motor-control friction for young children. Navigation is powered by touch-anywhere NavMesh / A* pathfinding.
-- **Immediate Visual & Audio Feedback:** Every tap creates responsive ripples, and characters navigate around obstacles automatically.
-- **Micro-Dungeons (Shrines):** Self-contained 3-to-5 room puzzle shrines to maintain attention span and deliver regular dopamine milestones.
+- **Zero Virtual Directional Pads (D-Pads):** Virtual joysticks create severe motor friction for young hands. Movement relies exclusively on tap-to-move pathfinding.
+- **Immediate Visual & Audio Feedback:** Every touch emits glowing ripples, and the avatar routes around obstacles automatically.
+- **Micro-Dungeons (Shrines):** Self-contained chambers deliver clear milestones within short attention spans.
+- **Storybook Visual Atmosphere:** Hand-painted temple sanctuaries feature volumetric golden sunbeams, floating motes, and soft drop shadows.
 
 ---
 
@@ -33,16 +34,15 @@
 
 | Layer | Technology | Details |
 | :--- | :--- | :--- |
-| **Framework** | Next.js 15 (React 19), TypeScript | App Router, Edge Middleware for CSP & Cross-Origin Isolation |
-| **Game Engine** | Phaser 3.80 + React HUD overlay | 60fps canvas rendering, React for dialogue modals & dashboard |
-| **State & Logic** | Pure ECS (`/src/ecs`) | Components, Systems (Movement, Optics, Logic), World manager |
-| **AI Mentor** | WebLLM (`@mlc-ai/web-llm`) + SmolLM2-360M | Offline in-browser LLM via Web Worker; deterministic fallback |
-| **Pathfinding** | A* solver (`/src/lib/pathfinding.ts`) | Dynamic collider avoidance, Fitts's Law touch targets ≥80px |
-| **Audio** | Web Audio API procedural synthesis | Step, stone thud, ice chime, gate chord, night chime — zero asset files |
-| **PWA / Offline** | Service Worker + CacheStorage precache | Full offline capability, landscape manifest, iPad viewport lock |
-| **Curriculum API** | REST endpoints (`/api/health`, `/api/curriculum`, `/api/telemetry`) | 6-shrine pedagogical metadata, session telemetry |
-| **Parent Dashboard** | `/dashboard` route with `ParentGate` | Arithmetic challenge gate, mastery progress, COPPA/FERPA zero-PII |
-| **Screen-Time** | `BedtimeManager` + `TwilightOverlay` | 15-min session limit, twilight dusk transition, gentle off-ramp |
+| **Framework** | Next.js 15 (React 19), TypeScript | App Router with Edge Middleware for Content Security Policy (CSP) and Cross-Origin Isolation |
+| **Game Engine** | Phaser 3.80 + React Head-Up Display (HUD) | 60fps WebGL canvas with non-blocking parchment dialogue bubbles |
+| **State & Logic** | Pure Entity Component System (ECS) | Decoupled entities, components, and systems in `/src/ecs` |
+| **AI Companion** | WebLLM (`@mlc-ai/web-llm`) + SmolLM2-360M | In-browser model executed via Web Worker with deterministic Socratic fallback |
+| **Pathfinding** | A* search algorithm (`/src/lib/pathfinding.ts`) | Dynamic obstacle avoidance with touch targets meeting the 80px minimum |
+| **Audio** | Procedural Web Audio API synthesis | Step, stone thud, ice chime, gate chord, and night chimes without static audio files |
+| **Offline Storage** | Progressive Web App (PWA) Service Worker | Offline asset precaching, landscape viewport locking, and touch normalization |
+| **Health UX** | Bedtime Manager (`BedtimeManager.ts`) | 15-minute gentle session limit with twilight dusk transition |
+| **Parent Portal** | `/dashboard` route with arithmetic gate | Curriculum mastery tracking with zero personally identifiable information |
 
 ### Shrine Curriculum (7 Shrines)
 
@@ -64,31 +64,37 @@
 - Node.js 20+
 - npm 10+
 
-### Installation & Local Run
+### Installation & Local Execution
 ```bash
-# Clone the repository
+# Clone repository
 git clone https://github.com/zsh04/ztlo.git
 cd ztlo
 
 # Install dependencies
 npm install
 
-# Run the development server
+# Run development server
 npm run dev
 
-# Run linting & type checks
-npm run lint
-npm run typecheck
+# Run automated tests (143/143 passing)
+npm test
 
-# Build for production
+# Run type checks and linter
+npm run typecheck
+npm run lint
+
+# Compile production build
 npm run build
+
+# Start production server
+npm start
 ```
 
 ---
 
 ## 🗺️ Project Milestones & Roadmap
 
-All four phases are **100% complete** with 130 passing tests, 0 lint errors, and 0 type errors.
+All six planned project milestones are **100% complete** with 143 passing tests, 0 lint errors, and 0 type errors.
 
 1. **Phase 1: Prototype (Completed ✅)**
    - [x] Scaffold touch-first responsive viewport (PR #15 / PR #16)
@@ -96,24 +102,38 @@ All four phases are **100% complete** with 130 passing tests, 0 lint errors, and
    - [x] Grid physics entities: `StoneBlock`, `IceBlock`, `PressurePlate` (PR #20)
    - [x] Socratic Light Orb mentor V1 state machine (PR #23)
    - [x] iPad touch-friction validation gate (PR #25)
+
 2. **Phase 2: Engine & AI Migration (Completed ✅)**
    - [x] Phaser 3 canvas engine with React HUD overlay (PR #28)
    - [x] WebLLM in-browser AI companion with SmolLM2-360M (PR #34)
    - [x] ECS-to-WebLLM prompt serializer & Socratic scaffolding (PR #38)
-   - [x] Gentle undo/rewind system (PR #29)
+   - [x] Gentle rewind system (PR #29)
    - [x] Pre-defined Socratic inquiry chips (PR #33)
-   - [x] Native Web Speech TTS/STT (PR #33)
+   - [x] Native Web Speech Text-to-Speech (TTS) and Speech-to-Text (STT) (PR #33)
+
 3. **Phase 3: Curriculum & NPC Empathy (Completed ✅)**
    - [x] NPC Emotion Regulation & Guided Co-Breathing — Shrine 04 (PR #36)
    - [x] Optics Puzzle — Light Beam Reflection & Rotatable Mirrors — Shrine 05 (PR #39)
    - [x] Sequential Logic Switch Gates & Glowing Conduits — Shrine 06 (PR #42)
+
 4. **Phase 4: Production, PWA & Polish (Completed ✅)**
    - [x] PWA CacheStorage precache, Edge CSP, REST APIs (PR #37)
    - [x] iPad full-screen viewport lock & landscape manifest (PR #35)
    - [x] Bedtime Twilight Transition & 15-min screen-time off-ramp (PR #43)
    - [x] Parent / Educator Curriculum Mastery Dashboard (PR #44)
 
-See [GitHub Milestones](https://github.com/zsh04/ztlo/milestones) and [Closed Issues](https://github.com/zsh04/ztlo/issues?q=is%3Aissue+is%3Aclosed) for the full audit trail.
+5. **Phase 5: Production Storybook Art & UX Asset Pipeline (Completed ✅)**
+   - [x] 41 hand-crafted SVG vector master sprites and ambient tiles (PR #53, #54)
+   - [x] Character animation suites: Zyra idle, walk, push, celebrate (PR #57)
+   - [x] Light Orb dynamic facial expressions and starlight trail (PR #58)
+   - [x] Dual WebP texture atlases compiled under 0.50 MB payload (PR #57)
+
+6. **Phase 6: Storybook Visual Atmosphere Overhaul (Completed ✅)**
+   - [x] Sunlit overgrown sanctuary background with volumetric golden sunbeams (Commit `3d8f734`)
+   - [x] Hand-carved limestone rune block, bronze lotus dais, and cosmic portal (Commit `3d8f734`)
+   - [x] Grounded soft directional drop shadows under characters and entities (Commit `3d8f734`)
+   - [x] Parchment UI HUD and thought bubble styling with gold borders (Commit `3d8f734`)
+   - [x] Automated Chrome DevTools Protocol (CDP) end-to-end playtest verification (Commit `3d8f734`)
 
 ---
 
