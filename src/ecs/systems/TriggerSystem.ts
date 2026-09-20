@@ -37,6 +37,16 @@ export class TriggerSystem {
       }
     }
 
+    // Pushable blocks resting on depressed pressure plates become passable so they don't barricade doorways
+    const pushableBlocks = allEntities.filter((e) => e.pushable !== undefined);
+    for (const block of pushableBlocks) {
+      if (!block.collider) continue;
+      const isOnActivePlate = plates.some(
+        (p) => p.position.x === block.position.x && p.position.y === block.position.y && p.trigger?.isDepressed
+      );
+      block.collider.passableByPlayer = isOnActivePlate;
+    }
+
     // Evaluate doors: a door unlocks when ALL pressure plates targeting it are depressed
     for (const door of doors) {
       const targetingPlates = plates.filter(

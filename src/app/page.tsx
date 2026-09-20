@@ -360,17 +360,22 @@ export default function GamePage() {
       const stepResult = world.stepPlayerMovement();
       world.evaluateTriggers();
 
-      // Check if player reached the open exit door
+      // Check if player reached the open exit door or stepped up to it
       const door = world.getEntityList().find((e) => e.renderable.shape === "door");
       const isDoorOpen = door?.collider && !door.collider.isSolid;
-      if (
-        door &&
-        isDoorOpen &&
-        stepResult.currentPos.x === door.position.x &&
-        stepResult.currentPos.y === door.position.y
-      ) {
-        handleRoomCompleted();
-        return;
+      if (door && isDoorOpen) {
+        const isAtDoor =
+          stepResult.currentPos.x === door.position.x &&
+          stepResult.currentPos.y === door.position.y;
+        const isAdjacentToDoor =
+          Math.abs(stepResult.currentPos.x - door.position.x) +
+          Math.abs(stepResult.currentPos.y - door.position.y) === 1;
+        const isTappingDoor = point.x === door.position.x && point.y === door.position.y;
+
+        if (isAtDoor || (isAdjacentToDoor && (stepResult.finished || isTappingDoor))) {
+          handleRoomCompleted();
+          return;
+        }
       }
 
       if (stepResult.finished) {

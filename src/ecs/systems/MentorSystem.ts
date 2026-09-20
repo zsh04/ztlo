@@ -66,14 +66,17 @@ export class MentorSystem {
 
     // 1. Success Affirmation: Door is unsealed / room cleared
     if (allDoorsUnlocked) {
-      mentor.userDismissed = false;
-      mentor.state = "success_affirmation";
-      mentor.currentDialog = {
-        speaker: "Light Orb",
-        text: "The gate is open! Balance has returned to this room.",
-        promptType: "encourage",
-      };
-      mentor.isBubbleOpen = true;
+      // Only trigger success dialog once — don't force-reopen if already shown
+      if (mentor.state !== "success_affirmation") {
+        mentor.state = "success_affirmation";
+        mentor.currentDialog = {
+          speaker: "Light Orb",
+          text: "The gate is open! Balance has returned to this room.",
+          promptType: "encourage",
+        };
+        mentor.isBubbleOpen = true;
+        mentor.userDismissed = false;
+      }
       return mentor.currentDialog;
     }
 
@@ -179,12 +182,6 @@ export class MentorSystem {
    */
   static recordPlayerMove(mentor: MentorComponent): void {
     mentor.idleSeconds = 0;
-    // Do NOT clear userDismissed if currently in corner_trap:
-    // The child already dismissed the corner trap prompt while navigating.
-    // Dismissal is cleared once the trap is resolved or if the child taps the Light Orb.
-    if (mentor.state !== "corner_trap") {
-      mentor.userDismissed = false;
-    }
     if (mentor.state === "idle_nudge") {
       mentor.state = "idle_observing";
     }
@@ -204,7 +201,6 @@ export class MentorSystem {
   static recordSuccessfulPush(mentor: MentorComponent): void {
     mentor.unproductivePushCount = 0;
     mentor.idleSeconds = 0;
-    mentor.userDismissed = false;
     if (mentor.state === "block_failed_push") {
       mentor.state = "idle_observing";
     }

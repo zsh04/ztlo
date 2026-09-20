@@ -27,11 +27,6 @@ test("Canonical 8x6 Shrine of Equilibrium conforms to Level 1-1 Specification", 
   assert.equal(stone.position.x, 3);
   assert.equal(stone.position.y, 2);
 
-  const ice = world.getEntityList().find((e) => e.renderable.shape === "ice");
-  assert.ok(ice);
-  assert.equal(ice.position.x, 4);
-  assert.equal(ice.position.y, 4);
-
   const plate = world.getEntityList().find((e) => e.renderable.shape === "plate");
   assert.ok(plate);
   assert.equal(plate.position.x, 6);

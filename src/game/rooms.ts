@@ -28,7 +28,6 @@ export const SHRINE_00_EQUILIBRIUM: RoomDefinition = {
   entities: [
     createPlayerEntity("player-1", 1, 2),
     createStoneBlockEntity("stone-1", 3, 2),
-    createIceBlockEntity("ice-1", 4, 4),
     createPressurePlateEntity("plate-1", 6, 2, "door-1"),
     createDoorEntity("door-1", 7, 2),
     createWallEntity("wall-interior-1", 3, 3),
