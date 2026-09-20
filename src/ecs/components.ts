@@ -20,6 +20,7 @@ export interface MentorComponent extends Component {
   unproductivePushCount: number;
   standingOnPlateSeconds: number;
   isBubbleOpen: boolean;
+  userDismissed: boolean;
   currentDialog: SocraticDialog;
 }
 

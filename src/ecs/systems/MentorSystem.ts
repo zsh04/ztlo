@@ -40,6 +40,7 @@ export class MentorSystem {
       unproductivePushCount: 0,
       standingOnPlateSeconds: 0,
       isBubbleOpen: false,
+      userDismissed: false,
       currentDialog: {
         speaker: "Light Orb",
         text: "I am floating right beside you, Zyra. Take your time to look around!",
@@ -65,6 +66,7 @@ export class MentorSystem {
 
     // 1. Success Affirmation: Door is unsealed / room cleared
     if (allDoorsUnlocked) {
+      mentor.userDismissed = false;
       mentor.state = "success_affirmation";
       mentor.currentDialog = {
         speaker: "Light Orb",
@@ -72,6 +74,12 @@ export class MentorSystem {
         promptType: "encourage",
       };
       mentor.isBubbleOpen = true;
+      return mentor.currentDialog;
+    }
+
+    // If the child explicitly closed the bubble, suppress auto-opening during idle ticks
+    // or existing corner traps until player moves, pushes, or directly taps the Light Orb.
+    if (mentor.userDismissed) {
       return mentor.currentDialog;
     }
 
@@ -151,6 +159,7 @@ export class MentorSystem {
     mentor: MentorComponent,
     entities: Entity[]
   ): SocraticDialog {
+    mentor.userDismissed = false;
     mentor.state = "direct_hint_request";
     mentor.currentDialog = MentorSystem.selectDirectHint(entities);
     mentor.isBubbleOpen = true;
@@ -162,6 +171,7 @@ export class MentorSystem {
    */
   static recordPlayerMove(mentor: MentorComponent): void {
     mentor.idleSeconds = 0;
+    mentor.userDismissed = false;
     if (mentor.state === "idle_nudge") {
       mentor.state = "idle_observing";
     }
@@ -180,6 +190,7 @@ export class MentorSystem {
   static recordSuccessfulPush(mentor: MentorComponent): void {
     mentor.unproductivePushCount = 0;
     mentor.idleSeconds = 0;
+    mentor.userDismissed = false;
     if (mentor.state === "block_failed_push") {
       mentor.state = "idle_observing";
     }
@@ -187,9 +198,16 @@ export class MentorSystem {
 
   /**
    * Toggles or sets the visibility of the companion's thought/speech bubble.
+   * When dismissed by user, sets userDismissed to prevent auto-reopen.
    */
   static setBubbleOpen(mentor: MentorComponent, open: boolean): void {
     mentor.isBubbleOpen = open;
+    if (!open) {
+      mentor.idleSeconds = 0;
+      mentor.userDismissed = true;
+    } else {
+      mentor.userDismissed = false;
+    }
   }
 
   /**
@@ -201,6 +219,7 @@ export class MentorSystem {
     mentor.unproductivePushCount = 0;
     mentor.standingOnPlateSeconds = 0;
     mentor.isBubbleOpen = false;
+    mentor.userDismissed = false;
     mentor.currentDialog = {
       speaker: "Light Orb",
       text: "I am floating right beside you, Zyra. Take your time to look around!",
@@ -332,6 +351,7 @@ export class MentorSystem {
     mentor: MentorComponent,
     chipId: string
   ): { dialog: SocraticDialog; triggersUndo: boolean } {
+    mentor.userDismissed = false;
     const chip = SOCRATIC_INQUIRY_CHIPS.find((c) => c.id === chipId);
     if (!chip) {
       return { dialog: mentor.currentDialog, triggersUndo: false };
@@ -348,6 +368,79 @@ export class MentorSystem {
     return {
       dialog: mentor.currentDialog,
       triggersUndo: chipId === "step_back",
+    };
+  }
+
+  /**
+   * Matches a spoken voice query from the child to an appropriate Socratic response.
+   * Zero didactic imperatives: guides through physical causality, friction, and observation.
+   */
+  static matchVoiceQueryToSocraticResponse(
+    mentor: MentorComponent,
+    transcript: string
+  ): { dialog: SocraticDialog; triggersUndo: boolean } {
+    mentor.userDismissed = false;
+    const lower = transcript.toLowerCase().trim();
+
+    // 1. Inquiries about stepping back, rewind, stuck in corner, or undo
+    if (
+      lower.includes("step back") ||
+      lower.includes("undo") ||
+      lower.includes("rewind") ||
+      lower.includes("go back") ||
+      lower.includes("back") ||
+      lower.includes("stuck") ||
+      lower.includes("corner") ||
+      lower.includes("tight") ||
+      lower.includes("trapped") ||
+      lower.includes("wrong")
+    ) {
+      return MentorSystem.handleInquiry(mentor, "step_back");
+    }
+
+    // 2. Inquiries about movement, sliding, friction, ice, stone stopping
+    if (
+      lower.includes("why") ||
+      lower.includes("stop") ||
+      lower.includes("slide") ||
+      lower.includes("stone") ||
+      lower.includes("rock") ||
+      lower.includes("ice") ||
+      lower.includes("heavy") ||
+      lower.includes("friction") ||
+      lower.includes("slippery")
+    ) {
+      return MentorSystem.handleInquiry(mentor, "why_stop");
+    }
+
+    // 3. Inquiries about what to look for, switches, plates, doors, clues
+    if (
+      lower.includes("look") ||
+      lower.includes("what") ||
+      lower.includes("where") ||
+      lower.includes("plate") ||
+      lower.includes("switch") ||
+      lower.includes("button") ||
+      lower.includes("floor") ||
+      lower.includes("door") ||
+      lower.includes("help") ||
+      lower.includes("clue") ||
+      lower.includes("how")
+    ) {
+      return MentorSystem.handleInquiry(mentor, "look_for");
+    }
+
+    // 4. Default gentle contextual encouragement
+    mentor.state = "direct_hint_request";
+    mentor.currentDialog = {
+      speaker: "Light Orb",
+      text: "I hear you! Look around the room together with me. Do you notice anything that can be moved?",
+      promptType: "socratic_hint",
+    };
+    mentor.isBubbleOpen = true;
+    return {
+      dialog: mentor.currentDialog,
+      triggersUndo: false,
     };
   }
 

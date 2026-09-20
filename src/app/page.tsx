@@ -80,6 +80,15 @@ export default function GamePage() {
     setCanUndo(world.canUndo());
   }, [stopPlayerMovement]);
 
+  const handleVoiceQuery = useCallback((transcript: string) => {
+    stopPlayerMovement();
+    const world = worldRef.current;
+    const result = world.answerVoiceQuery(transcript);
+    setMentorDialog(result.dialog);
+    setIsMentorOpen(true);
+    setCanUndo(world.canUndo());
+  }, [stopPlayerMovement]);
+
   useEffect(() => {
     loadRoom(currentRoom);
     return () => {
@@ -333,6 +342,7 @@ export default function GamePage() {
             onOrbTap={handleOrbTap}
             onCloseBubble={handleCloseMentorBubble}
             onSelectChip={handleSelectInquiryChip}
+            onVoiceQuery={handleVoiceQuery}
             onUndo={handleUndo}
             canUndo={canUndo}
           />
