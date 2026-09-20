@@ -488,6 +488,7 @@ export default function GamePage() {
           onRoomCompleted={handleRoomCompleted}
           onNpcTap={handleNpcTap}
           onMirrorTap={handleMirrorTap}
+          bedtimePhase={bedtimeState.phase}
         />
       </div>
 
@@ -513,6 +514,8 @@ export default function GamePage() {
             onVoiceQuery={handleVoiceQuery}
             onUndo={handleUndo}
             canUndo={canUndo}
+            bedtimePhase={bedtimeState.phase}
+            mentorState={worldRef.current?.mentor?.state}
           />
         </div>
       </div>

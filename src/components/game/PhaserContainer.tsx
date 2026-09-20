@@ -6,6 +6,7 @@ import type { GameWorld } from "../../ecs/world";
 import type { Entity } from "../../ecs/entities";
 import type { GridPoint, RoomDefinition } from "../../types/game";
 import type { ShrineScene } from "../../game/scenes/ShrineScene";
+import type { BedtimePhase } from "../../lib/bedtime/bedtimeManager";
 
 export interface PhaserContainerProps {
   world: GameWorld;
@@ -14,6 +15,7 @@ export interface PhaserContainerProps {
   onRoomCompleted?: () => void;
   onNpcTap?: (npc: Entity) => void;
   onMirrorTap?: (mirror: Entity) => void;
+  bedtimePhase?: BedtimePhase;
   className?: string;
 }
 
@@ -24,6 +26,7 @@ export const PhaserContainer: React.FC<PhaserContainerProps> = ({
   onRoomCompleted,
   onNpcTap,
   onMirrorTap,
+  bedtimePhase = "daylight",
   className = "",
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -48,6 +51,9 @@ export const PhaserContainer: React.FC<PhaserContainerProps> = ({
 
   const roomRef = useRef(room);
   roomRef.current = room;
+
+  const bedtimePhaseRef = useRef(bedtimePhase);
+  bedtimePhaseRef.current = bedtimePhase;
 
   useEffect(() => {
     let isCancelled = false;
@@ -116,6 +122,7 @@ export const PhaserContainer: React.FC<PhaserContainerProps> = ({
             onMirrorTapRef.current?.(mirror);
           };
           currentScene.loadRoom(roomRef.current, worldRef.current);
+          currentScene.setBedtimePhase(bedtimePhaseRef.current);
         }
       });
     };
@@ -136,6 +143,13 @@ export const PhaserContainer: React.FC<PhaserContainerProps> = ({
     };
   }, []);
 
+  // Update bedtime phase whenever bedtime state changes
+  useEffect(() => {
+    if (sceneRef.current && sceneRef.current.scene?.isActive()) {
+      sceneRef.current.setBedtimePhase(bedtimePhase);
+    }
+  }, [bedtimePhase]);
+
   // Update running scene whenever room definition or world instance changes
   useEffect(() => {
     if (sceneRef.current && sceneRef.current.scene?.isActive()) {
@@ -152,8 +166,9 @@ export const PhaserContainer: React.FC<PhaserContainerProps> = ({
         onMirrorTapRef.current?.(mirror);
       };
       sceneRef.current.loadRoom(room, world);
+      sceneRef.current.setBedtimePhase(bedtimePhase);
     }
-  }, [room, world]);
+  }, [room, world, bedtimePhase]);
 
   return (
     <div
