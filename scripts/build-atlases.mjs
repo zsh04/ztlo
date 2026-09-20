@@ -709,9 +709,11 @@ function getGlobalEntitiesFrames() {
 
   // Hero: Zyra
   for (let i = 0; i < 6; i++) {
+    const num = i + 1;
+    const pad = String(num).padStart(2, "0");
     frames.push({
       name: `zyra-idle-${i}`,
-      aliases: i === 0 ? ["zyra-idle"] : [],
+      aliases: [`zyra-idle-${pad}`, `zyra-idle-${num}`].concat(i === 0 ? ["zyra-idle"] : []),
       width: 80,
       height: 80,
       svg: createZyraIdleSvg(i),
@@ -719,9 +721,11 @@ function getGlobalEntitiesFrames() {
   }
 
   for (let i = 0; i < 8; i++) {
+    const num = i + 1;
+    const pad = String(num).padStart(2, "0");
     frames.push({
       name: `zyra-walk-${i}`,
-      aliases: i === 0 ? ["zyra-walk"] : [],
+      aliases: [`zyra-walk-${pad}`, `zyra-walk-${num}`].concat(i === 0 ? ["zyra-walk"] : []),
       width: 80,
       height: 80,
       svg: createZyraWalkSvg(i),
@@ -729,9 +733,11 @@ function getGlobalEntitiesFrames() {
   }
 
   for (let i = 0; i < 8; i++) {
+    const num = i + 1;
+    const pad = String(num).padStart(2, "0");
     frames.push({
       name: `zyra-walk-up-${i}`,
-      aliases: i === 0 ? ["zyra-walk-up"] : [],
+      aliases: [`zyra-walk-up-${pad}`, `zyra-walk-up-${num}`].concat(i === 0 ? ["zyra-walk-up"] : []),
       width: 80,
       height: 80,
       svg: createZyraWalkUpSvg(i),
@@ -739,9 +745,11 @@ function getGlobalEntitiesFrames() {
   }
 
   for (let i = 0; i < 8; i++) {
+    const num = i + 1;
+    const pad = String(num).padStart(2, "0");
     frames.push({
       name: `zyra-walk-down-${i}`,
-      aliases: i === 0 ? ["zyra-walk-down"] : [],
+      aliases: [`zyra-walk-down-${pad}`, `zyra-walk-down-${num}`].concat(i === 0 ? ["zyra-walk-down"] : []),
       width: 80,
       height: 80,
       svg: createZyraWalkDownSvg(i),
@@ -749,9 +757,11 @@ function getGlobalEntitiesFrames() {
   }
 
   for (let i = 0; i < 6; i++) {
+    const num = i + 1;
+    const pad = String(num).padStart(2, "0");
     frames.push({
       name: `zyra-push-${i}`,
-      aliases: i === 0 ? ["zyra-push"] : [],
+      aliases: [`zyra-push-${pad}`, `zyra-push-${num}`].concat(i === 0 ? ["zyra-push"] : []),
       width: 80,
       height: 80,
       svg: createZyraPushSvg(i),
@@ -759,9 +769,11 @@ function getGlobalEntitiesFrames() {
   }
 
   for (let i = 0; i < 8; i++) {
+    const num = i + 1;
+    const pad = String(num).padStart(2, "0");
     frames.push({
       name: `zyra-celebrate-${i}`,
-      aliases: i === 0 ? ["zyra-celebrate"] : [],
+      aliases: [`zyra-celebrate-${pad}`, `zyra-celebrate-${num}`].concat(i === 0 ? ["zyra-celebrate"] : []),
       width: 80,
       height: 80,
       svg: createZyraCelebrateSvg(i),
@@ -769,9 +781,11 @@ function getGlobalEntitiesFrames() {
   }
 
   for (let i = 0; i < 4; i++) {
+    const num = i + 1;
+    const pad = String(num).padStart(2, "0");
     frames.push({
       name: `zyra-sleep-${i}`,
-      aliases: i === 0 ? ["zyra-sleep"] : [],
+      aliases: [`zyra-sleep-${pad}`, `zyra-sleep-${num}`].concat(i === 0 ? ["zyra-sleep"] : []),
       width: 80,
       height: 80,
       svg: createZyraSleepSvg(i),
@@ -792,9 +806,11 @@ function getGlobalEntitiesFrames() {
 
   // NPC: Sprout Forest Spirit
   for (let i = 0; i < 8; i++) {
+    const num = i + 1;
+    const pad = String(num).padStart(2, "0");
     frames.push({
       name: `sprout-anxious-${i}`,
-      aliases: i === 0 ? ["sprout-anxious"] : [],
+      aliases: [`sprout-anxious-${pad}`, `sprout-anxious-${num}`].concat(i === 0 ? ["sprout-anxious"] : []),
       width: 80,
       height: 80,
       svg: createSproutAnxiousSvg(i),
@@ -802,9 +818,11 @@ function getGlobalEntitiesFrames() {
   }
 
   for (let i = 0; i < 8; i++) {
+    const num = i + 1;
+    const pad = String(num).padStart(2, "0");
     frames.push({
       name: `sprout-breathe-${i}`,
-      aliases: i === 0 ? ["sprout-breathe"] : [],
+      aliases: [`sprout-breathe-${pad}`, `sprout-breathe-${num}`].concat(i === 0 ? ["sprout-breathe"] : []),
       width: 80,
       height: 80,
       svg: createSproutBreatheSvg(i),
@@ -812,9 +830,11 @@ function getGlobalEntitiesFrames() {
   }
 
   for (let i = 0; i < 6; i++) {
+    const num = i + 1;
+    const pad = String(num).padStart(2, "0");
     frames.push({
       name: `sprout-joy-${i}`,
-      aliases: i === 0 ? ["sprout-joy"] : [],
+      aliases: [`sprout-joy-${pad}`, `sprout-joy-${num}`].concat(i === 0 ? ["sprout-joy"] : []),
       width: 80,
       height: 80,
       svg: createSproutJoySvg(i),

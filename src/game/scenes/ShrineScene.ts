@@ -78,11 +78,165 @@ export class ShrineScene extends Phaser.Scene {
     this.onMirrorTap = data?.onMirrorTap;
   }
 
+  public preload(): void {
+    if (!this.textures.exists("atlas-global-entities")) {
+      this.load.atlas(
+        "atlas-global-entities",
+        "/assets/atlases/atlas-global-entities.webp",
+        "/assets/atlases/atlas-global-entities.json"
+      );
+    }
+    if (!this.textures.exists("atlas-shrine-environment")) {
+      this.load.atlas(
+        "atlas-shrine-environment",
+        "/assets/atlases/atlas-shrine-environment.webp",
+        "/assets/atlases/atlas-shrine-environment.json"
+      );
+    }
+  }
+
+  public hasAtlas(atlasKey: string): boolean {
+    return Boolean(this.textures && this.textures.exists(atlasKey));
+  }
+
+  public hasFrame(atlasKey: string, frameKey: string): boolean {
+    if (!this.hasAtlas(atlasKey)) return false;
+    const texture = this.textures.get(atlasKey);
+    return Boolean(texture && texture.has(frameKey));
+  }
+
+  public registerAnimations(): void {
+    if (!this.textures || !this.textures.exists("atlas-global-entities")) {
+      return;
+    }
+
+    const anims = this.anims;
+
+    // zyra_idle: frames zyra-idle-01..06 @ 8 FPS repeat -1
+    if (!anims.exists("zyra_idle")) {
+      anims.create({
+        key: "zyra_idle",
+        frames: anims.generateFrameNames("atlas-global-entities", {
+          prefix: "zyra-idle-",
+          start: 1,
+          end: 6,
+          zeroPad: 2,
+        }),
+        frameRate: 8,
+        repeat: -1,
+      });
+    }
+
+    // zyra_walk: frames zyra-walk-01..08 @ 12 FPS repeat -1
+    if (!anims.exists("zyra_walk")) {
+      anims.create({
+        key: "zyra_walk",
+        frames: anims.generateFrameNames("atlas-global-entities", {
+          prefix: "zyra-walk-",
+          start: 1,
+          end: 8,
+          zeroPad: 2,
+        }),
+        frameRate: 12,
+        repeat: -1,
+      });
+    }
+
+    // zyra_push: frames zyra-push-01..06 @ 12 FPS
+    if (!anims.exists("zyra_push")) {
+      anims.create({
+        key: "zyra_push",
+        frames: anims.generateFrameNames("atlas-global-entities", {
+          prefix: "zyra-push-",
+          start: 1,
+          end: 6,
+          zeroPad: 2,
+        }),
+        frameRate: 12,
+      });
+    }
+
+    // zyra_celebrate: frames zyra-celebrate-01..08 @ 12 FPS
+    if (!anims.exists("zyra_celebrate")) {
+      anims.create({
+        key: "zyra_celebrate",
+        frames: anims.generateFrameNames("atlas-global-entities", {
+          prefix: "zyra-celebrate-",
+          start: 1,
+          end: 8,
+          zeroPad: 2,
+        }),
+        frameRate: 12,
+      });
+    }
+
+    // sprout_anxious: frames sprout-anxious-01..08 @ 8 FPS repeat -1
+    if (!anims.exists("sprout_anxious")) {
+      anims.create({
+        key: "sprout_anxious",
+        frames: anims.generateFrameNames("atlas-global-entities", {
+          prefix: "sprout-anxious-",
+          start: 1,
+          end: 8,
+          zeroPad: 2,
+        }),
+        frameRate: 8,
+        repeat: -1,
+      });
+    }
+
+    // sprout_breathe: frames sprout-breathe-01..08 @ 8 FPS repeat -1
+    if (!anims.exists("sprout_breathe")) {
+      anims.create({
+        key: "sprout_breathe",
+        frames: anims.generateFrameNames("atlas-global-entities", {
+          prefix: "sprout-breathe-",
+          start: 1,
+          end: 8,
+          zeroPad: 2,
+        }),
+        frameRate: 8,
+        repeat: -1,
+      });
+    }
+  }
+
   public create(): void {
     this.conduitGraphics = this.add.graphics();
     this.conduitGraphics.setDepth(1);
     this.beamGraphics = this.add.graphics();
     this.beamGraphics.setDepth(12);
+
+    this.registerAnimations();
+
+    this.load.on("complete", () => {
+      this.registerAnimations();
+      this.buildGrid();
+      this.buildEntities();
+      this.buildCompanionOrb();
+    });
+
+    if (
+      (!this.textures.exists("atlas-global-entities") || !this.textures.exists("atlas-shrine-environment")) &&
+      !this.load.isLoading()
+    ) {
+      if (!this.textures.exists("atlas-global-entities")) {
+        this.load.atlas(
+          "atlas-global-entities",
+          "/assets/atlases/atlas-global-entities.webp",
+          "/assets/atlases/atlas-global-entities.json"
+        );
+      }
+      if (!this.textures.exists("atlas-shrine-environment")) {
+        this.load.atlas(
+          "atlas-shrine-environment",
+          "/assets/atlases/atlas-shrine-environment.webp",
+          "/assets/atlases/atlas-shrine-environment.json"
+        );
+      }
+      this.load.start();
+    }
+
     this.calculateLayout();
     this.buildGrid();
     this.buildEntities();
@@ -158,20 +312,34 @@ export class ShrineScene extends Phaser.Scene {
       24
     );
 
-    // Grid cells with alternating storybook pastel fills
+    const hasEnvAtlas = this.hasFrame("atlas-shrine-environment", "tile-floor-light");
+
+    // Grid cells with storybook atlas tiles or alternating pastel fills
     for (let y = 0; y < this.roomHeight; y++) {
       for (let x = 0; x < this.roomWidth; x++) {
         const cellX = this.gridOffsetX + x * this.tileSize;
         const cellY = this.gridOffsetY + y * this.tileSize;
         const isAlternate = (x + y) % 2 === 0;
 
-        // Alternate fill: light pastel cream/white vs soft grayish blue
-        const fillColor = isAlternate ? 0xF8FAFC : 0xEDF2F7;
-        graphics.fillStyle(fillColor, 0.9);
-        graphics.lineStyle(1, 0xCBD5E1, 0.5);
+        if (hasEnvAtlas) {
+          const frameKey = isAlternate ? "tile-floor-light" : "tile-floor-dark";
+          const tileSprite = this.add.sprite(
+            cellX + this.tileSize / 2,
+            cellY + this.tileSize / 2,
+            "atlas-shrine-environment",
+            frameKey
+          );
+          tileSprite.setDisplaySize(this.tileSize, this.tileSize);
+          this.gridContainer.add(tileSprite);
+        } else {
+          // Fallback: light pastel cream/white vs soft grayish blue
+          const fillColor = isAlternate ? 0xF8FAFC : 0xEDF2F7;
+          graphics.fillStyle(fillColor, 0.9);
+          graphics.lineStyle(1, 0xCBD5E1, 0.5);
 
-        graphics.fillRoundedRect(cellX + 2, cellY + 2, this.tileSize - 4, this.tileSize - 4, 8);
-        graphics.strokeRoundedRect(cellX + 2, cellY + 2, this.tileSize - 4, this.tileSize - 4, 8);
+          graphics.fillRoundedRect(cellX + 2, cellY + 2, this.tileSize - 4, this.tileSize - 4, 8);
+          graphics.strokeRoundedRect(cellX + 2, cellY + 2, this.tileSize - 4, this.tileSize - 4, 8);
+        }
       }
     }
   }
@@ -209,91 +377,240 @@ export class ShrineScene extends Phaser.Scene {
     const container = this.add.container(pos.x, pos.y);
     container.setDepth(entity.renderable.zIndex);
 
-    const graphics = this.add.graphics();
-    container.add(graphics);
+    const s = this.tileSize;
 
     switch (entity.renderable.shape) {
-      case "avatar":
-        this.renderAvatarGraphic(graphics, this.tileSize);
-        // Add gentle breathing bob animation
-        this.tweens.add({
-          targets: container,
-          scaleY: 1.03,
-          scaleX: 0.98,
-          duration: 1100,
-          yoyo: true,
-          repeat: -1,
-          ease: "Sine.easeInOut",
-        });
+      case "avatar": {
+        if (this.hasFrame("atlas-global-entities", "zyra-idle-01")) {
+          const sprite = this.add.sprite(0, 0, "atlas-global-entities", "zyra-idle-01");
+          sprite.setDisplaySize(s, s);
+          container.add(sprite);
+          container.setData("sprite", sprite);
+          if (this.anims.exists("zyra_idle")) {
+            sprite.play("zyra_idle");
+          }
+        } else {
+          const graphics = this.add.graphics();
+          container.add(graphics);
+          container.setData("graphics", graphics);
+          this.renderAvatarGraphic(graphics, this.tileSize);
+          this.tweens.add({
+            targets: container,
+            scaleY: 1.03,
+            scaleX: 0.98,
+            duration: 1100,
+            yoyo: true,
+            repeat: -1,
+            ease: "Sine.easeInOut",
+          });
+        }
         break;
+      }
 
-      case "stone":
-        this.renderStoneBlockGraphic(graphics, this.tileSize);
+      case "stone": {
+        if (this.hasFrame("atlas-global-entities", "stone-block")) {
+          const sprite = this.add.sprite(0, 0, "atlas-global-entities", "stone-block");
+          sprite.setDisplaySize(s, s);
+          container.add(sprite);
+          container.setData("sprite", sprite);
+        } else {
+          const graphics = this.add.graphics();
+          container.add(graphics);
+          container.setData("graphics", graphics);
+          this.renderStoneBlockGraphic(graphics, this.tileSize);
+        }
         break;
+      }
 
-      case "ice":
-        this.renderIceBlockGraphic(graphics, this.tileSize);
+      case "ice": {
+        if (this.hasFrame("atlas-global-entities", "ice-block")) {
+          const sprite = this.add.sprite(0, 0, "atlas-global-entities", "ice-block");
+          sprite.setDisplaySize(s, s);
+          container.add(sprite);
+          container.setData("sprite", sprite);
+        } else {
+          const graphics = this.add.graphics();
+          container.add(graphics);
+          container.setData("graphics", graphics);
+          this.renderIceBlockGraphic(graphics, this.tileSize);
+        }
         break;
+      }
 
-      case "plate":
+      case "plate": {
         const isDepressed = entity.trigger?.isDepressed || false;
         this.plateStates.set(entity.id, isDepressed);
-        this.renderPressurePlateGraphic(graphics, this.tileSize, isDepressed);
+        const frameKey = isDepressed ? "plate-active" : "plate-dormant";
+        if (this.hasFrame("atlas-shrine-environment", frameKey)) {
+          const sprite = this.add.sprite(0, 0, "atlas-shrine-environment", frameKey);
+          sprite.setDisplaySize(s, s);
+          container.add(sprite);
+          container.setData("sprite", sprite);
+        } else {
+          const graphics = this.add.graphics();
+          container.add(graphics);
+          container.setData("graphics", graphics);
+          this.renderPressurePlateGraphic(graphics, this.tileSize, isDepressed);
+        }
         break;
+      }
 
-      case "door":
+      case "door": {
         const isOpen = entity.collider ? !entity.collider.isSolid : false;
         this.doorStates.set(entity.id, isOpen);
-        this.renderDoorGraphic(graphics, this.tileSize, isOpen);
+        const frameKey = isOpen ? "door-open" : "door-sealed";
+        if (this.hasFrame("atlas-shrine-environment", frameKey)) {
+          const sprite = this.add.sprite(0, 0, "atlas-shrine-environment", frameKey);
+          sprite.setDisplaySize(s, s);
+          container.add(sprite);
+          container.setData("sprite", sprite);
+        } else {
+          const graphics = this.add.graphics();
+          container.add(graphics);
+          container.setData("graphics", graphics);
+          this.renderDoorGraphic(graphics, this.tileSize, isOpen);
+        }
         break;
+      }
 
-      case "wall":
-        this.renderWallGraphic(graphics, this.tileSize);
+      case "wall": {
+        if (this.hasFrame("atlas-shrine-environment", "wall-cap-chamfer-top")) {
+          const sprite = this.add.sprite(0, 0, "atlas-shrine-environment", "wall-cap-chamfer-top");
+          sprite.setDisplaySize(s, s);
+          container.add(sprite);
+          container.setData("sprite", sprite);
+        } else {
+          const graphics = this.add.graphics();
+          container.add(graphics);
+          container.setData("graphics", graphics);
+          this.renderWallGraphic(graphics, this.tileSize);
+        }
         break;
+      }
 
-      case "npc":
+      case "npc": {
         const isSoothed = entity.npc?.isSoothed || false;
         this.npcSoothedStates.set(entity.id, isSoothed);
-        this.renderNpcGraphic(graphics, this.tileSize, entity);
-        this.tweens.add({
-          targets: container,
-          scaleY: 1.05,
-          scaleX: 1.05,
-          duration: 1200,
-          yoyo: true,
-          repeat: -1,
-          ease: "Sine.easeInOut",
-        });
+        const initialFrame = isSoothed ? "sprout-breathe-01" : "sprout-anxious-01";
+        if (this.hasFrame("atlas-global-entities", initialFrame)) {
+          const sprite = this.add.sprite(0, 0, "atlas-global-entities", initialFrame);
+          sprite.setDisplaySize(s, s);
+          container.add(sprite);
+          container.setData("sprite", sprite);
+          const animKey = isSoothed ? "sprout_breathe" : "sprout_anxious";
+          if (this.anims.exists(animKey)) {
+            sprite.play(animKey);
+          }
+        } else {
+          const graphics = this.add.graphics();
+          container.add(graphics);
+          container.setData("graphics", graphics);
+          this.renderNpcGraphic(graphics, this.tileSize, entity);
+          this.tweens.add({
+            targets: container,
+            scaleY: 1.05,
+            scaleX: 1.05,
+            duration: 1200,
+            yoyo: true,
+            repeat: -1,
+            ease: "Sine.easeInOut",
+          });
+        }
         break;
+      }
 
-      case "emitter":
-        this.renderEmitterGraphic(graphics, this.tileSize, entity);
+      case "emitter": {
+        const dir = entity.optics?.direction || "east";
+        const frameKey = `emitter-brass-${dir}`;
+        if (this.hasFrame("atlas-shrine-environment", frameKey)) {
+          const sprite = this.add.sprite(0, 0, "atlas-shrine-environment", frameKey);
+          sprite.setDisplaySize(s, s);
+          container.add(sprite);
+          container.setData("sprite", sprite);
+        } else {
+          const graphics = this.add.graphics();
+          container.add(graphics);
+          container.setData("graphics", graphics);
+          this.renderEmitterGraphic(graphics, this.tileSize, entity);
+        }
         break;
+      }
 
-      case "mirror":
+      case "mirror": {
         const mAngle = entity.optics?.angle ?? 45;
         this.mirrorAngles.set(entity.id, mAngle);
-        this.renderMirrorGraphic(graphics, this.tileSize, mAngle);
+        const normAngle = ((mAngle % 180) + 180) % 180;
+        const frameKey = `mirror-prism-${normAngle}deg`;
+        if (this.hasFrame("atlas-shrine-environment", frameKey)) {
+          const sprite = this.add.sprite(0, 0, "atlas-shrine-environment", frameKey);
+          sprite.setDisplaySize(s, s);
+          container.add(sprite);
+          container.setData("sprite", sprite);
+        } else {
+          const graphics = this.add.graphics();
+          container.add(graphics);
+          container.setData("graphics", graphics);
+          this.renderMirrorGraphic(graphics, this.tileSize, mAngle);
+        }
         break;
+      }
 
-      case "receptor":
+      case "receptor": {
         const isRecActivated = entity.optics?.isActivated ?? false;
         this.receptorStates.set(entity.id, isRecActivated);
-        this.renderReceptorGraphic(graphics, this.tileSize, isRecActivated);
+        const frameKey = isRecActivated ? "receptor-solar-active" : "receptor-solar-dormant";
+        if (this.hasFrame("atlas-shrine-environment", frameKey)) {
+          const sprite = this.add.sprite(0, 0, "atlas-shrine-environment", frameKey);
+          sprite.setDisplaySize(s, s);
+          container.add(sprite);
+          container.setData("sprite", sprite);
+        } else {
+          const graphics = this.add.graphics();
+          container.add(graphics);
+          container.setData("graphics", graphics);
+          this.renderReceptorGraphic(graphics, this.tileSize, isRecActivated);
+        }
         break;
+      }
 
-      case "gate":
+      case "gate": {
         const isSatisfied = entity.logicGate?.isSatisfied ?? false;
         this.gateStates.set(entity.id, isSatisfied);
-        this.renderGateGraphic(graphics, this.tileSize, isSatisfied);
+        const frameKey = isSatisfied ? "logic-nexus-active" : "logic-nexus-dormant";
+        if (this.hasFrame("atlas-shrine-environment", frameKey)) {
+          const sprite = this.add.sprite(0, 0, "atlas-shrine-environment", frameKey);
+          sprite.setDisplaySize(s, s);
+          container.add(sprite);
+          container.setData("sprite", sprite);
+        } else {
+          const graphics = this.add.graphics();
+          container.add(graphics);
+          container.setData("graphics", graphics);
+          this.renderGateGraphic(graphics, this.tileSize, isSatisfied);
+        }
         break;
+      }
 
-      case "switch":
+      case "switch": {
         const isDepSw = entity.trigger?.isDepressed ?? false;
         this.switchStates.set(entity.id, isDepSw);
-        this.renderFloorSwitchGraphic(graphics, this.tileSize, entity, isDepSw);
+        let dotCount = 1;
+        if (entity.id.includes("2")) dotCount = 2;
+        else if (entity.id.includes("3")) dotCount = 3;
+        const frameKey = `switch-runic-${dotCount}-${isDepSw ? "on" : "off"}`;
+        if (this.hasFrame("atlas-shrine-environment", frameKey)) {
+          const sprite = this.add.sprite(0, 0, "atlas-shrine-environment", frameKey);
+          sprite.setDisplaySize(s, s);
+          container.add(sprite);
+          container.setData("sprite", sprite);
+        } else {
+          const graphics = this.add.graphics();
+          container.add(graphics);
+          container.setData("graphics", graphics);
+          this.renderFloorSwitchGraphic(graphics, this.tileSize, entity, isDepSw);
+        }
         break;
-
+      }
     }
 
     this.entityContainers.set(entity.id, container);
@@ -321,9 +638,24 @@ export class ShrineScene extends Phaser.Scene {
     this.lightOrbContainer = this.add.container(orbX, orbY);
     this.lightOrbContainer.setDepth(15);
 
-    const graphics = this.add.graphics();
-    this.lightOrbContainer.add(graphics);
-    this.renderLightOrbGraphic(graphics, this.tileSize);
+    if (this.hasFrame("atlas-global-entities", "orb-faces-happy")) {
+      // Gentle warm radial aura behind orb face
+      const aura = this.add.graphics();
+      aura.fillStyle(0xFDE68A, 0.45);
+      aura.fillCircle(0, 0, this.tileSize * 0.33);
+      aura.fillStyle(0xFEF08A, 0.95);
+      aura.fillCircle(0, 0, this.tileSize * 0.22);
+      this.lightOrbContainer.add(aura);
+
+      const sprite = this.add.sprite(0, 0, "atlas-global-entities", "orb-faces-happy");
+      sprite.setDisplaySize(this.tileSize * 0.48, this.tileSize * 0.48);
+      this.lightOrbContainer.add(sprite);
+      this.lightOrbContainer.setData("sprite", sprite);
+    } else {
+      const graphics = this.add.graphics();
+      this.lightOrbContainer.add(graphics);
+      this.renderLightOrbGraphic(graphics, this.tileSize);
+    }
 
     // Sinusoidal floating tween
     this.tweens.add({
@@ -439,6 +771,50 @@ export class ShrineScene extends Phaser.Scene {
         }
       }
 
+      // Handle Avatar sprite animation states (idle, walk, push)
+      if (entity.renderable.shape === "avatar") {
+        const sprite = container.getData("sprite") as Phaser.GameObjects.Sprite | undefined;
+        if (sprite) {
+          const isMoving = Boolean(entity.movement?.isMoving);
+          const isPushing = Boolean(isMoving && entities.some((e) => e.pushable?.isSliding));
+          const currentAnim = sprite.anims.currentAnim?.key;
+
+          if (isPushing) {
+            if (currentAnim !== "zyra_push" && this.anims.exists("zyra_push")) {
+              sprite.play("zyra_push", true);
+            }
+          } else if (isMoving) {
+            if (currentAnim !== "zyra_walk" && this.anims.exists("zyra_walk")) {
+              sprite.play("zyra_walk", true);
+            }
+          } else {
+            if (currentAnim !== "zyra_idle" && currentAnim !== "zyra_celebrate" && this.anims.exists("zyra_idle")) {
+              sprite.play("zyra_idle", true);
+            }
+          }
+
+          // Orient sprite based on movement direction
+          if (entity.movement?.target) {
+            if (entity.movement.target.x < entity.position.x) {
+              sprite.setFlipX(true);
+            } else if (entity.movement.target.x > entity.position.x) {
+              sprite.setFlipX(false);
+            }
+          }
+        }
+      }
+
+      // Handle Ice block sliding sprite state
+      if (entity.renderable.shape === "ice") {
+        const sprite = container.getData("sprite") as Phaser.GameObjects.Sprite | undefined;
+        if (sprite) {
+          const frameKey = entity.pushable?.isSliding ? "ice-block-sliding" : "ice-block";
+          if (this.hasFrame("atlas-global-entities", frameKey)) {
+            sprite.setFrame(frameKey);
+          }
+        }
+      }
+
       // Handle Pressure Plate visual state changes (depressed / released)
       if (entity.renderable.shape === "plate" && entity.trigger) {
         const lastDepressed = this.plateStates.get(entity.id);
@@ -446,7 +822,14 @@ export class ShrineScene extends Phaser.Scene {
 
         if (lastDepressed !== currentDepressed) {
           this.plateStates.set(entity.id, currentDepressed);
-          const graphics = container.getAt(0) as Phaser.GameObjects.Graphics;
+          const sprite = container.getData("sprite") as Phaser.GameObjects.Sprite | undefined;
+          if (sprite) {
+            const frameKey = currentDepressed ? "plate-active" : "plate-dormant";
+            if (this.hasFrame("atlas-shrine-environment", frameKey)) {
+              sprite.setFrame(frameKey);
+            }
+          }
+          const graphics = container.getData("graphics") as Phaser.GameObjects.Graphics | undefined;
           if (graphics) {
             graphics.clear();
             this.renderPressurePlateGraphic(graphics, this.tileSize, currentDepressed);
@@ -471,7 +854,19 @@ export class ShrineScene extends Phaser.Scene {
 
         if (lastSoothed !== currentSoothed) {
           this.npcSoothedStates.set(entity.id, currentSoothed);
-          const graphics = container.getAt(0) as Phaser.GameObjects.Graphics;
+          const sprite = container.getData("sprite") as Phaser.GameObjects.Sprite | undefined;
+          if (sprite) {
+            const animKey = currentSoothed ? "sprout_breathe" : "sprout_anxious";
+            if (this.anims.exists(animKey)) {
+              sprite.play(animKey);
+            } else {
+              const frameKey = currentSoothed ? "sprout-breathe-01" : "sprout-anxious-01";
+              if (this.hasFrame("atlas-global-entities", frameKey)) {
+                sprite.setFrame(frameKey);
+              }
+            }
+          }
+          const graphics = container.getData("graphics") as Phaser.GameObjects.Graphics | undefined;
           if (graphics) {
             graphics.clear();
             this.renderNpcGraphic(graphics, this.tileSize, entity);
@@ -497,7 +892,14 @@ export class ShrineScene extends Phaser.Scene {
 
         if (lastOpen !== currentOpen) {
           this.doorStates.set(entity.id, currentOpen);
-          const graphics = container.getAt(0) as Phaser.GameObjects.Graphics;
+          const sprite = container.getData("sprite") as Phaser.GameObjects.Sprite | undefined;
+          if (sprite) {
+            const frameKey = currentOpen ? "door-open" : "door-sealed";
+            if (this.hasFrame("atlas-shrine-environment", frameKey)) {
+              sprite.setFrame(frameKey);
+            }
+          }
+          const graphics = container.getData("graphics") as Phaser.GameObjects.Graphics | undefined;
           if (graphics) {
             graphics.clear();
             this.renderDoorGraphic(graphics, this.tileSize, currentOpen);
@@ -522,7 +924,15 @@ export class ShrineScene extends Phaser.Scene {
 
         if (lastAngle !== currentAngle) {
           this.mirrorAngles.set(entity.id, currentAngle);
-          const graphics = container.getAt(0) as Phaser.GameObjects.Graphics;
+          const sprite = container.getData("sprite") as Phaser.GameObjects.Sprite | undefined;
+          if (sprite) {
+            const normAngle = ((currentAngle % 180) + 180) % 180;
+            const frameKey = `mirror-prism-${normAngle}deg`;
+            if (this.hasFrame("atlas-shrine-environment", frameKey)) {
+              sprite.setFrame(frameKey);
+            }
+          }
+          const graphics = container.getData("graphics") as Phaser.GameObjects.Graphics | undefined;
           if (graphics) {
             graphics.clear();
             this.renderMirrorGraphic(graphics, this.tileSize, currentAngle);
@@ -546,7 +956,14 @@ export class ShrineScene extends Phaser.Scene {
 
         if (lastActivated !== currentActivated) {
           this.receptorStates.set(entity.id, currentActivated);
-          const graphics = container.getAt(0) as Phaser.GameObjects.Graphics;
+          const sprite = container.getData("sprite") as Phaser.GameObjects.Sprite | undefined;
+          if (sprite) {
+            const frameKey = currentActivated ? "receptor-solar-active" : "receptor-solar-dormant";
+            if (this.hasFrame("atlas-shrine-environment", frameKey)) {
+              sprite.setFrame(frameKey);
+            }
+          }
+          const graphics = container.getData("graphics") as Phaser.GameObjects.Graphics | undefined;
           if (graphics) {
             graphics.clear();
             this.renderReceptorGraphic(graphics, this.tileSize, currentActivated);
@@ -572,7 +989,14 @@ export class ShrineScene extends Phaser.Scene {
 
         if (lastSatisfied !== currentSatisfied) {
           this.gateStates.set(entity.id, currentSatisfied);
-          const graphics = container.getAt(0) as Phaser.GameObjects.Graphics;
+          const sprite = container.getData("sprite") as Phaser.GameObjects.Sprite | undefined;
+          if (sprite) {
+            const frameKey = currentSatisfied ? "logic-nexus-active" : "logic-nexus-dormant";
+            if (this.hasFrame("atlas-shrine-environment", frameKey)) {
+              sprite.setFrame(frameKey);
+            }
+          }
+          const graphics = container.getData("graphics") as Phaser.GameObjects.Graphics | undefined;
           if (graphics) {
             graphics.clear();
             this.renderGateGraphic(graphics, this.tileSize, currentSatisfied);
@@ -598,7 +1022,17 @@ export class ShrineScene extends Phaser.Scene {
 
         if (lastDepressed !== currentDepressed) {
           this.switchStates.set(entity.id, currentDepressed);
-          const graphics = container.getAt(0) as Phaser.GameObjects.Graphics;
+          const sprite = container.getData("sprite") as Phaser.GameObjects.Sprite | undefined;
+          if (sprite) {
+            let dotCount = 1;
+            if (entity.id.includes("2")) dotCount = 2;
+            else if (entity.id.includes("3")) dotCount = 3;
+            const frameKey = `switch-runic-${dotCount}-${currentDepressed ? "on" : "off"}`;
+            if (this.hasFrame("atlas-shrine-environment", frameKey)) {
+              sprite.setFrame(frameKey);
+            }
+          }
+          const graphics = container.getData("graphics") as Phaser.GameObjects.Graphics | undefined;
           if (graphics) {
             graphics.clear();
             this.renderFloorSwitchGraphic(graphics, this.tileSize, entity, currentDepressed);
@@ -653,6 +1087,20 @@ export class ShrineScene extends Phaser.Scene {
     this.buildCompanionOrb();
     this.renderFloorConduits();
     this.renderOpticsBeams();
+  }
+
+  /**
+   * Triggers Zyra's celebration animation upon room or puzzle completion.
+   */
+  public celebrateCompletion(): void {
+    const avatar = this.world.getEntityList().find((e) => e.renderable.shape === "avatar");
+    if (avatar) {
+      const container = this.entityContainers.get(avatar.id);
+      const sprite = container?.getData("sprite") as Phaser.GameObjects.Sprite | undefined;
+      if (sprite && this.anims.exists("zyra_celebrate")) {
+        sprite.play("zyra_celebrate");
+      }
+    }
   }
 
   // ==========================================
