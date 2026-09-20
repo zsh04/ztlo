@@ -1,0 +1,68 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="160" height="160" viewBox="0 0 160 160">
+  <defs>
+    <linearGradient id="sbBaseGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#E2E8F0" />
+      <stop offset="40%" stop-color="#CBD5E1" />
+      <stop offset="100%" stop-color="#94A3B8" />
+    </linearGradient>
+    <linearGradient id="sbBevelTop" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.8" />
+      <stop offset="100%" stop-color="#E2E8F0" stop-opacity="0.2" />
+    </linearGradient>
+    <radialGradient id="sbGlowAura" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#FEF08A" stop-opacity="0.6" />
+      <stop offset="40%" stop-color="#F59E0B" stop-opacity="0.35" />
+      <stop offset="75%" stop-color="#F97316" stop-opacity="0.15" />
+      <stop offset="100%" stop-color="#EA580C" stop-opacity="0" />
+    </radialGradient>
+    <linearGradient id="sbRuneGlow" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FEF08A" />
+      <stop offset="30%" stop-color="#FBBF24" />
+      <stop offset="70%" stop-color="#F97316" />
+      <stop offset="100%" stop-color="#EA580C" />
+    </linearGradient>
+    <linearGradient id="sbCyanGlow" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#E0F2FE" />
+      <stop offset="50%" stop-color="#38BDF8" />
+      <stop offset="100%" stop-color="#0284C7" />
+    </linearGradient>
+  </defs>
+
+  <!-- Ambient Ground Occlusion Shadow -->
+  <ellipse cx="80" cy="142" rx="54" ry="12" fill="#0F172A" fill-opacity="0.18" />
+
+    <!-- Luminous Energy Halo & Pulse Ring -->
+    <circle cx="80" cy="80" r="54" fill="url(#sbGlowAura)" />
+    <circle cx="80" cy="80" r="46" stroke="#F97316" stroke-width="2.5" stroke-dasharray="6 4" fill="none" opacity="0.85" />
+    <circle cx="80" cy="80" r="42" stroke="#38BDF8" stroke-width="1.5" stroke-dasharray="3 3" fill="none" opacity="0.7" />
+    <!-- Radiant Spark Motes -->
+    <circle cx="48" cy="48" r="2.2" fill="#FEF08A" />
+    <circle cx="112" cy="48" r="2.2" fill="#FEF08A" />
+    <circle cx="48" cy="112" r="2.2" fill="#FEF08A" />
+    <circle cx="112" cy="112" r="2.2" fill="#FEF08A" />
+
+  <!-- Main Carved Limestone Cube Body -->
+  <rect x="26" y="26" width="108" height="108" rx="20" fill="url(#sbBaseGrad)" stroke="#475569" stroke-width="3" />
+
+  <!-- Tactile Top Bevel Highlight -->
+  <path d="M 44 28 L 116 28 Q 132 28 132 44 L 132 50 Q 116 38 80 38 Q 44 38 28 50 L 28 44 Q 28 28 44 28 Z" fill="url(#sbBevelTop)" />
+
+  <!-- Bottom Chamfer Shadow Rim -->
+  <path d="M 28 116 L 28 118 Q 28 134 44 134 L 116 134 Q 132 134 132 118 L 132 116 Q 116 126 80 126 Q 44 126 28 116 Z" fill="#334155" fill-opacity="0.3" />
+
+  <!-- Fine Stone Texture Striations -->
+  <line x1="38" y1="44" x2="48" y2="44" stroke="#FFFFFF" stroke-width="1.5" stroke-linecap="round" opacity="0.4" />
+  <line x1="112" y1="116" x2="122" y2="116" stroke="#334155" stroke-width="1.5" stroke-linecap="round" opacity="0.3" />
+  <circle cx="42" cy="114" r="1.5" fill="#475569" opacity="0.4" />
+  <circle cx="118" cy="46" r="1.5" fill="#FFFFFF" opacity="0.5" />
+
+    <!-- Energized Petroglyphs: Concentric Sacred Geometry -->
+    <circle cx="80" cy="80" r="30" stroke="url(#sbRuneGlow)" stroke-width="4.5" fill="#FEF08A" fill-opacity="0.25" />
+    <polygon points="80,56 104,80 80,104 56,80" stroke="url(#sbCyanGlow)" stroke-width="3" fill="#38BDF8" fill-opacity="0.2" />
+    <circle cx="80" cy="80" r="14" stroke="url(#sbRuneGlow)" stroke-width="3.5" fill="#F97316" fill-opacity="0.4" />
+    <!-- Stellar Cross Inscription -->
+    <path d="M 80 64 L 80 96 M 64 80 L 96 80" stroke="#FFFFFF" stroke-width="3" stroke-linecap="round" />
+    <circle cx="80" cy="80" r="4" fill="#FFFFFF" />
+    <!-- Cardinal Petroglyph Notches -->
+    <path d="M 80 46 L 80 52 M 80 108 L 80 114 M 46 80 L 52 80 M 108 80 L 114 80" stroke="#F97316" stroke-width="3" stroke-linecap="round" />
+</svg>

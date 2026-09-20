@@ -1,0 +1,61 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="160" height="160" viewBox="0 0 160 160">
+  <defs>
+    <radialGradient id="recpAura" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#FEF08A" stop-opacity="0.75" />
+      <stop offset="40%" stop-color="#F59E0B" stop-opacity="0.4" />
+      <stop offset="75%" stop-color="#F97316" stop-opacity="0.15" />
+      <stop offset="100%" stop-color="#EA580C" stop-opacity="0" />
+    </radialGradient>
+    <linearGradient id="recpCrystalMain" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FFFFFF" />
+      <stop offset="30%" stop-color="#FEF08A" />
+      <stop offset="70%" stop-color="#F59E0B" />
+      <stop offset="100%" stop-color="#EA580C" />
+    </linearGradient>
+    <linearGradient id="recpFacetL" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FEF08A" />
+      <stop offset="100%" stop-color="#F97316" />
+    </linearGradient>
+    <linearGradient id="recpFacetR" x1="100%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#FFFFFF" />
+      <stop offset="100%" stop-color="#D97706" />
+    </linearGradient>
+  </defs>
+
+  <!-- Ambient Ground Shadow -->
+  <ellipse cx="80" cy="144" rx="54" ry="12" fill="#000000" fill-opacity="0.18" />
+
+  <!-- Radiant Solar Coronet Aura & Flare Bursts -->
+  <circle cx="80" cy="74" r="58" fill="url(#recpAura)" />
+  <circle cx="80" cy="74" r="48" stroke="#F59E0B" stroke-width="2.5" stroke-dasharray="6 4" fill="none" opacity="0.85" />
+  <!-- Starlight Glint Flares -->
+  <polygon points="80,16 83,28 94,30 83,32 80,44 77,32 66,30 77,28" fill="#FFFFFF" />
+  <circle cx="48" cy="60" r="2.5" fill="#FEF08A" />
+  <circle cx="112" cy="60" r="2.5" fill="#FEF08A" />
+  <circle cx="80" cy="74" r="3" fill="#FFFFFF" />
+
+  <!-- Heavy Carved Octagonal Stone Pedestal Base -->
+  <polygon points="52,106 108,106 134,136 26,136" fill="#334155" stroke="#1E293B" stroke-width="3" />
+  <polygon points="58,110 102,110 124,132 36,132" fill="#475569" fill-opacity="0.6" />
+
+  <!-- Energized Gold Power Channels into Dais -->
+  <path d="M 80 114 L 80 142 M 56 120 L 36 138 M 104 120 L 124 138" stroke="#FEF08A" stroke-width="3" stroke-linecap="round" />
+
+  <!-- Bronze Mounting Brackets Gripping Crystal -->
+  <path d="M 50 110 Q 56 94 62 90" stroke="#B45309" stroke-width="4.5" stroke-linecap="round" fill="none" />
+  <path d="M 110 110 Q 104 94 98 90" stroke="#B45309" stroke-width="4.5" stroke-linecap="round" fill="none" />
+  <circle cx="50" cy="110" r="3.5" fill="#F59E0B" />
+  <circle cx="110" cy="110" r="3.5" fill="#F59E0B" />
+
+  <!-- Central Faceted Receptor Crystal Obelisk -->
+  <!-- Left Wing Facet -->
+  <polygon points="56,92 80,72 80,114 50,110" fill="url(#recpFacetL)" stroke="#FEF08A" stroke-width="1.5" />
+  <!-- Right Wing Facet -->
+  <polygon points="104,92 80,72 80,114 110,110" fill="url(#recpFacetR)" stroke="#FEF08A" stroke-width="1.5" />
+  <!-- Main Tall Center Crystal Spire -->
+  <polygon points="80,26 100,68 80,114 60,68" fill="url(#recpCrystalMain)" stroke="#FFFFFF" stroke-width="2.5" />
+  <!-- Center Ridge Highlight Line -->
+  <line x1="80" y1="28" x2="80" y2="112" stroke="#FFFFFF" stroke-width="2.2" stroke-linecap="round" opacity="0.95" />
+  <!-- Specular Apex Flare -->
+  <circle cx="80" cy="30" r="3" fill="#FFFFFF" />
+</svg>

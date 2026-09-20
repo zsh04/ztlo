@@ -1,0 +1,58 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="160" height="160" viewBox="0 0 160 160">
+  <defs>
+    <linearGradient id="sproutBodyGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#86EFAC" />
+      <stop offset="40%" stop-color="#4ADE80" />
+      <stop offset="100%" stop-color="#22C55E" />
+    </linearGradient>
+    <linearGradient id="sproutBellyGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#F0FDF4" />
+      <stop offset="100%" stop-color="#BBF7D0" />
+    </linearGradient>
+  </defs>
+
+  <!-- Ambient Ground Shadow -->
+  <ellipse cx="80" cy="142" rx="46" ry="10" fill="#000000" fill-opacity="0.14" />
+
+  <!-- Soothing 0.125 Hz Co-Breathing Jade Halo Ring -->
+  <circle cx="80.0" cy="94.0" r="56" fill="#34D399" fill-opacity="0.20" />
+  <circle cx="80.0" cy="94.0" r="50" stroke="#10B981" stroke-width="2.5" fill="none" opacity="0.50" />
+  <!-- Floating Calming Blossom Spores -->
+  <circle cx="42.0" cy="70.0" r="2" fill="#A7F3D0" opacity="0.50" />
+  <circle cx="116.0" cy="74.0" r="2.2" fill="#A7F3D0" opacity="0.50" />
+  <circle cx="56.0" cy="126.0" r="1.6" fill="#F472B6" opacity="0.40" />
+
+  <!-- Main Sprout Body Group -->
+  <g transform="translate(80.0, 94.0) scale(1.120) translate(-80.0, -94.0)">
+    <!-- Tiny Stubby Woodland Feet -->
+    <ellipse cx="64" cy="128.0" rx="8" ry="5" fill="#15803D" />
+    <ellipse cx="96" cy="128.0" rx="8" ry="5" fill="#15803D" />
+
+    <!-- Leaf Ears -->
+      <path d="M 64.0 60.0 C 48.0 40.1 36.0 56.1 56.0 70.0 Z" fill="#4ADE80" stroke="#15803D" stroke-width="2.2" />
+      <path d="M 96.0 60.0 C 112.0 40.1 124.0 56.1 104.0 70.0 Z" fill="#4ADE80" stroke="#15803D" stroke-width="2.2" />
+
+    <!-- Plump Pear-Shaped Moss Body -->
+    <path d="M 48.0 122.0 C 36.0 116.0 42.0 78.0 56.0 64.0 C 66.0 54.0 94.0 54.0 104.0 64.0 C 118.0 78.0 124.0 116.0 112.0 122.0 C 100.0 130.0 60.0 130.0 48.0 122.0 Z" fill="url(#sproutBodyGrad)" stroke="#15803D" stroke-width="2.6" />
+
+    <!-- Soft Pastel Cream Underbelly Patch -->
+    <ellipse cx="80.0" cy="108.0" rx="22" ry="18" fill="url(#sproutBellyGrad)" />
+    <!-- Three Subtle Belly Clover Flecks -->
+    <circle cx="74.0" cy="106.0" r="1.4" fill="#16A34A" opacity="0.5" />
+    <circle cx="86.0" cy="106.0" r="1.4" fill="#16A34A" opacity="0.5" />
+    <circle cx="80.0" cy="112.0" r="1.4" fill="#16A34A" opacity="0.5" />
+
+    <!-- Rosy Woodland Cheeks -->
+    <circle cx="58.0" cy="98.0" r="6.5" fill="#FCA5A5" fill-opacity="0.65" />
+    <circle cx="102.0" cy="98.0" r="6.5" fill="#FCA5A5" fill-opacity="0.65" />
+
+      <!-- Serene Meditative Closed Crescent Eyelashes -->
+      <path d="M 62.0 91.0 Q 67.0 98.0 72.0 91.0" stroke="#14532D" stroke-width="2.6" stroke-linecap="round" fill="none" />
+      <path d="M 88.0 91.0 Q 93.0 98.0 98.0 91.0" stroke="#14532D" stroke-width="2.6" stroke-linecap="round" fill="none" />
+<path d="M 75.0 107.0 Q 80.0 111.0 85.0 107.0" stroke="#14532D" stroke-width="2.4" stroke-linecap="round" fill="none" />
+
+    <!-- Tiny Leaf Resting Hands -->
+    <ellipse cx="54.0" cy="112.0" rx="5" ry="3.5" fill="#4ADE80" stroke="#15803D" stroke-width="1.5" />
+    <ellipse cx="106.0" cy="112.0" rx="5" ry="3.5" fill="#4ADE80" stroke="#15803D" stroke-width="1.5" />
+  </g>
+</svg>

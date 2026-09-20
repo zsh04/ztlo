@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="160" height="160" viewBox="0 0 160 160">
+  <defs>
+    <linearGradient id="iceBodyGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#E0F2FE" />
+      <stop offset="25%" stop-color="#7DD3FC" />
+      <stop offset="70%" stop-color="#38BDF8" />
+      <stop offset="100%" stop-color="#0284C7" />
+    </linearGradient>
+    <linearGradient id="iceFacetMain" x1="0%" y1="0%" x2="100%" y2="80%">
+      <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.65" />
+      <stop offset="50%" stop-color="#BAE6FD" stop-opacity="0.35" />
+      <stop offset="100%" stop-color="#0284C7" stop-opacity="0.1" />
+    </linearGradient>
+    <linearGradient id="icePrismFacet" x1="100%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.5" />
+      <stop offset="100%" stop-color="#38BDF8" stop-opacity="0.15" />
+    </linearGradient>
+  </defs>
+
+  <!-- Cool Azure Ground Shadow -->
+  <ellipse cx="80" cy="142" rx="54" ry="12" fill="#0284C7" fill-opacity="0.22" />
+
+
+  <!-- Translucent Sapphire Ice Cube -->
+  <rect x="26" y="26" width="108" height="108" rx="20" fill="url(#iceBodyGrad)" fill-opacity="0.92" stroke="#BAE6FD" stroke-width="3" />
+
+  <!-- Internal Diagonal Cleavage Facet (Geometric Refraction Plane) -->
+  <polygon points="34,46 96,30 128,78 74,126 34,96" fill="url(#iceFacetMain)" />
+  <!-- Upper Prismatic Refraction Shard -->
+  <polygon points="56,30 126,30 126,84 84,58" fill="url(#icePrismFacet)" />
+
+  <!-- Crystalline Starlight Lattice Core -->
+  <g stroke="#FFFFFF" stroke-width="2.4" stroke-linecap="round" opacity="0.75">
+    <line x1="80" y1="52" x2="80" y2="108" />
+    <line x1="52" y1="80" x2="108" y2="80" />
+    <line x1="60" y1="60" x2="100" y2="100" />
+    <line x1="60" y1="100" x2="100" y2="60" />
+  </g>
+  <circle cx="80" cy="80" r="16" stroke="#FFFFFF" stroke-width="1.8" stroke-dasharray="3 3" fill="none" opacity="0.6" />
+  <circle cx="80" cy="80" r="5" fill="#FFFFFF" opacity="0.9" />
+
+  <!-- Top-Left Crest Specular Highlight -->
+  <path d="M 40 30 L 112 30 Q 124 30 124 38 L 124 42 Q 112 34 80 34 Q 46 34 36 42 L 36 38 Q 36 30 40 30 Z" fill="#FFFFFF" fill-opacity="0.75" />
+
+  <!-- Diamond Specular Glints -->
+  <g fill="#FFFFFF">
+    <!-- Glint 1 (Top Left) -->
+    <polygon points="42,32 44,40 52,42 44,44 42,52 40,44 32,42 40,40" />
+    <circle cx="42" cy="42" r="2.2" fill="#BAE6FD" />
+    <!-- Glint 2 (Top Right) -->
+    <polygon points="116,38 117.5,43 122.5,44.5 117.5,46 116,51 114.5,46 109.5,44.5 114.5,43" opacity="0.9" />
+    <circle cx="116" cy="44.5" r="1.8" fill="#BAE6FD" />
+    <!-- Glint 3 (Center Lower) -->
+    <circle cx="94" cy="112" r="2" opacity="0.8" />
+  </g>
+</svg>

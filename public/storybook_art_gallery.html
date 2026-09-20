@@ -262,6 +262,33 @@
           <div class="anim-title">Light Orb Companion</div>
           <div class="anim-meta">0.28 Hz Sinusoidal Float + Emotion</div>
         </div>
+
+        <!-- Sprout Anxious -->
+        <div class="anim-player">
+          <div class="anim-viewport">
+            <img id="view-sprout-anxious" src="assets/svg/sprout_anxious_01.svg" alt="Sprout Anxious">
+          </div>
+          <div class="anim-title">sprout-anxious</div>
+          <div class="anim-meta">8 frames @ 8 FPS (tremor, jitter)</div>
+        </div>
+
+        <!-- Sprout Breathe -->
+        <div class="anim-player">
+          <div class="anim-viewport">
+            <img id="view-sprout-breathe" src="assets/svg/sprout_breathe_01.svg" alt="Sprout Breathe">
+          </div>
+          <div class="anim-title">sprout-breathe</div>
+          <div class="anim-meta">8 frames @ 1 FPS (0.125 Hz co-breathing)</div>
+        </div>
+
+        <!-- Sprout Joy -->
+        <div class="anim-player">
+          <div class="anim-viewport">
+            <img id="view-sprout-joy" src="assets/svg/sprout_joy_01.svg" alt="Sprout Joy">
+          </div>
+          <div class="anim-title">sprout-joy</div>
+          <div class="anim-meta">6 frames @ 10 FPS (blossom bounce)</div>
+        </div>
       </div>
     </section>
 
@@ -299,13 +326,22 @@
 
     <!-- 3. COMPLETE ATOM CATALOG -->
     <section>
-      <h2>Master Asset Sheet (All 52 Independent Standalone SVGs)</h2>
+      <h2>Master Asset Sheet (All 93 Independent Standalone SVGs)</h2>
       
       <h3 style="font-size:15px; margin: 16px 0 8px; color:var(--teal);">Hero: Zyra Character Frames (160×160)</h3>
       <div class="grid-gallery" id="zyra-gallery"></div>
 
       <h3 style="font-size:15px; margin: 24px 0 8px; color:var(--gold);">Companion: Light Orb Expressive Faces (96×96)</h3>
       <div class="grid-gallery" id="orb-gallery"></div>
+
+      <h3 style="font-size:15px; margin: 24px 0 8px; color:#10B981;">NPC: Sprout Forest Spirit Frames (160×160)</h3>
+      <div class="grid-gallery" id="sprout-gallery"></div>
+
+      <h3 style="font-size:15px; margin: 24px 0 8px; color:#F97316;">Interactive Puzzle Props: Kinetic Blocks & Lotus Dais (160×160)</h3>
+      <div class="grid-gallery" id="props-gallery"></div>
+
+      <h3 style="font-size:15px; margin: 24px 0 8px; color:#F59E0B;">Interactive Puzzle Props: Optics & Logic Nexus (160×160)</h3>
+      <div class="grid-gallery" id="optics-gallery"></div>
 
       <h3 style="font-size:15px; margin: 24px 0 8px; color:var(--cyan);">Environment: Limestone Tiles & Wall Caps (160×160)</h3>
       <div class="grid-gallery" id="env-gallery"></div>
@@ -335,10 +371,14 @@
       'assets/svg/orb_face_thinking.svg',
       'assets/svg/orb_face_sleepy.svg'
     ];
+    const sproutAnxiousFrames = Array.from({length: 8}, (_, i) => `assets/svg/sprout_anxious_${String(i+1).padStart(2, '0')}.svg`);
+    const sproutBreatheFrames = Array.from({length: 8}, (_, i) => `assets/svg/sprout_breathe_${String(i+1).padStart(2, '0')}.svg`);
+    const sproutJoyFrames = Array.from({length: 6}, (_, i) => `assets/svg/sprout_joy_${String(i+1).padStart(2, '0')}.svg`);
 
     function createLooper(elId, frames, fps) {
       let idx = 0;
       const el = document.getElementById(elId);
+      if (!el) return;
       setInterval(() => {
         idx = (idx + 1) % frames.length;
         el.src = frames[idx];
@@ -351,10 +391,14 @@
     createLooper('view-celeb', celebFrames, 12);
     createLooper('view-sleep', sleepFrames, 4);
     createLooper('view-orb', orbFrames, 0.5); // mood change every 2s
+    createLooper('view-sprout-anxious', sproutAnxiousFrames, 8);
+    createLooper('view-sprout-breathe', sproutBreatheFrames, 1); // 0.125 Hz co-breathing
+    createLooper('view-sprout-joy', sproutJoyFrames, 10);
 
     // Populate catalog
     function addCards(containerId, fileList) {
       const container = document.getElementById(containerId);
+      if (!container) return;
       fileList.forEach(fn => {
         const card = document.createElement('div');
         card.className = 'card';
@@ -374,6 +418,29 @@
 
     const allOrb = orbFrames.map(p => p.split('/').pop());
     addCards('orb-gallery', allOrb);
+
+    const allSprout = [
+      ...sproutAnxiousFrames.map(p => p.split('/').pop()),
+      ...sproutBreatheFrames.map(p => p.split('/').pop()),
+      ...sproutJoyFrames.map(p => p.split('/').pop())
+    ];
+    addCards('sprout-gallery', allSprout);
+
+    const allProps = [
+      'stone_block.svg', 'stone_block_active.svg',
+      'ice_block.svg', 'ice_block_sliding.svg',
+      'plate_lotus_dormant.svg', 'plate_lotus_active.svg'
+    ];
+    addCards('props-gallery', allProps);
+
+    const allOptics = [
+      'emitter_sun_pedestal.svg', 'emitter_sun_pedestal_east.svg', 'emitter_sun_pedestal_west.svg',
+      'emitter_sun_pedestal_north.svg', 'emitter_sun_pedestal_south.svg',
+      'mirror_prism_000.svg', 'mirror_prism_045.svg', 'mirror_prism_090.svg', 'mirror_prism_135.svg',
+      'receptor_solar_crystal.svg', 'receptor_solar_active.svg',
+      'logic_gate_nexus.svg', 'logic_gate_satisfied.svg'
+    ];
+    addCards('optics-gallery', allOptics);
 
     const allEnv = [
       'tile_light_01.svg', 'tile_light_02.svg', 'tile_dark_01.svg', 'tile_dark_02.svg',
