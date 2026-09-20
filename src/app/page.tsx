@@ -86,6 +86,11 @@ export default function GamePage() {
     setActiveNpcModal(npc);
   }, [stopPlayerMovement]);
 
+  const handleMirrorTap = useCallback((_mirror: Entity) => {
+    stopPlayerMovement();
+    setCanUndo(worldRef.current.canUndo());
+  }, [stopPlayerMovement]);
+
   const handleCompleteBreathing = useCallback(() => {
     if (!activeNpcModal) return;
     const world = worldRef.current;
@@ -242,6 +247,16 @@ export default function GamePage() {
     if (targetNpc) {
       stopPlayerMovement();
       setActiveNpcModal(targetNpc);
+      return;
+    }
+
+    const targetMirror = world
+      .getEntityList()
+      .find((e) => e.optics?.opticsType === "mirror" && e.position.x === point.x && e.position.y === point.y);
+    if (targetMirror) {
+      stopPlayerMovement();
+      world.rotateMirror(targetMirror.id);
+      setCanUndo(world.canUndo());
       return;
     }
 
@@ -422,6 +437,7 @@ export default function GamePage() {
           onCellTap={handleCellTap}
           onRoomCompleted={handleRoomCompleted}
           onNpcTap={handleNpcTap}
+          onMirrorTap={handleMirrorTap}
         />
       </div>
 

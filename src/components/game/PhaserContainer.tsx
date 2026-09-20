@@ -13,6 +13,7 @@ export interface PhaserContainerProps {
   onCellTap?: (point: GridPoint, screenX: number, screenY: number) => void;
   onRoomCompleted?: () => void;
   onNpcTap?: (npc: Entity) => void;
+  onMirrorTap?: (mirror: Entity) => void;
   className?: string;
 }
 
@@ -22,6 +23,7 @@ export const PhaserContainer: React.FC<PhaserContainerProps> = ({
   onCellTap,
   onRoomCompleted,
   onNpcTap,
+  onMirrorTap,
   className = "",
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -37,6 +39,9 @@ export const PhaserContainer: React.FC<PhaserContainerProps> = ({
 
   const onNpcTapRef = useRef(onNpcTap);
   onNpcTapRef.current = onNpcTap;
+
+  const onMirrorTapRef = useRef(onMirrorTap);
+  onMirrorTapRef.current = onMirrorTap;
 
   const worldRef = useRef(world);
   worldRef.current = world;
@@ -101,6 +106,9 @@ export const PhaserContainer: React.FC<PhaserContainerProps> = ({
           currentScene.onNpcTap = (npc) => {
             onNpcTapRef.current?.(npc);
           };
+          currentScene.onMirrorTap = (mirror) => {
+            onMirrorTapRef.current?.(mirror);
+          };
           currentScene.loadRoom(roomRef.current, worldRef.current);
         }
       });
@@ -133,6 +141,9 @@ export const PhaserContainer: React.FC<PhaserContainerProps> = ({
       };
       sceneRef.current.onNpcTap = (npc) => {
         onNpcTapRef.current?.(npc);
+      };
+      sceneRef.current.onMirrorTap = (mirror) => {
+        onMirrorTapRef.current?.(mirror);
       };
       sceneRef.current.loadRoom(room, world);
     }

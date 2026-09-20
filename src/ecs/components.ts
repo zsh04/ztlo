@@ -76,9 +76,24 @@ export interface NpcComponent extends Component {
   unblocksTargetId?: string;
 }
 
+
+export type OpticsType = "emitter" | "mirror" | "receptor";
+export type CardinalDirection = "north" | "south" | "east" | "west";
+
+export interface OpticsComponent extends Component {
+  type: "optics";
+  opticsType: OpticsType;
+  angle?: 45 | 135 | 225 | 315; // For mirrors (degrees)
+  direction?: CardinalDirection; // For emitters
+  isLit?: boolean;
+  isActivated?: boolean; // For receptors
+  targetDoorId?: string; // Door unsealed when receptor receives light
+  beamColor?: string; // e.g. "#FACC15"
+}
+
 export interface RenderableComponent extends Component {
   type: "renderable";
-  shape: "avatar" | "stone" | "ice" | "plate" | "wall" | "door" | "npc";
+  shape: "avatar" | "stone" | "ice" | "plate" | "wall" | "door" | "npc" | "emitter" | "mirror" | "receptor";
   colorToken: string;
   zIndex: number;
 }

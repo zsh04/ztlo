@@ -16,6 +16,7 @@ export interface ShrineSceneInitData {
   onCellTap?: (point: GridPoint, screenX: number, screenY: number) => void;
   onRoomCompleted?: () => void;
   onNpcTap?: (npc: Entity) => void;
+  onMirrorTap?: (mirror: Entity) => void;
 }
 
 export class ShrineScene extends Phaser.Scene {
@@ -24,6 +25,7 @@ export class ShrineScene extends Phaser.Scene {
   public onCellTap?: (point: GridPoint, screenX: number, screenY: number) => void;
   public onRoomCompleted?: () => void;
   public onNpcTap?: (npc: Entity) => void;
+  public onMirrorTap?: (mirror: Entity) => void;
 
   public static readonly CANVAS_WIDTH = 1280;
   public static readonly CANVAS_HEIGHT = 720;
@@ -44,6 +46,9 @@ export class ShrineScene extends Phaser.Scene {
   private plateStates: Map<string, boolean> = new Map();
   private doorStates: Map<string, boolean> = new Map();
   private npcSoothedStates: Map<string, boolean> = new Map();
+  private mirrorAngles: Map<string, number> = new Map();
+  private receptorStates: Map<string, boolean> = new Map();
+  private beamGraphics?: Phaser.GameObjects.Graphics;
   private lightOrbContainer?: Phaser.GameObjects.Container;
 
   constructor(config?: Phaser.Types.Scenes.SettingsConfig) {
@@ -67,9 +72,12 @@ export class ShrineScene extends Phaser.Scene {
     this.onCellTap = data?.onCellTap;
     this.onRoomCompleted = data?.onRoomCompleted;
     this.onNpcTap = data?.onNpcTap;
+    this.onMirrorTap = data?.onMirrorTap;
   }
 
   public create(): void {
+    this.beamGraphics = this.add.graphics();
+    this.beamGraphics.setDepth(5);
     this.calculateLayout();
     this.buildGrid();
     this.buildEntities();
@@ -253,6 +261,22 @@ export class ShrineScene extends Phaser.Scene {
         });
         break;
 
+      case "emitter":
+        this.renderEmitterGraphic(graphics, this.tileSize, entity);
+        break;
+
+      case "mirror":
+        const mAngle = entity.optics?.angle ?? 45;
+        this.mirrorAngles.set(entity.id, mAngle);
+        this.renderMirrorGraphic(graphics, this.tileSize, mAngle);
+        break;
+
+      case "receptor":
+        const isRecActivated = entity.optics?.isActivated ?? false;
+        this.receptorStates.set(entity.id, isRecActivated);
+        this.renderReceptorGraphic(graphics, this.tileSize, isRecActivated);
+        break;
+
     }
 
     this.entityContainers.set(entity.id, container);
@@ -312,6 +336,16 @@ export class ShrineScene extends Phaser.Scene {
         );
         if (tappedNpc && this.onNpcTap) {
           this.onNpcTap(tappedNpc);
+        }
+
+        const tappedMirror = this.world.getEntityList().find(
+          (e) => e.optics?.opticsType === "mirror" && e.position.x === point.x && e.position.y === point.y
+        );
+        if (tappedMirror) {
+          this.world.rotateMirror(tappedMirror.id);
+          if (this.onMirrorTap) {
+            this.onMirrorTap(tappedMirror);
+          }
         }
 
         if (this.onCellTap) {
@@ -463,7 +497,59 @@ export class ShrineScene extends Phaser.Scene {
           });
         }
       }
+
+      // Handle Mirror rotation angle changes
+      if (entity.renderable.shape === "mirror" && entity.optics) {
+        const lastAngle = this.mirrorAngles.get(entity.id);
+        const currentAngle = entity.optics.angle ?? 45;
+
+        if (lastAngle !== currentAngle) {
+          this.mirrorAngles.set(entity.id, currentAngle);
+          const graphics = container.getAt(0) as Phaser.GameObjects.Graphics;
+          if (graphics) {
+            graphics.clear();
+            this.renderMirrorGraphic(graphics, this.tileSize, currentAngle);
+          }
+
+          this.tweens.add({
+            targets: container,
+            scaleX: 1.15,
+            scaleY: 1.15,
+            duration: 150,
+            yoyo: true,
+            ease: "Back.easeOut",
+          });
+        }
+      }
+
+      // Handle Receptor visual activation
+      if (entity.renderable.shape === "receptor" && entity.optics) {
+        const lastActivated = this.receptorStates.get(entity.id);
+        const currentActivated = entity.optics.isActivated ?? false;
+
+        if (lastActivated !== currentActivated) {
+          this.receptorStates.set(entity.id, currentActivated);
+          const graphics = container.getAt(0) as Phaser.GameObjects.Graphics;
+          if (graphics) {
+            graphics.clear();
+            this.renderReceptorGraphic(graphics, this.tileSize, currentActivated);
+          }
+
+          if (currentActivated) {
+            this.tweens.add({
+              targets: container,
+              scaleX: 1.2,
+              scaleY: 1.2,
+              duration: 200,
+              yoyo: true,
+              ease: "Back.easeOut",
+            });
+          }
+        }
+      }
     }
+
+    this.renderOpticsBeams();
   }
 
   /**
@@ -753,6 +839,194 @@ export class ShrineScene extends Phaser.Scene {
       g.lineTo(0, half * 0.12);
       g.lineTo(half * 0.15, half * 0.18);
       g.strokePath();
+    }
+  }
+
+
+  public renderOpticsBeams(): void {
+    if (!this.beamGraphics) return;
+    this.beamGraphics.clear();
+
+    const paths = this.world.getOpticsPaths();
+    if (!paths || paths.length === 0) return;
+
+    for (const path of paths) {
+      if (!path.points || path.points.length < 2) continue;
+
+      const screenPoints = path.points.map((p) =>
+        gridToScreenPoint(p.x, p.y, this.layoutMetrics)
+      );
+
+      const colorNum = parseInt(path.beamColor.replace("#", ""), 16) || 0xfacc15;
+
+      // Outer soft bloom glow
+      this.beamGraphics.lineStyle(14, colorNum, 0.25);
+      this.beamGraphics.beginPath();
+      this.beamGraphics.moveTo(screenPoints[0].x, screenPoints[0].y);
+      for (let i = 1; i < screenPoints.length; i++) {
+        this.beamGraphics.lineTo(screenPoints[i].x, screenPoints[i].y);
+      }
+      this.beamGraphics.strokePath();
+
+      // Mid intense glow
+      this.beamGraphics.lineStyle(6, 0xfef08a, 0.65);
+      this.beamGraphics.beginPath();
+      this.beamGraphics.moveTo(screenPoints[0].x, screenPoints[0].y);
+      for (let i = 1; i < screenPoints.length; i++) {
+        this.beamGraphics.lineTo(screenPoints[i].x, screenPoints[i].y);
+      }
+      this.beamGraphics.strokePath();
+
+      // Sharp white core
+      this.beamGraphics.lineStyle(2.5, 0xffffff, 0.95);
+      this.beamGraphics.beginPath();
+      this.beamGraphics.moveTo(screenPoints[0].x, screenPoints[0].y);
+      for (let i = 1; i < screenPoints.length; i++) {
+        this.beamGraphics.lineTo(screenPoints[i].x, screenPoints[i].y);
+      }
+      this.beamGraphics.strokePath();
+
+      // Draw reflection sparkle glints at nodes
+      for (const node of path.reflectionNodes) {
+        const pt = gridToScreenPoint(node.x, node.y, this.layoutMetrics);
+        this.beamGraphics.fillStyle(0xffffff, 0.95);
+        this.beamGraphics.fillCircle(pt.x, pt.y, 4);
+        this.beamGraphics.fillStyle(colorNum, 0.5);
+        this.beamGraphics.fillCircle(pt.x, pt.y, 8);
+      }
+    }
+  }
+
+  private renderEmitterGraphic(g: Phaser.GameObjects.Graphics, size: number, entity: Entity): void {
+    const s = size * 0.82;
+    const half = s / 2;
+    const dir = entity.optics?.direction || "east";
+
+    // Ground shadow
+    g.fillStyle(0x000000, 0.2);
+    g.fillEllipse(0, half * 0.85, s * 0.75, s * 0.25);
+
+    // Brass / Golden pedestal base
+    g.fillStyle(0xB45309, 1);
+    g.lineStyle(2, 0x78350F, 1);
+    g.fillCircle(0, 0, half * 0.85);
+    g.strokeCircle(0, 0, half * 0.85);
+
+    // Radiant inner sun crystal
+    g.fillStyle(0xFACC15, 1);
+    g.lineStyle(2, 0xFEF08A, 1);
+    g.fillCircle(0, 0, half * 0.55);
+    g.strokeCircle(0, 0, half * 0.55);
+
+    // Core white-hot star spark
+    g.fillStyle(0xFFFFFF, 0.95);
+    g.fillCircle(0, 0, half * 0.25);
+
+    // Directional emitter nozzle
+    g.fillStyle(0x92400E, 1);
+    g.lineStyle(1.5, 0xFDE047, 1);
+    const nozzleDist = half * 0.75;
+    let nx = 0, ny = 0;
+    if (dir === "east") nx = nozzleDist;
+    else if (dir === "west") nx = -nozzleDist;
+    else if (dir === "north") ny = -nozzleDist;
+    else if (dir === "south") ny = nozzleDist;
+    g.fillCircle(nx, ny, 5);
+    g.strokeCircle(nx, ny, 5);
+  }
+
+  private renderMirrorGraphic(g: Phaser.GameObjects.Graphics, size: number, angle: number): void {
+    const s = size * 0.82;
+    const half = s / 2;
+
+    // Ground shadow
+    g.fillStyle(0x000000, 0.2);
+    g.fillEllipse(0, half * 0.85, s * 0.8, s * 0.25);
+
+    // Prism diamond frame
+    g.fillStyle(0x0369A1, 1);
+    g.lineStyle(2.5, 0x38BDF8, 1);
+    g.beginPath();
+    g.moveTo(0, -half * 0.9);
+    g.lineTo(half * 0.9, 0);
+    g.lineTo(0, half * 0.9);
+    g.lineTo(-half * 0.9, 0);
+    g.closePath();
+    g.fillPath();
+    g.strokePath();
+
+    // Polished crystal glass surface
+    g.fillStyle(0xE0F2FE, 0.9);
+    g.beginPath();
+    g.moveTo(0, -half * 0.65);
+    g.lineTo(half * 0.65, 0);
+    g.lineTo(0, half * 0.65);
+    g.lineTo(-half * 0.65, 0);
+    g.closePath();
+    g.fillPath();
+
+    // Internal reflective mirror line oriented at angle
+    const normAngle = ((angle % 180) + 180) % 180;
+    g.lineStyle(3, 0x0284C7, 1);
+    g.beginPath();
+    if (normAngle === 45) {
+      g.moveTo(-half * 0.55, half * 0.55);
+      g.lineTo(half * 0.55, -half * 0.55);
+    } else {
+      g.moveTo(-half * 0.55, -half * 0.55);
+      g.lineTo(half * 0.55, half * 0.55);
+    }
+    g.strokePath();
+
+    // Prismatic facet highlight glints
+    g.fillStyle(0xFFFFFF, 0.9);
+    g.fillCircle(0, 0, 3);
+  }
+
+  private renderReceptorGraphic(g: Phaser.GameObjects.Graphics, size: number, isActivated: boolean): void {
+    const s = size * 0.82;
+    const half = s / 2;
+
+    // Ground shadow
+    g.fillStyle(0x000000, 0.2);
+    g.fillEllipse(0, half * 0.85, s * 0.8, s * 0.25);
+
+    if (isActivated) {
+      // Golden Radiant Solar Aura
+      g.fillStyle(0xFACC15, 0.35);
+      g.fillCircle(0, 0, half * 1.3);
+
+      // Altar base
+      g.fillStyle(0x78350F, 1);
+      g.lineStyle(2.5, 0xD97706, 1);
+      g.fillRoundedRect(-half * 0.85, -half * 0.85, s * 0.85, s * 0.85, 12);
+      g.strokeRoundedRect(-half * 0.85, -half * 0.85, s * 0.85, s * 0.85, 12);
+
+      // Incandescent solar gem core
+      g.fillStyle(0xFDE047, 1);
+      g.lineStyle(2, 0xFFFFFF, 1);
+      g.fillCircle(0, 0, half * 0.5);
+      g.strokeCircle(0, 0, half * 0.5);
+
+      // White core burst
+      g.fillStyle(0xFFFFFF, 0.95);
+      g.fillCircle(0, 0, half * 0.22);
+    } else {
+      // Resting Altar Base
+      g.fillStyle(0x334155, 1);
+      g.lineStyle(2.5, 0x1E293B, 1);
+      g.fillRoundedRect(-half * 0.85, -half * 0.85, s * 0.85, s * 0.85, 12);
+      g.strokeRoundedRect(-half * 0.85, -half * 0.85, s * 0.85, s * 0.85, 12);
+
+      // Latent Amethyst Crystal
+      g.fillStyle(0x7E22CE, 0.9);
+      g.lineStyle(2, 0xA855F7, 0.8);
+      g.fillCircle(0, 0, half * 0.45);
+      g.strokeCircle(0, 0, half * 0.45);
+
+      // Faint crystal glint
+      g.fillStyle(0xE9D5FF, 0.7);
+      g.fillCircle(-half * 0.12, -half * 0.12, 2);
     }
   }
 

@@ -5,6 +5,7 @@ import { PhysicsSystem } from "./systems/PhysicsSystem";
 import { TriggerSystem, TriggerEvaluationResult } from "./systems/TriggerSystem";
 import { MentorSystem } from "./systems/MentorSystem";
 import { NpcSystem, SootheResult } from "./systems/NpcSystem";
+import { OpticsSystem, BeamPath, OpticsEvaluationResult } from "./systems/OpticsSystem";
 import { MentorComponent, NpcEmotionState } from "./components";
 
 export interface EntityPositionSnapshot {
@@ -22,6 +23,11 @@ export interface EntityPositionSnapshot {
     isSoothed: boolean;
     currentBreathCount?: number;
   };
+  opticsState?: {
+    angle?: 45 | 135 | 225 | 315;
+    isActivated?: boolean;
+    isLit?: boolean;
+  };
 }
 
 export interface WorldSnapshot {
@@ -36,6 +42,7 @@ export class GameWorld {
   public objective: string;
   public mentor: MentorComponent;
   public history: WorldSnapshot[];
+  private cachedOpticsResult?: OpticsEvaluationResult;
 
   constructor(room: RoomDefinition) {
     this.width = room.width;
@@ -45,6 +52,7 @@ export class GameWorld {
     this.entities = new Map();
     this.history = [];
     this.mentor = MentorSystem.createInitialState();
+    this.evaluateOptics();
   }
 
   public setEntities(entitiesList: Entity[]) {
@@ -53,6 +61,7 @@ export class GameWorld {
     for (const e of entitiesList) {
       this.entities.set(e.id, e);
     }
+    this.evaluateOptics();
   }
 
   public getEntityList(): Entity[] {
@@ -76,6 +85,13 @@ export class GameWorld {
           ? { ...e.pushable.slideDirection }
           : undefined,
         isSolid: e.collider?.isSolid,
+        opticsState: e.optics
+          ? {
+              angle: e.optics.angle,
+              isActivated: e.optics.isActivated,
+              isLit: e.optics.isLit,
+            }
+          : undefined,
         npcState: e.npc
           ? {
               emotion: e.npc.emotion,
@@ -137,10 +153,17 @@ export class GameWorld {
           entity.npc.isSoothed = snap.npcState.isSoothed;
           entity.npc.currentBreathCount = snap.npcState.currentBreathCount;
         }
+
+        if (entity.optics && snap.opticsState) {
+          entity.optics.angle = snap.opticsState.angle;
+          entity.optics.isActivated = snap.opticsState.isActivated;
+          entity.optics.isLit = snap.opticsState.isLit;
+        }
       }
     }
 
     this.evaluateTriggers();
+    this.evaluateOptics();
     MentorSystem.update(this.mentor, this.getEntityList(), 0, this.width, this.height);
     return true;
   }
@@ -196,6 +219,7 @@ export class GameWorld {
     if (result.success && result.newPath.length > 0) {
       this.history.push(snapshot);
       this.evaluateTriggers();
+      this.evaluateOptics();
     }
     return result;
   }
@@ -299,6 +323,35 @@ export class GameWorld {
     if (!npc) return { success: false, soothed: false };
     this.history.push(this.captureSnapshot());
     return NpcSystem.sootheWithGift(npc, this.getEntityList(), giftItem);
+  }
+
+  public evaluateOptics(): OpticsEvaluationResult {
+    this.cachedOpticsResult = OpticsSystem.evaluateOptics(
+      this.getEntityList(),
+      this.width,
+      this.height
+    );
+    return this.cachedOpticsResult;
+  }
+
+  public getOpticsPaths(): BeamPath[] {
+    if (!this.cachedOpticsResult) {
+      this.evaluateOptics();
+    }
+    return this.cachedOpticsResult?.paths || [];
+  }
+
+  public rotateMirror(mirrorId: string): boolean {
+    const mirror = this.entities.get(mirrorId);
+    if (!mirror || !mirror.optics || mirror.optics.opticsType !== "mirror") {
+      return false;
+    }
+    this.history.push(this.captureSnapshot());
+    const rotated = OpticsSystem.rotateMirror(mirror);
+    if (rotated) {
+      this.evaluateOptics();
+    }
+    return rotated;
   }
 
 }
