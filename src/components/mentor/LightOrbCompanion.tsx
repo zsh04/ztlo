@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Volume2, VolumeX, Mic } from "lucide-react";
 import { SocraticDialog } from "../../types/game";
@@ -90,6 +90,34 @@ export const LightOrbCompanion: React.FC<LightOrbCompanionProps> = ({
     }
   }, [isOpen]);
 
+  const handleClose = useCallback(() => {
+    stopSpeech();
+    if (cancelListeningRef.current) {
+      cancelListeningRef.current();
+      cancelListeningRef.current = null;
+      setIsListening(false);
+    }
+    if (onCloseBubble) {
+      onCloseBubble();
+    }
+    setInternalOpen(false);
+  }, [onCloseBubble]);
+
+  // Auto-dismiss pure encouragement / celebration messages after 3.5s so exit paths stay clear
+  useEffect(() => {
+    if (isDialogOpen && dialog.promptType === "encourage") {
+      const timer = setTimeout(() => {
+        handleClose();
+      }, 3500);
+      return () => clearTimeout(timer);
+    }
+  }, [isDialogOpen, dialog.promptType, handleClose]);
+
+  const showInquiries =
+    mentorState === "direct_hint_request" ||
+    dialog.promptType === "socratic_hint" ||
+    isCornerTrap;
+
   // Cleanly speak new Socratic messages aloud via TTS when bubble is open and unmuted
   useEffect(() => {
     if (
@@ -120,19 +148,6 @@ export const LightOrbCompanion: React.FC<LightOrbCompanionProps> = ({
     } else {
       setInternalOpen((prev) => !prev);
     }
-  };
-
-  const handleClose = () => {
-    stopSpeech();
-    if (cancelListeningRef.current) {
-      cancelListeningRef.current();
-      cancelListeningRef.current = null;
-      setIsListening(false);
-    }
-    if (onCloseBubble) {
-      onCloseBubble();
-    }
-    setInternalOpen(false);
   };
 
   const toggleMute = () => {
@@ -194,20 +209,6 @@ export const LightOrbCompanion: React.FC<LightOrbCompanionProps> = ({
 
   return (
     <>
-      {/* Full-screen backdrop for easy 1-tap dismissal on iPad */}
-      <AnimatePresence>
-        {isDialogOpen && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={handleClose}
-            aria-label="Close dialog backdrop"
-            className="fixed inset-0 z-30 bg-black/15 backdrop-blur-[2px] pointer-events-auto"
-          />
-        )}
-      </AnimatePresence>
-
       <div className="relative z-40 flex flex-col items-end pointer-events-none">
         {/* Floating Light Orb Avatar - Fitts's Law >= 80px touch target */}
         <motion.button
@@ -410,78 +411,84 @@ export const LightOrbCompanion: React.FC<LightOrbCompanionProps> = ({
                 </motion.button>
               )}
 
-              {/* Voice Interaction (STT) Button */}
-              {hasSTT && (
-                <div className="flex flex-col gap-1.5 pt-1">
+              {/* Voice Interaction (STT) Button and Socratic Inquiry Chips */}
+              {showInquiries && (
+                <>
+                  {hasSTT && (
+                    <div className="flex flex-col gap-1.5 pt-1">
+                      <motion.button
+                        type="button"
+                        onClick={handleStartListening}
+                        whileTap={{ scale: 0.97 }}
+                        className={`w-full min-h-[56px] px-4 py-3 rounded-2xl border-2 flex items-center gap-3 transition-all cursor-pointer select-none ${
+                          isListening
+                            ? "bg-amber-100 border-amber-400 text-amber-950 shadow-md ring-4 ring-amber-300/60 animate-pulse"
+                            : "bg-gradient-to-r from-amber-50/90 to-yellow-50/90 hover:from-amber-100 hover:to-yellow-100 border-amber-200 text-amber-900 shadow-sm"
+                        }`}
+                      >
+                        <div
+                          className={`w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 ${
+                            isListening ? "bg-amber-500 text-white animate-bounce" : "bg-amber-300/80 text-amber-900"
+                          }`}
+                        >
+                          <Mic className="w-5 h-5" />
+                        </div>
+                        <div className="flex flex-col text-left overflow-hidden">
+                          <span className="text-xs sm:text-sm font-bold leading-tight">
+                            {isListening ? "Listening... Speak to Zyra!" : "Talk to Light Orb"}
+                          </span>
+                          <span className="text-[11px] text-amber-700 font-medium truncate">
+                            {listeningFeedback || "Tap and ask your question aloud"}
+                          </span>
+                        </div>
+                      </motion.button>
+                    </div>
+                  )}
+
+                  {/* Pre-defined Socratic Inquiry Chips */}
+                  <div className="flex flex-col gap-2 pt-1 border-t border-storybook-muted/40">
+                    <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 px-1">
+                      Or Tap a Question
+                    </span>
+                    <div className="flex flex-col gap-2">
+                      {SOCRATIC_INQUIRY_CHIPS.map((chip) => (
+                        <motion.button
+                          key={chip.id}
+                          type="button"
+                          onClick={() => handleChipClick(chip.id)}
+                          whileTap={{ scale: 0.97 }}
+                          className="w-full min-h-[56px] p-3 rounded-xl bg-white hover:bg-amber-50/70 border border-slate-200 hover:border-amber-300 text-left flex items-center justify-between text-slate-700 font-medium transition-all shadow-sm cursor-pointer"
+                        >
+                          <div className="flex items-center gap-2.5">
+                            <span className="text-lg select-none" aria-hidden="true">
+                              {CHIP_ICONS[chip.id] || "💬"}
+                            </span>
+                            <span className="text-xs sm:text-sm font-semibold text-slate-800">
+                              {chip.label}
+                            </span>
+                          </div>
+                          <span className="text-amber-500 text-base font-bold select-none">›</span>
+                        </motion.button>
+                      ))}
+                    </div>
+                  </div>
+                </>
+              )}
+
+              {/* Bottom Dismissal Button for easy pediatric tap-to-close when inquiries are open */}
+              {showInquiries && (
+                <div className="pt-2 border-t border-storybook-muted/30">
                   <motion.button
                     type="button"
-                    onClick={handleStartListening}
+                    onClick={handleClose}
                     whileTap={{ scale: 0.97 }}
-                    className={`w-full min-h-[56px] px-4 py-3 rounded-2xl border-2 flex items-center gap-3 transition-all cursor-pointer select-none ${
-                      isListening
-                        ? "bg-amber-100 border-amber-400 text-amber-950 shadow-md ring-4 ring-amber-300/60 animate-pulse"
-                        : "bg-gradient-to-r from-amber-50/90 to-yellow-50/90 hover:from-amber-100 hover:to-yellow-100 border-amber-200 text-amber-900 shadow-sm"
-                    }`}
+                    className="w-full min-h-[48px] py-3 px-4 rounded-xl bg-slate-100 hover:bg-slate-200 active:bg-slate-300 text-slate-700 font-bold text-sm flex items-center justify-center gap-2 cursor-pointer transition-colors shadow-sm select-none"
                   >
-                    <div
-                      className={`w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 ${
-                        isListening ? "bg-amber-500 text-white animate-bounce" : "bg-amber-300/80 text-amber-900"
-                      }`}
-                    >
-                      <Mic className="w-5 h-5" />
-                    </div>
-                    <div className="flex flex-col text-left overflow-hidden">
-                      <span className="text-xs sm:text-sm font-bold leading-tight">
-                        {isListening ? "Listening... Speak to Zyra!" : "Talk to Light Orb"}
-                      </span>
-                      <span className="text-[11px] text-amber-700 font-medium truncate">
-                        {listeningFeedback || "Tap and ask your question aloud"}
-                      </span>
-                    </div>
+                    <span>Keep Playing</span>
+                    <span className="text-xs">✕</span>
                   </motion.button>
                 </div>
               )}
-
-              {/* Pre-defined Socratic Inquiry Chips */}
-              <div className="flex flex-col gap-2 pt-1 border-t border-storybook-muted/40">
-                <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 px-1">
-                  Or Tap a Question
-                </span>
-                <div className="flex flex-col gap-2">
-                  {SOCRATIC_INQUIRY_CHIPS.map((chip) => (
-                    <motion.button
-                      key={chip.id}
-                      type="button"
-                      onClick={() => handleChipClick(chip.id)}
-                      whileTap={{ scale: 0.97 }}
-                      className="w-full min-h-[56px] p-3 rounded-xl bg-white hover:bg-amber-50/70 border border-slate-200 hover:border-amber-300 text-left flex items-center justify-between text-slate-700 font-medium transition-all shadow-sm cursor-pointer"
-                    >
-                      <div className="flex items-center gap-2.5">
-                        <span className="text-lg select-none" aria-hidden="true">
-                          {CHIP_ICONS[chip.id] || "💬"}
-                        </span>
-                        <span className="text-xs sm:text-sm font-semibold text-slate-800">
-                          {chip.label}
-                        </span>
-                      </div>
-                      <span className="text-amber-500 text-base font-bold select-none">›</span>
-                    </motion.button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Bottom Dismissal Button for easy pediatric tap-to-close */}
-              <div className="pt-2 border-t border-storybook-muted/30">
-                <motion.button
-                  type="button"
-                  onClick={handleClose}
-                  whileTap={{ scale: 0.97 }}
-                  className="w-full min-h-[48px] py-3 px-4 rounded-xl bg-slate-100 hover:bg-slate-200 active:bg-slate-300 text-slate-700 font-bold text-sm flex items-center justify-center gap-2 cursor-pointer transition-colors shadow-sm select-none"
-                >
-                  <span>Keep Playing</span>
-                  <span className="text-xs">✕</span>
-                </motion.button>
-              </div>
             </motion.div>
           )}
         </AnimatePresence>

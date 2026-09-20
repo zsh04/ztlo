@@ -256,8 +256,11 @@ export class MentorSystem {
    */
   static recordPlayerMove(mentor: MentorComponent): void {
     mentor.idleSeconds = 0;
-    if (mentor.state === "idle_nudge") {
-      mentor.state = "idle_observing";
+    if (mentor.state === "idle_nudge" || mentor.state === "success_affirmation") {
+      mentor.isBubbleOpen = false;
+      if (mentor.state === "idle_nudge") {
+        mentor.state = "idle_observing";
+      }
     }
   }
 
