@@ -11,6 +11,10 @@ const PRECACHE_ASSETS = [
   '/favicon.svg',
   '/manifest.json',
   '/journeys.html',
+  '/assets/atlases/atlas-global-entities.json',
+  '/assets/atlases/atlas-global-entities.webp',
+  '/assets/atlases/atlas-shrine-environment.json',
+  '/assets/atlases/atlas-shrine-environment.webp',
 ];
 
 self.addEventListener('install', (event) => {
@@ -57,11 +61,13 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Next.js static bundles and immutable assets: Cache-First strategy
+  // Next.js static bundles, sprite atlases, and immutable assets: Cache-First strategy
   if (
     url.pathname.startsWith('/_next/static/') ||
+    url.pathname.startsWith('/assets/atlases/') ||
     url.pathname.endsWith('.svg') ||
     url.pathname.endsWith('.png') ||
+    url.pathname.endsWith('.webp') ||
     url.pathname.endsWith('.woff2')
   ) {
     event.respondWith(

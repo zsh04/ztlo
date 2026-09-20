@@ -15,11 +15,15 @@ test("PWA Service Worker: public/sw.js configures precache and CacheStorage stra
   // Validate Cache Name
   assert.ok(swContent.includes("ztlo-v1-static"), "SW must define cache name 'ztlo-v1-static'");
 
-  // Validate Precaching of Core Assets
+  // Validate Precaching of Core Assets & Texture Atlases
   assert.ok(swContent.includes("'/'"), "Must precache root route");
   assert.ok(swContent.includes("'/favicon.svg'"), "Must precache favicon.svg");
   assert.ok(swContent.includes("'/manifest.json'"), "Must precache manifest.json");
   assert.ok(swContent.includes("'/journeys.html'"), "Must precache journeys.html");
+  assert.ok(swContent.includes("'/assets/atlases/atlas-global-entities.json'"), "Must precache global entities atlas json");
+  assert.ok(swContent.includes("'/assets/atlases/atlas-global-entities.webp'"), "Must precache global entities atlas webp");
+  assert.ok(swContent.includes("'/assets/atlases/atlas-shrine-environment.json'"), "Must precache shrine environment atlas json");
+  assert.ok(swContent.includes("'/assets/atlases/atlas-shrine-environment.webp'"), "Must precache shrine environment atlas webp");
 
   // Validate Lifecycle Event Listeners
   assert.ok(swContent.includes("addEventListener('install'"), "Must handle install event");
