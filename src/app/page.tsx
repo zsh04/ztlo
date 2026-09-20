@@ -7,6 +7,7 @@ import { ALL_SHRINE_ROOMS } from "../game/rooms";
 import { HudOverlay } from "../components/ui/HudOverlay";
 import { LightOrbCompanion } from "../components/mentor/LightOrbCompanion";
 import { TouchFeedback } from "../components/ui/TouchFeedback";
+import { useWebLLM } from "../hooks/useWebLLM";
 import { GridPoint, TouchFeedbackEvent, RoomDefinition, SocraticDialog } from "../types/game";
 
 // Next.js dynamic import with ssr: false for client-only Phaser 3 canvas initialization
@@ -38,6 +39,10 @@ export default function GamePage() {
   );
   const [isMentorOpen, setIsMentorOpen] = useState(false);
   const [canUndo, setCanUndo] = useState(false);
+
+  const { generateHint: generateWebLLMHint, status: webLLMStatus } = useWebLLM({
+    autoInit: true,
+  });
 
   const stopPlayerMovement = useCallback(() => {
     if (moveTimerRef.current) {
@@ -80,14 +85,38 @@ export default function GamePage() {
     setCanUndo(world.canUndo());
   }, [stopPlayerMovement]);
 
-  const handleVoiceQuery = useCallback((transcript: string) => {
+  const handleVoiceQuery = useCallback(async (transcript: string) => {
     stopPlayerMovement();
     const world = worldRef.current;
     const result = world.answerVoiceQuery(transcript);
     setMentorDialog(result.dialog);
     setIsMentorOpen(true);
     setCanUndo(world.canUndo());
-  }, [stopPlayerMovement]);
+
+    if (webLLMStatus === "ready") {
+      try {
+        const llmHint = await generateWebLLMHint(
+          {
+            entities: world.getEntityList(),
+            roomId: currentRoom.id,
+            roomName: currentRoom.name,
+            objective: currentRoom.objective,
+          },
+          transcript
+        );
+        if (llmHint) {
+          setMentorDialog((prev) => ({
+            ...prev,
+            speaker: "Light Orb",
+            text: llmHint,
+            promptType: "socratic_hint",
+          }));
+        }
+      } catch {
+        // Transparently retain deterministic result on error
+      }
+    }
+  }, [currentRoom, generateWebLLMHint, stopPlayerMovement, webLLMStatus]);
 
   useEffect(() => {
     loadRoom(currentRoom);
@@ -298,7 +327,7 @@ export default function GamePage() {
     loadRoom(currentRoom);
   };
 
-  const handleOrbTap = () => {
+  const handleOrbTap = async () => {
     const world = worldRef.current;
     if (isMentorOpen) {
       world.setMentorBubbleOpen(false);
@@ -307,6 +336,27 @@ export default function GamePage() {
       const hint = world.requestMentorDirectHint();
       setMentorDialog(hint);
       setIsMentorOpen(true);
+
+      if (webLLMStatus === "ready") {
+        try {
+          const llmHint = await generateWebLLMHint({
+            entities: world.getEntityList(),
+            roomId: currentRoom.id,
+            roomName: currentRoom.name,
+            objective: currentRoom.objective,
+          });
+          if (llmHint) {
+            setMentorDialog((prev) => ({
+              ...prev,
+              speaker: "Light Orb",
+              text: llmHint,
+              promptType: "socratic_hint",
+            }));
+          }
+        } catch {
+          // Transparently retain deterministic hint on error
+        }
+      }
     }
   };
 
