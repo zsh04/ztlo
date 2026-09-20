@@ -183,3 +183,140 @@ test("MentorSystem: Strict absence of imperative spoil keywords across all promp
   const initial = MentorSystem.createInitialState();
   assertNoImperativeSpoilers(initial.currentDialog.text);
 });
+
+test("MentorSystem: Corner entrapment detection prompts gentle rewind", () => {
+  const mentor = MentorSystem.createInitialState();
+  const player = createPlayerEntity("player-1", 1, 0);
+  // Place stone at (0, 0) in a 16x9 room - bounded by x=0 (West) and y=0 (North)
+  const stone = createStoneBlockEntity("stone-1", 0, 0);
+  const entities = [player, stone];
+
+  const dialog = MentorSystem.update(mentor, entities, 1, 16, 9);
+  assert.equal(mentor.state, "corner_trap");
+  assert.equal(mentor.isBubbleOpen, true);
+  assert.equal(
+    dialog.text,
+    "Oops, that corner is tight! Would you like to rewind one step together?"
+  );
+  assertNoImperativeSpoilers(dialog.text);
+
+  // When block is moved out of corner, corner_trap reverts
+  stone.position.x = 5;
+  stone.position.y = 5;
+  MentorSystem.update(mentor, entities, 0, 16, 9);
+  assert.equal(mentor.state, "idle_observing");
+});
+
+test("MentorSystem: Block resting on a pressure plate is NOT treated as corner-trapped", () => {
+  const mentor = MentorSystem.createInitialState();
+  const player = createPlayerEntity("player-1", 1, 0);
+  // Stone at corner (0, 0), but resting on a pressure plate at (0, 0)
+  const stone = createStoneBlockEntity("stone-1", 0, 0);
+  const plate = createPressurePlateEntity("plate-1", 0, 0, "door-1");
+  const entities = [player, stone, plate];
+
+  MentorSystem.update(mentor, entities, 1, 16, 9);
+  assert.notEqual(mentor.state, "corner_trap");
+});
+
+test("MentorSystem: Pre-defined Socratic inquiry chips provide guidance without spoilers", () => {
+  const mentor = MentorSystem.createInitialState();
+
+  // Chip 1: "What should we look for?"
+  const res1 = MentorSystem.handleInquiry(mentor, "look_for");
+  assert.equal(mentor.state, "direct_hint_request");
+  assert.equal(mentor.isBubbleOpen, true);
+  assert.equal(res1.triggersUndo, false);
+  assert.ok(
+    res1.dialog.text.includes("Look closely at the floor! Do you see any special stones or plates that look like they need a hug?")
+  );
+  assertNoImperativeSpoilers(res1.dialog.text);
+
+  // Chip 2: "Why did the block stop?"
+  const res2 = MentorSystem.handleInquiry(mentor, "why_stop");
+  assert.equal(res2.triggersUndo, false);
+  assert.ok(
+    res2.dialog.text.includes("Heavy stones love the floor and stop quickly, but ice loves to slide!")
+  );
+  assertNoImperativeSpoilers(res2.dialog.text);
+
+  // Chip 3: "Can we take a step back?"
+  const res3 = MentorSystem.handleInquiry(mentor, "step_back");
+  assert.equal(res3.triggersUndo, true);
+  assert.equal(
+    res3.dialog.text,
+    "Of course! Let's take one step back together."
+  );
+  assertNoImperativeSpoilers(res3.dialog.text);
+});
+
+test("GameWorld: undoLastMove restores coordinates without clearing room state", () => {
+  const { GameWorld } = require("../world");
+  const room = {
+    id: "test-room",
+    name: "Test Room",
+    width: 16,
+    height: 9,
+    objective: "Test objective",
+    hintKey: "test",
+    entities: [],
+  };
+
+  const world = new GameWorld(room);
+  const player = createPlayerEntity("player-1", 2, 4);
+  const stone = createStoneBlockEntity("stone-1", 3, 4);
+  const plate = createPressurePlateEntity("plate-1", 4, 4, "door-1");
+  const door = createDoorEntity("door-1", 10, 4);
+  world.setEntities([player, stone, plate, door]);
+
+  assert.equal(world.canUndo(), false);
+
+  // Push stone East: player pushes stone from (3, 4) to (4, 4) onto plate!
+  const pushResult = world.pushBlock("stone-1", { x: 1, y: 0 });
+  assert.equal(pushResult.success, true);
+  assert.equal(stone.position.x, 4);
+  assert.equal(stone.position.y, 4);
+  assert.equal(plate.trigger?.isDepressed, true);
+  assert.equal(door.collider?.isSolid, false); // Door opened!
+  assert.equal(world.canUndo(), true);
+
+  // Now execute Undo
+  const undoSuccess = world.undoLastMove();
+  assert.equal(undoSuccess, true);
+  assert.equal(stone.position.x, 3);
+  assert.equal(stone.position.y, 4);
+  assert.equal(plate.trigger?.isDepressed, false);
+  assert.equal(door.collider?.isSolid, true); // Door is closed again
+  assert.equal(world.canUndo(), false);
+});
+
+test("GameWorld: answerInquiryChip step_back triggers gentle undo", () => {
+  const { GameWorld } = require("../world");
+  const room = {
+    id: "test-room",
+    name: "Test Room",
+    width: 16,
+    height: 9,
+    objective: "Test objective",
+    hintKey: "test",
+    entities: [],
+  };
+
+  const world = new GameWorld(room);
+  const player = createPlayerEntity("player-1", 2, 4);
+  const stone = createStoneBlockEntity("stone-1", 3, 4);
+  world.setEntities([player, stone]);
+
+  // Push stone
+  world.pushBlock("stone-1", { x: 1, y: 0 });
+  assert.equal(stone.position.x, 4);
+  assert.equal(world.canUndo(), true);
+
+  // Child asks "Can we take a step back?"
+  const inquiryResult = world.answerInquiryChip("step_back");
+  assert.equal(inquiryResult.triggersUndo, true);
+  assert.equal(inquiryResult.dialog.text, "Of course! Let's take one step back together.");
+  // Stone restored back to 3
+  assert.equal(stone.position.x, 3);
+  assert.equal(world.canUndo(), false);
+});

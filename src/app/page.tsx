@@ -82,6 +82,7 @@ export default function GamePage() {
     worldRef.current.getMentorDialog()
   );
   const [isMentorOpen, setIsMentorOpen] = useState(false);
+  const [canUndo, setCanUndo] = useState(false);
 
   const stopPlayerMovement = useCallback(() => {
     if (moveTimerRef.current) {
@@ -102,6 +103,29 @@ export default function GamePage() {
     setInactiveSeconds(0);
     setMentorDialog(world.getMentorDialog());
     setIsMentorOpen(world.isMentorBubbleOpen());
+    setCanUndo(false);
+  }, [stopPlayerMovement]);
+
+  const handleUndo = useCallback(() => {
+    stopPlayerMovement();
+    const world = worldRef.current;
+    const undone = world.undoLastMove();
+    if (undone) {
+      setEntities([...world.getEntityList()]);
+      setMentorDialog(world.getMentorDialog());
+      setIsMentorOpen(world.isMentorBubbleOpen());
+      setCanUndo(world.canUndo());
+    }
+  }, [stopPlayerMovement]);
+
+  const handleSelectInquiryChip = useCallback((chipId: string) => {
+    stopPlayerMovement();
+    const world = worldRef.current;
+    const result = world.answerInquiryChip(chipId);
+    setMentorDialog(result.dialog);
+    setIsMentorOpen(true);
+    setEntities([...world.getEntityList()]);
+    setCanUndo(world.canUndo());
   }, [stopPlayerMovement]);
 
   useEffect(() => {
@@ -201,6 +225,7 @@ export default function GamePage() {
         setEntities([...world.getEntityList()]);
         setMentorDialog(world.getMentorDialog());
         setIsMentorOpen(world.isMentorBubbleOpen());
+        setCanUndo(world.canUndo());
 
         if (targetBlock.pushable?.isSliding) {
           const slideDistance = pushResult.newPath.length;
@@ -232,6 +257,7 @@ export default function GamePage() {
     }
 
     world.startPlayerMovement(path);
+    setCanUndo(world.canUndo());
 
     const stepInterval = player.movement?.stepIntervalMs || 150;
 
@@ -287,6 +313,7 @@ export default function GamePage() {
               setEntities([...world.getEntityList()]);
               setMentorDialog(world.getMentorDialog());
               setIsMentorOpen(world.isMentorBubbleOpen());
+              setCanUndo(world.canUndo());
 
               if (targetBlock.pushable?.isSliding) {
                 const slideDistance = pushResult.newPath.length;
@@ -348,6 +375,8 @@ export default function GamePage() {
         roomName={currentRoom.name}
         objective={currentRoom.objective}
         onResetRoom={handleResetRoom}
+        onUndo={handleUndo}
+        canUndo={canUndo}
       />
 
       {/* Socratic Mentor Companion */}
@@ -357,6 +386,9 @@ export default function GamePage() {
         isOpen={isMentorOpen}
         onOrbTap={handleOrbTap}
         onCloseBubble={handleCloseMentorBubble}
+        onSelectChip={handleSelectInquiryChip}
+        onUndo={handleUndo}
+        canUndo={canUndo}
       />
 
       {/* 16x9 Interactive CSS Grid Room */}

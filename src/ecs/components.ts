@@ -6,7 +6,8 @@ export type MentorState =
   | "block_failed_push"
   | "plate_curiosity"
   | "direct_hint_request"
-  | "success_affirmation";
+  | "success_affirmation"
+  | "corner_trap";
 
 export interface Component {
   type: string;
