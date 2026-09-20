@@ -94,9 +94,9 @@ test("Pure ECS integration: solving 8x6 Shrine of Equilibrium unseals the gate",
 });
 
 test("ALL_SHRINE_ROOMS contains valid room definitions with unique IDs", () => {
-  assert.equal(ALL_SHRINE_ROOMS.length, 6);
+  assert.equal(ALL_SHRINE_ROOMS.length, 7);
   const ids = new Set(ALL_SHRINE_ROOMS.map((r) => r.id));
-  assert.equal(ids.size, 6);
+  assert.equal(ids.size, 7);
 
   for (const room of ALL_SHRINE_ROOMS) {
     assert.ok(room.width >= 8);
@@ -140,4 +140,78 @@ test("Shrine 05 (Chamber of Reflections, 8x6): Aligning mirror activates solar r
   assert.equal(mirror.optics?.angle, 45);
   assert.equal(receptor.optics?.isActivated, false);
   assert.equal(door.collider?.isSolid, true);
+});
+
+test("Shrine 06 (Chamber of Logic, 8x6): Stepping on switches in sequence unseals logic door", () => {
+  const room = ALL_SHRINE_ROOMS.find((r) => r.id === "shrine-06")!;
+  assert.ok(room);
+  assert.equal(room.width, 8);
+  assert.equal(room.height, 6);
+
+  const world = new GameWorld(room);
+  world.setEntities(JSON.parse(JSON.stringify(room.entities)));
+
+  const gate = world.entities.get("gate-1")!;
+  const door = world.entities.get("door-logic")!;
+
+  assert.equal(gate.logicGate?.isSatisfied, false);
+  assert.equal(door.collider?.isSolid, true);
+
+  // Walk player: (1, 2) -> (2, 4) [switch 1]
+  world.startPlayerMovement([
+    { x: 1, y: 2 },
+    { x: 2, y: 2 },
+    { x: 2, y: 3 },
+    { x: 2, y: 4 },
+  ]);
+  world.stepPlayerMovement();
+  world.stepPlayerMovement();
+  world.stepPlayerMovement();
+  assert.deepEqual(gate.logicGate?.currentSequence, ["switch-1"]);
+  assert.equal(gate.logicGate?.isSatisfied, false);
+
+  // Walk player: (2, 4) -> (4, 2) [switch 2]
+  world.startPlayerMovement([
+    { x: 2, y: 4 },
+    { x: 3, y: 4 },
+    { x: 4, y: 4 },
+    { x: 4, y: 3 },
+    { x: 4, y: 2 },
+  ]);
+  world.stepPlayerMovement();
+  world.stepPlayerMovement();
+  world.stepPlayerMovement();
+  world.stepPlayerMovement();
+  assert.deepEqual(gate.logicGate?.currentSequence, ["switch-1", "switch-2"]);
+  assert.equal(gate.logicGate?.isSatisfied, false);
+
+  // Walk player: (4, 2) -> (5, 4) [switch 3]
+  world.startPlayerMovement([
+    { x: 4, y: 2 },
+    { x: 5, y: 2 },
+    { x: 5, y: 3 },
+    { x: 5, y: 4 },
+  ]);
+  world.stepPlayerMovement();
+  world.stepPlayerMovement();
+  world.stepPlayerMovement();
+  assert.deepEqual(gate.logicGate?.currentSequence, ["switch-1", "switch-2", "switch-3"]);
+  assert.equal(gate.logicGate?.isSatisfied, true);
+  assert.equal(door.collider?.isSolid, false);
+
+  // Walk player to unsealed door at (7, 2)
+  world.startPlayerMovement([
+    { x: 5, y: 4 },
+    { x: 6, y: 4 },
+    { x: 7, y: 4 },
+    { x: 7, y: 3 },
+    { x: 7, y: 2 },
+  ]);
+  world.stepPlayerMovement();
+  world.stepPlayerMovement();
+  world.stepPlayerMovement();
+  world.stepPlayerMovement();
+  const player = world.getPlayer()!;
+  assert.equal(player.position.x, door.position.x);
+  assert.equal(player.position.y, door.position.y);
 });

@@ -91,9 +91,23 @@ export interface OpticsComponent extends Component {
   beamColor?: string; // e.g. "#FACC15"
 }
 
+
+export type LogicGateType = "and" | "or" | "sequential";
+
+export interface LogicGateComponent extends Component {
+  type: "logicGate";
+  gateType: LogicGateType;
+  targetDoorId: string;
+  inputEntityIds: string[];
+  requiredSequence?: string[];
+  currentSequence: string[];
+  isSatisfied: boolean;
+  conduitTiles?: Array<{ x: number; y: number }>;
+}
+
 export interface RenderableComponent extends Component {
   type: "renderable";
-  shape: "avatar" | "stone" | "ice" | "plate" | "wall" | "door" | "npc" | "emitter" | "mirror" | "receptor";
+  shape: "avatar" | "stone" | "ice" | "plate" | "wall" | "door" | "npc" | "emitter" | "mirror" | "receptor" | "gate" | "switch";
   colorToken: string;
   zIndex: number;
 }

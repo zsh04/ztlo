@@ -10,6 +10,8 @@ import {
   createLightEmitterEntity,
   createMirrorEntity,
   createReceptorEntity,
+  createLogicGateEntity,
+  createFloorSwitchEntity,
 } from "../ecs/entities";
 
 /**
@@ -214,6 +216,74 @@ export const SHRINE_05_CHAMBER_OF_REFLECTIONS: RoomDefinition = {
   ],
 };
 
+
+/**
+ * Level 1-7 Canonical Logic Circuit Specification: Chamber of Logic
+ * Conforms to Issue #11
+ * Features sequential floor switches, illuminated conduits, and logic gate unsealing portal.
+ */
+export const SHRINE_06_CHAMBER_OF_LOGIC: RoomDefinition = {
+  id: "shrine-06",
+  name: "Chamber of Logic",
+  width: 8,
+  height: 6,
+  objective: "Step on the ancient runic floor switches in harmonic sequence (I -> II -> III) to power the logic circuit",
+  hintKey: "logic_hint",
+  entities: [
+    createPlayerEntity("player-1", 1, 2),
+    createFloorSwitchEntity("switch-1", 2, 4, "gate-1"),
+    createFloorSwitchEntity("switch-2", 4, 2, "gate-1"),
+    createFloorSwitchEntity("switch-3", 5, 4, "gate-1"),
+    createLogicGateEntity(
+      "gate-1",
+      4,
+      3,
+      "sequential",
+      "door-logic",
+      ["switch-1", "switch-2", "switch-3"],
+      ["switch-1", "switch-2", "switch-3"],
+      [
+        { x: 2, y: 4 },
+        { x: 4, y: 3 },
+        { x: 5, y: 4 },
+        { x: 7, y: 2 },
+      ]
+    ),
+    createDoorEntity("door-logic", 7, 2),
+
+    // Obstacle column
+    createWallEntity("wall-logic-col", 3, 3),
+
+    // Perimeter boundary walls
+    createWallEntity("wall-logic-t0", 0, 0),
+    createWallEntity("wall-logic-t1", 1, 0),
+    createWallEntity("wall-logic-t2", 2, 0),
+    createWallEntity("wall-logic-t3", 3, 0),
+    createWallEntity("wall-logic-t4", 4, 0),
+    createWallEntity("wall-logic-t5", 5, 0),
+    createWallEntity("wall-logic-t6", 6, 0),
+    createWallEntity("wall-logic-t7", 7, 0),
+
+    createWallEntity("wall-logic-b0", 0, 5),
+    createWallEntity("wall-logic-b1", 1, 5),
+    createWallEntity("wall-logic-b2", 2, 5),
+    createWallEntity("wall-logic-b3", 3, 5),
+    createWallEntity("wall-logic-b4", 4, 5),
+    createWallEntity("wall-logic-b5", 5, 5),
+    createWallEntity("wall-logic-b6", 6, 5),
+    createWallEntity("wall-logic-b7", 7, 5),
+
+    createWallEntity("wall-logic-l1", 0, 1),
+    createWallEntity("wall-logic-l2", 0, 2),
+    createWallEntity("wall-logic-l3", 0, 3),
+    createWallEntity("wall-logic-l4", 0, 4),
+
+    createWallEntity("wall-logic-r1", 7, 1),
+    createWallEntity("wall-logic-r3", 7, 3),
+    createWallEntity("wall-logic-r4", 7, 4),
+  ],
+};
+
 export const ALL_SHRINE_ROOMS: RoomDefinition[] = [
   SHRINE_00_EQUILIBRIUM,
   SHRINE_01_STILL_WEIGHT,
@@ -221,4 +291,5 @@ export const ALL_SHRINE_ROOMS: RoomDefinition[] = [
   SHRINE_03_HARMONY_GATES,
   SHRINE_04_GROVE_OF_HARMONY,
   SHRINE_05_CHAMBER_OF_REFLECTIONS,
+  SHRINE_06_CHAMBER_OF_LOGIC,
 ];

@@ -10,6 +10,8 @@ import {
   NpcEmotionState,
   OpticsComponent,
   CardinalDirection,
+  LogicGateComponent,
+  LogicGateType,
 } from "./components";
 
 export interface Entity {
@@ -22,6 +24,7 @@ export interface Entity {
   mentor?: MentorComponent;
   npc?: NpcComponent;
   optics?: OpticsComponent;
+  logicGate?: LogicGateComponent;
   renderable: RenderableComponent;
 }
 
@@ -211,5 +214,52 @@ export function createReceptorEntity(
       beamColor: requiredBeamColor,
     },
     renderable: { type: "renderable", shape: "receptor", colorToken: "storybook-purple", zIndex: 4 },
+  };
+}
+
+export function createLogicGateEntity(
+  id: string,
+  x: number,
+  y: number,
+  gateType: LogicGateType,
+  targetDoorId: string,
+  inputEntityIds: string[],
+  requiredSequence?: string[],
+  conduitTiles?: Array<{ x: number; y: number }>
+): Entity {
+  return {
+    id,
+    position: { type: "position", x, y, previousX: x, previousY: y },
+    collider: { type: "collider", isSolid: false, passableByPlayer: true },
+    logicGate: {
+      type: "logicGate",
+      gateType,
+      targetDoorId,
+      inputEntityIds,
+      requiredSequence,
+      currentSequence: [],
+      isSatisfied: false,
+      conduitTiles,
+    },
+    renderable: { type: "renderable", shape: "gate", colorToken: "storybook-magic", zIndex: 1 },
+  };
+}
+
+export function createFloorSwitchEntity(
+  id: string,
+  x: number,
+  y: number,
+  activatesTargetId: string
+): Entity {
+  return {
+    id,
+    position: { type: "position", x, y, previousX: x, previousY: y },
+    trigger: {
+      type: "trigger",
+      triggerId: id,
+      isDepressed: false,
+      activatesTargetId,
+    },
+    renderable: { type: "renderable", shape: "switch", colorToken: "storybook-gold", zIndex: 1 },
   };
 }
