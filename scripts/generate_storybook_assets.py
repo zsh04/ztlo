@@ -1301,6 +1301,13 @@ def generate_all_assets():
         assets_created.append(fp)
         print(f"  [Energy Conduit]  -> {fn}")
 
+    # --------------------------------------------------------------------------
+    # F. INTERACTIVE PUZZLE ENTITIES (Shrines 00-06, Issue #53)
+    # --------------------------------------------------------------------------
+    from generate_puzzle_entities import generate_interactive_entities
+    interactive_paths = generate_interactive_entities()
+    assets_created.extend(interactive_paths)
+
     print(f"\nSuccessfully generated {len(assets_created)} SVG assets.")
     return assets_created
 
