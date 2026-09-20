@@ -37,6 +37,7 @@ export default function GamePage() {
     worldRef.current.getMentorDialog()
   );
   const [isMentorOpen, setIsMentorOpen] = useState(false);
+  const [canUndo, setCanUndo] = useState(false);
 
   const stopPlayerMovement = useCallback(() => {
     if (moveTimerRef.current) {
@@ -56,6 +57,27 @@ export default function GamePage() {
     setInactiveSeconds(0);
     setMentorDialog(world.getMentorDialog());
     setIsMentorOpen(world.isMentorBubbleOpen());
+    setCanUndo(false);
+  }, [stopPlayerMovement]);
+
+  const handleUndo = useCallback(() => {
+    stopPlayerMovement();
+    const world = worldRef.current;
+    const undone = world.undoLastMove();
+    if (undone) {
+      setMentorDialog(world.getMentorDialog());
+      setIsMentorOpen(world.isMentorBubbleOpen());
+      setCanUndo(world.canUndo());
+    }
+  }, [stopPlayerMovement]);
+
+  const handleSelectInquiryChip = useCallback((chipId: string) => {
+    stopPlayerMovement();
+    const world = worldRef.current;
+    const result = world.answerInquiryChip(chipId);
+    setMentorDialog(result.dialog);
+    setIsMentorOpen(true);
+    setCanUndo(world.canUndo());
   }, [stopPlayerMovement]);
 
   useEffect(() => {
@@ -152,6 +174,7 @@ export default function GamePage() {
         world.evaluateTriggers();
         setMentorDialog(world.getMentorDialog());
         setIsMentorOpen(world.isMentorBubbleOpen());
+        setCanUndo(world.canUndo());
 
         if (targetBlock.pushable?.isSliding) {
           const slideDistance = pushResult.newPath.length;
@@ -182,6 +205,8 @@ export default function GamePage() {
     }
 
     world.startPlayerMovement(path);
+    setCanUndo(world.canUndo());
+
     const stepInterval = player.movement?.stepIntervalMs || 150;
 
     const advanceStep = () => {
@@ -223,6 +248,7 @@ export default function GamePage() {
               world.evaluateTriggers();
               setMentorDialog(world.getMentorDialog());
               setIsMentorOpen(world.isMentorBubbleOpen());
+              setCanUndo(world.canUndo());
 
               if (targetBlock.pushable?.isSliding) {
                 const slideDistance = pushResult.newPath.length;
@@ -290,13 +316,14 @@ export default function GamePage() {
 
       {/* Floating React UI Overlay with Touch Pass-Through (pointer-events-none container) */}
       <div className="absolute inset-0 pointer-events-none z-30 flex flex-col justify-between p-4">
-        {/* Top Floating Bar: HUD (Room Title, Objective, Undo Button) and Light Orb Mentor */}
+        {/* Top Floating Bar: HUD (Room Title, Objective, Reset, Undo) and Light Orb Mentor */}
         <div className="flex items-start justify-between w-full">
           <HudOverlay
             roomName={currentRoom.name}
             objective={currentRoom.objective}
             onResetRoom={handleResetRoom}
-            onUndo={handleResetRoom}
+            onUndo={handleUndo}
+            canUndo={canUndo}
           />
 
           <LightOrbCompanion
@@ -305,6 +332,9 @@ export default function GamePage() {
             isOpen={isMentorOpen}
             onOrbTap={handleOrbTap}
             onCloseBubble={handleCloseMentorBubble}
+            onSelectChip={handleSelectInquiryChip}
+            onUndo={handleUndo}
+            canUndo={canUndo}
           />
         </div>
       </div>
