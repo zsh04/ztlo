@@ -4,6 +4,8 @@
   "private": true,
   "scripts": {
     "dev": "next dev --experimental-https -H 0.0.0.0",
+    "build:atlases": "node scripts/build-atlases.mjs",
+    "prebuild": "npm run build:atlases",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
