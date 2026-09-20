@@ -2,6 +2,32 @@ import { Entity } from "../entities";
 import { MentorComponent, MentorState } from "../components";
 import { SocraticDialog } from "../../types/game";
 
+export interface InquiryChip {
+  id: string;
+  label: string;
+  response: string;
+}
+
+export const SOCRATIC_INQUIRY_CHIPS: InquiryChip[] = [
+  {
+    id: "look_for",
+    label: "What should we look for?",
+    response:
+      "Look closely at the floor! Do you see any special stones or plates that look like they need a hug?",
+  },
+  {
+    id: "why_stop",
+    label: "Why did the block stop?",
+    response:
+      "Heavy stones love the floor and stop quickly, but ice loves to slide! Where do you think it wants to go?",
+  },
+  {
+    id: "step_back",
+    label: "Can we take a step back?",
+    response: "Of course! Let's take one step back together.",
+  },
+];
+
 export class MentorSystem {
   /**
    * Constructs the initial MentorComponent state.
@@ -24,12 +50,14 @@ export class MentorSystem {
 
   /**
    * Main state machine evaluation loop.
-   * Evaluates puzzle state, player standing duration, unproductive collisions, and idle timer.
+   * Evaluates puzzle state, corner traps, player standing duration, unproductive collisions, and idle timer.
    */
   static update(
     mentor: MentorComponent,
     entities: Entity[],
-    dtSeconds: number = 1
+    dtSeconds: number = 1,
+    roomWidth: number = 16,
+    roomHeight: number = 9
   ): SocraticDialog {
     const doors = entities.filter((e) => e.renderable.shape === "door");
     const allDoorsUnlocked =
@@ -45,6 +73,26 @@ export class MentorSystem {
       };
       mentor.isBubbleOpen = true;
       return mentor.currentDialog;
+    }
+
+    // 2. Corner Entrapment Deadlock Detection
+    if (MentorSystem.isAnyBlockCornerTrapped(entities, roomWidth, roomHeight)) {
+      mentor.state = "corner_trap";
+      mentor.currentDialog = {
+        speaker: "Light Orb",
+        text: "Oops, that corner is tight! Would you like to rewind one step together?",
+        promptType: "socratic_hint",
+      };
+      mentor.isBubbleOpen = true;
+      return mentor.currentDialog;
+    } else if (mentor.state === "corner_trap") {
+      // Clear corner trap state once block is rewound out of the corner
+      mentor.state = "idle_observing";
+      mentor.currentDialog = {
+        speaker: "Light Orb",
+        text: "I am floating right beside you, Zyra. Take your time to look around!",
+        promptType: "neutral",
+      };
     }
 
     // 2. Plate Curiosity: Zyra standing on a pressure plate >= 3 seconds
@@ -274,5 +322,100 @@ export class MentorSystem {
       text: "Look around the room together with me! Do you notice anything that can be moved?",
       promptType: "socratic_hint",
     };
+  }
+
+  /**
+   * Handles pre-defined Socratic inquiry chip selection.
+   * STRICT PEDAGOGICAL RULE: No spoiling imperative commands.
+   */
+  static handleInquiry(
+    mentor: MentorComponent,
+    chipId: string
+  ): { dialog: SocraticDialog; triggersUndo: boolean } {
+    const chip = SOCRATIC_INQUIRY_CHIPS.find((c) => c.id === chipId);
+    if (!chip) {
+      return { dialog: mentor.currentDialog, triggersUndo: false };
+    }
+
+    mentor.state = "direct_hint_request";
+    mentor.currentDialog = {
+      speaker: "Light Orb",
+      text: chip.response,
+      promptType: "socratic_hint",
+    };
+    mentor.isBubbleOpen = true;
+
+    return {
+      dialog: mentor.currentDialog,
+      triggersUndo: chipId === "step_back",
+    };
+  }
+
+  /**
+   * Checks whether a specific pushable block is trapped in a corner formed by
+   * impassable room boundaries or solid obstacles without resting on a pressure plate.
+   */
+  static isBlockCornerTrapped(
+    block: Entity,
+    entities: Entity[],
+    roomWidth: number = 16,
+    roomHeight: number = 9
+  ): boolean {
+    if (!block.pushable) {
+      return false;
+    }
+
+    // A block resting on a pressure plate is active or solving, not deadlocked
+    const isOnPlate = entities.some(
+      (e) =>
+        e.trigger !== undefined &&
+        e.position.x === block.position.x &&
+        e.position.y === block.position.y
+    );
+    if (isOnPlate) {
+      return false;
+    }
+
+    const isObstacle = (x: number, y: number): boolean => {
+      // Room perimeter edges are solid boundaries
+      if (x < 0 || x >= roomWidth || y < 0 || y >= roomHeight) {
+        return true;
+      }
+      // Non-pushable solid colliders (walls, sealed doors) are impassable obstacles
+      return entities.some(
+        (e) =>
+          e.id !== block.id &&
+          e.position.x === x &&
+          e.position.y === y &&
+          e.collider?.isSolid &&
+          !e.pushable
+      );
+    };
+
+    const blockedNorth = isObstacle(block.position.x, block.position.y - 1);
+    const blockedSouth = isObstacle(block.position.x, block.position.y + 1);
+    const blockedWest = isObstacle(block.position.x - 1, block.position.y);
+    const blockedEast = isObstacle(block.position.x + 1, block.position.y);
+
+    return (
+      (blockedNorth && blockedWest) ||
+      (blockedNorth && blockedEast) ||
+      (blockedSouth && blockedWest) ||
+      (blockedSouth && blockedEast)
+    );
+  }
+
+  /**
+   * Checks whether any pushable block in the room is trapped in a corner deadlock.
+   */
+  static isAnyBlockCornerTrapped(
+    entities: Entity[],
+    roomWidth: number = 16,
+    roomHeight: number = 9
+  ): boolean {
+    const pushables = entities.filter((e) => e.pushable !== undefined);
+    return pushables.some((block) =>
+      MentorSystem.isBlockCornerTrapped(block, entities, roomWidth, roomHeight)
+    );
   }
 }
