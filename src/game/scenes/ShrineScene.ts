@@ -15,6 +15,7 @@ export interface ShrineSceneInitData {
   room?: RoomDefinition;
   onCellTap?: (point: GridPoint, screenX: number, screenY: number) => void;
   onRoomCompleted?: () => void;
+  onNpcTap?: (npc: Entity) => void;
 }
 
 export class ShrineScene extends Phaser.Scene {
@@ -22,6 +23,7 @@ export class ShrineScene extends Phaser.Scene {
   public room!: RoomDefinition;
   public onCellTap?: (point: GridPoint, screenX: number, screenY: number) => void;
   public onRoomCompleted?: () => void;
+  public onNpcTap?: (npc: Entity) => void;
 
   public static readonly CANVAS_WIDTH = 1280;
   public static readonly CANVAS_HEIGHT = 720;
@@ -41,6 +43,7 @@ export class ShrineScene extends Phaser.Scene {
   private entityTweens: Map<string, Phaser.Tweens.Tween> = new Map();
   private plateStates: Map<string, boolean> = new Map();
   private doorStates: Map<string, boolean> = new Map();
+  private npcSoothedStates: Map<string, boolean> = new Map();
   private lightOrbContainer?: Phaser.GameObjects.Container;
 
   constructor(config?: Phaser.Types.Scenes.SettingsConfig) {
@@ -63,6 +66,7 @@ export class ShrineScene extends Phaser.Scene {
 
     this.onCellTap = data?.onCellTap;
     this.onRoomCompleted = data?.onRoomCompleted;
+    this.onNpcTap = data?.onNpcTap;
   }
 
   public create(): void {
@@ -172,6 +176,7 @@ export class ShrineScene extends Phaser.Scene {
     this.entityTweens.clear();
     this.plateStates.clear();
     this.doorStates.clear();
+    this.npcSoothedStates.clear();
 
     const entities = this.world.getEntityList();
     // Sort entities by zIndex for proper rendering order (plates < doors/walls < blocks < player)
@@ -232,6 +237,22 @@ export class ShrineScene extends Phaser.Scene {
       case "wall":
         this.renderWallGraphic(graphics, this.tileSize);
         break;
+
+      case "npc":
+        const isSoothed = entity.npc?.isSoothed || false;
+        this.npcSoothedStates.set(entity.id, isSoothed);
+        this.renderNpcGraphic(graphics, this.tileSize, entity);
+        this.tweens.add({
+          targets: container,
+          scaleY: 1.05,
+          scaleX: 1.05,
+          duration: 1200,
+          yoyo: true,
+          repeat: -1,
+          ease: "Sine.easeInOut",
+        });
+        break;
+
     }
 
     this.entityContainers.set(entity.id, container);
@@ -285,6 +306,13 @@ export class ShrineScene extends Phaser.Scene {
       // Verify tap is within room boundaries
       if (point) {
         this.spawnTouchRipple(pointer.x, pointer.y);
+
+        const tappedNpc = this.world.getEntityList().find(
+          (e) => e.npc && e.position.x === point.x && e.position.y === point.y
+        );
+        if (tappedNpc && this.onNpcTap) {
+          this.onNpcTap(tappedNpc);
+        }
 
         if (this.onCellTap) {
           const screenX = pointer.event ? (pointer.event as MouseEvent).clientX : pointer.x;
@@ -381,6 +409,32 @@ export class ShrineScene extends Phaser.Scene {
             duration: 150,
             yoyo: true,
             ease: "Quad.easeInOut",
+          });
+        }
+      }
+
+      // Handle NPC mood state transition (anxious -> soothed golden)
+      if (entity.renderable.shape === "npc" && entity.npc) {
+        const lastSoothed = this.npcSoothedStates.get(entity.id);
+        const currentSoothed = entity.npc.isSoothed;
+
+        if (lastSoothed !== currentSoothed) {
+          this.npcSoothedStates.set(entity.id, currentSoothed);
+          const graphics = container.getAt(0) as Phaser.GameObjects.Graphics;
+          if (graphics) {
+            graphics.clear();
+            this.renderNpcGraphic(graphics, this.tileSize, entity);
+          }
+
+          // Cheerful sparkle / celebration bounce
+          this.tweens.add({
+            targets: container,
+            scaleX: 1.18,
+            scaleY: 1.18,
+            duration: 250,
+            yoyo: true,
+            repeat: 1,
+            ease: "Back.easeOut",
           });
         }
       }
@@ -620,6 +674,86 @@ export class ShrineScene extends Phaser.Scene {
     // Subtle inner bevel
     g.fillStyle(0x475569, 0.6);
     g.fillRoundedRect(-half * 0.6, -half * 0.6, s * 0.6, s * 0.6, 6);
+  }
+
+
+  private renderNpcGraphic(g: Phaser.GameObjects.Graphics, size: number, entity: Entity): void {
+    const s = size * 0.85;
+    const half = s / 2;
+    const isSoothed = entity.npc?.isSoothed || false;
+
+    // 1. Glowing, pulsing mood aura halo
+    if (isSoothed) {
+      // Golden Peaceful / Joyful Aura
+      g.fillStyle(0xFDE047, 0.4);
+      g.fillCircle(0, 0, half * 1.35);
+      g.fillStyle(0xFEF08A, 0.5);
+      g.fillCircle(0, 0, half * 1.1);
+
+      // Star glint sparkles
+      g.fillStyle(0xFFFFFF, 0.9);
+      g.fillCircle(-half * 0.8, -half * 0.8, 3);
+      g.fillCircle(half * 0.8, -half * 0.7, 3);
+    } else {
+      // Anxious Amber Tremor Aura
+      g.fillStyle(0xF59E0B, 0.35);
+      g.fillCircle(0, 0, half * 1.25);
+      g.lineStyle(2, 0xFBBF24, 0.6);
+      g.strokeCircle(0, 0, half * 1.15);
+    }
+
+    // 2. Forest Spirit Sprout Body (Cute woodland creature)
+    g.fillStyle(0x10B981, 1); // Forest emerald body
+    g.lineStyle(2.5, 0x047857, 1);
+    g.fillRoundedRect(-half * 0.6, -half * 0.3, s * 0.6, s * 0.7, 16);
+    g.strokeRoundedRect(-half * 0.6, -half * 0.3, s * 0.6, s * 0.7, 16);
+
+    // 3. Sprout Head Leaves
+    g.fillStyle(0x34D399, 1);
+    g.lineStyle(1.5, 0x059669, 1);
+    // Left leaf
+    g.fillEllipse(-half * 0.25, -half * 0.55, s * 0.3, s * 0.15);
+    g.strokeEllipse(-half * 0.25, -half * 0.55, s * 0.3, s * 0.15);
+    // Right leaf
+    g.fillEllipse(half * 0.25, -half * 0.55, s * 0.3, s * 0.15);
+    g.strokeEllipse(half * 0.25, -half * 0.55, s * 0.3, s * 0.15);
+
+    // Leaf stem
+    g.lineStyle(2, 0x047857, 1);
+    g.lineBetween(0, -half * 0.3, 0, -half * 0.5);
+
+    // 4. Expressive Eyes & Mood
+    if (isSoothed) {
+      // Cheerful Happy Curved Eyes (^ ^)
+      g.lineStyle(2, 0x064E3B, 1);
+      g.beginPath();
+      g.arc(-half * 0.2, -half * 0.05, 4, Phaser.Math.DegToRad(200), Phaser.Math.DegToRad(340), false);
+      g.arc(half * 0.2, -half * 0.05, 4, Phaser.Math.DegToRad(200), Phaser.Math.DegToRad(340), false);
+      g.strokePath();
+
+      // Sweet smiling mouth
+      g.beginPath();
+      g.arc(0, half * 0.15, 5, Phaser.Math.DegToRad(20), Phaser.Math.DegToRad(160), false);
+      g.strokePath();
+
+      // Soft blushing cheeks
+      g.fillStyle(0xFCA5A5, 0.6);
+      g.fillCircle(-half * 0.35, half * 0.1, 3);
+      g.fillCircle(half * 0.35, half * 0.1, 3);
+    } else {
+      // Anxious / Worried Wide Eyes
+      g.fillStyle(0x064E3B, 1);
+      g.fillCircle(-half * 0.2, -half * 0.05, 3);
+      g.fillCircle(half * 0.2, -half * 0.05, 3);
+
+      // Trembling wavy mouth line
+      g.lineStyle(1.8, 0x064E3B, 1);
+      g.beginPath();
+      g.moveTo(-half * 0.15, half * 0.18);
+      g.lineTo(0, half * 0.12);
+      g.lineTo(half * 0.15, half * 0.18);
+      g.strokePath();
+    }
   }
 
   private renderLightOrbGraphic(g: Phaser.GameObjects.Graphics, size: number): void {

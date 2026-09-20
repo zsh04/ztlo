@@ -6,6 +6,8 @@ import {
   TriggerComponent,
   RenderableComponent,
   MentorComponent,
+  NpcComponent,
+  NpcEmotionState,
 } from "./components";
 
 export interface Entity {
@@ -16,6 +18,7 @@ export interface Entity {
   pushable?: PushableComponent;
   trigger?: TriggerComponent;
   mentor?: MentorComponent;
+  npc?: NpcComponent;
   renderable: RenderableComponent;
 }
 
@@ -90,5 +93,48 @@ export function createWallEntity(id: string, x: number, y: number): Entity {
     position: { type: "position", x, y, previousX: x, previousY: y },
     collider: { type: "collider", isSolid: true, passableByPlayer: false },
     renderable: { type: "renderable", shape: "wall", colorToken: "storybook-stone-dark", zIndex: 3 },
+  };
+}
+
+export function createNpcEntity(
+  id: string,
+  x: number,
+  y: number,
+  name: string = "Sprout",
+  emotion: NpcEmotionState = "anxious",
+  soothingMechanic: "co_breathing" | "gift_offering" = "co_breathing",
+  unblocksTargetId?: string
+): Entity {
+  const isAnxious = emotion === "anxious";
+  const isSad = emotion === "sad";
+  const auraColor = isAnxious ? "#F59E0B" : isSad ? "#818CF8" : "#FDE047";
+
+  return {
+    id,
+    position: { type: "position", x, y, previousX: x, previousY: y },
+    collider: { type: "collider", isSolid: true, passableByPlayer: false },
+    npc: {
+      type: "npc",
+      name,
+      emotion,
+      auraColor,
+      soothingMechanic,
+      breathCountRequired: soothingMechanic === "co_breathing" ? 1 : undefined,
+      currentBreathCount: 0,
+      isSoothed: false,
+      dialogPrompt:
+        emotion === "anxious"
+          ? "The shadows felt too loud... My chest feels all tight and fluttering."
+          : "I feel small and heavy... like a cloud that forgot how to float.",
+      soothedDialog:
+        "My heart feels soft and sunny again! The grove path is open for you, Zyra!",
+      unblocksTargetId,
+    },
+    renderable: {
+      type: "renderable",
+      shape: "npc",
+      colorToken: isAnxious ? "storybook-interactable" : "storybook-plate",
+      zIndex: 8,
+    },
   };
 }

@@ -94,9 +94,9 @@ test("Pure ECS integration: solving 8x6 Shrine of Equilibrium unseals the gate",
 });
 
 test("ALL_SHRINE_ROOMS contains valid room definitions with unique IDs", () => {
-  assert.equal(ALL_SHRINE_ROOMS.length, 4);
+  assert.equal(ALL_SHRINE_ROOMS.length, 5);
   const ids = new Set(ALL_SHRINE_ROOMS.map((r) => r.id));
-  assert.equal(ids.size, 4);
+  assert.equal(ids.size, 5);
 
   for (const room of ALL_SHRINE_ROOMS) {
     assert.ok(room.width >= 8);
