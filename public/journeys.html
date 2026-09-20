@@ -236,8 +236,10 @@
     }
 
     .tablet-bezel {
-      width: 1024px;
+      width: 100%;
+      max-width: 1024px;
       height: 680px;
+      max-height: 85vh;
       background: var(--bezel-color);
       border-radius: 44px;
       box-shadow: 0 25px 60px -12px rgba(0, 0, 0, 0.65), 0 0 0 12px #2A2C30, 0 0 0 14px #141517;
@@ -298,8 +300,10 @@
 
     /* Screen Stage Active View Container */
     .screen-stage {
-      position: absolute;
-      inset: 0;
+      position: absolute !important;
+      inset: 0 !important;
+      width: 100% !important;
+      height: 100% !important;
       display: none;
       opacity: 0;
       transform: scale(0.985);
@@ -308,9 +312,9 @@
       overflow: hidden;
     }
     .screen-stage.active {
-      display: flex;
-      opacity: 1;
-      transform: scale(1);
+      display: flex !important;
+      opacity: 1 !important;
+      transform: scale(1) !important;
     }
 
     /* iPad Home Indicator */
@@ -520,11 +524,8 @@
        ========================================================================== */
     #screen-1 {
       background: linear-gradient(180deg, #CDE9E0 0%, #E8F5EE 60%, #F5FAF7 100%);
-      display: flex;
-      flex-direction: column;
       align-items: center;
       justify-content: center;
-      position: relative;
     }
 
     .splash-landscape {
@@ -571,7 +572,6 @@
        ========================================================================== */
     #screen-2 {
       background: #D7EDE2;
-      position: relative;
       overflow: hidden;
     }
 
@@ -595,10 +595,8 @@
        ========================================================================== */
     #screen-3 {
       background: #E2ECE6;
-      display: flex;
       align-items: center;
       justify-content: center;
-      position: relative;
     }
 
     .grid-board {
@@ -633,10 +631,8 @@
        ========================================================================== */
     #screen-4 {
       background: #E2ECE6;
-      display: flex;
       align-items: center;
       justify-content: center;
-      position: relative;
     }
 
     .path-waypoint {
@@ -655,10 +651,8 @@
        ========================================================================== */
     #screen-5 {
       background: #E2ECE6;
-      display: flex;
       align-items: center;
       justify-content: center;
-      position: relative;
     }
 
     /* ==========================================================================
@@ -666,10 +660,8 @@
        ========================================================================== */
     #screen-6 {
       background: #DEEDF4;
-      display: flex;
       align-items: center;
       justify-content: center;
-      position: relative;
     }
 
     /* ==========================================================================
@@ -677,10 +669,8 @@
        ========================================================================== */
     #screen-7 {
       background: #E2ECE6;
-      display: flex;
       align-items: center;
       justify-content: center;
-      position: relative;
     }
 
     .thought-bubble {
@@ -716,10 +706,8 @@
        ========================================================================== */
     #screen-8 {
       background: #E2ECE6;
-      display: flex;
       align-items: center;
       justify-content: center;
-      position: relative;
     }
 
     .dialog-overlay {
@@ -795,10 +783,8 @@
        ========================================================================== */
     #screen-9 {
       background: #DFECE5;
-      display: flex;
       align-items: center;
       justify-content: center;
-      position: relative;
     }
 
     /* ==========================================================================
@@ -806,11 +792,8 @@
        ========================================================================== */
     #screen-10 {
       background: #111827;
-      display: flex;
-      flex-direction: column;
       align-items: center;
       justify-content: center;
-      position: relative;
     }
 
     .victory-portal-ring {
@@ -830,10 +813,8 @@
        ========================================================================== */
     #screen-11 {
       background: #E8EFE8;
-      display: flex;
       align-items: center;
       justify-content: center;
-      position: relative;
     }
 
     .npc-aura-anxious {
@@ -846,10 +827,8 @@
        ========================================================================== */
     #screen-12 {
       background: #E3F2FD;
-      display: flex;
       align-items: center;
       justify-content: center;
-      position: relative;
     }
 
     .breathing-circle-guide {
@@ -878,10 +857,8 @@
        ========================================================================== */
     #screen-13 {
       background: #202634;
-      display: flex;
       align-items: center;
       justify-content: center;
-      position: relative;
     }
 
     /* ==========================================================================
@@ -889,11 +866,8 @@
        ========================================================================== */
     #screen-14 {
       background: linear-gradient(180deg, #0F172A 0%, #1E1B4B 50%, #312E81 100%);
-      display: flex;
-      flex-direction: column;
       align-items: center;
       justify-content: center;
-      position: relative;
       color: #F8FAFC;
     }
 
