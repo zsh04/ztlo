@@ -3,7 +3,7 @@
 import React from "react";
 import { RotateCcw } from "lucide-react";
 
-interface HudOverlayProps {
+export interface HudOverlayProps {
   roomName: string;
   objective: string;
   onResetRoom: () => void;
@@ -19,13 +19,13 @@ export const HudOverlay: React.FC<HudOverlayProps> = ({
   canUndo = false,
 }) => {
   return (
-    <div className="absolute top-4 left-4 z-40 flex items-center gap-4 pointer-events-auto select-none">
+    <div className="flex items-center gap-4 pointer-events-auto select-none">
       {/* Reset Button: Fitts's Law >= 80px touch target */}
       <button
         type="button"
         onClick={onResetRoom}
         aria-label="Reset Room"
-        className="w-20 h-20 min-w-[80px] min-h-[80px] rounded-2xl bg-white/95 backdrop-blur-sm shadow-md border-2 border-storybook-muted flex flex-col items-center justify-center gap-1 text-storybook-subtle hover:text-storybook-text hover:border-slate-300 active:scale-95 transition-all cursor-pointer"
+        className="w-20 h-20 min-w-[80px] min-h-[80px] rounded-2xl bg-white/95 backdrop-blur-sm shadow-md border-2 border-storybook-muted flex flex-col items-center justify-center gap-1 text-storybook-subtle hover:text-storybook-text hover:border-slate-300 active:scale-95 transition-all cursor-pointer pointer-events-auto"
       >
         <RotateCcw className="w-6 h-6" />
         <span className="text-[11px] font-bold uppercase tracking-wider">Reset</span>
@@ -37,7 +37,7 @@ export const HudOverlay: React.FC<HudOverlayProps> = ({
         onClick={onUndo}
         disabled={!canUndo}
         aria-label="Undo last move"
-        className={`w-20 h-20 min-w-[80px] min-h-[80px] rounded-2xl bg-white/95 backdrop-blur-sm shadow-md border-2 flex flex-col items-center justify-center gap-1 transition-all ${
+        className={`w-20 h-20 min-w-[80px] min-h-[80px] rounded-2xl bg-white/95 backdrop-blur-sm shadow-md border-2 flex flex-col items-center justify-center gap-1 transition-all pointer-events-auto ${
           canUndo
             ? "border-amber-300 text-amber-700 hover:bg-amber-50 active:scale-95 cursor-pointer shadow-amber-100"
             : "border-slate-200 text-slate-300 opacity-50 cursor-not-allowed"
@@ -60,7 +60,7 @@ export const HudOverlay: React.FC<HudOverlayProps> = ({
       </button>
 
       {/* Room Badge & Objective */}
-      <div className="px-5 py-3 bg-white/90 backdrop-blur-sm rounded-2xl shadow-md border-2 border-storybook-muted flex flex-col justify-center min-h-[80px]">
+      <div className="px-5 py-3 bg-white/90 backdrop-blur-sm rounded-2xl shadow-md border-2 border-storybook-muted flex flex-col justify-center min-h-[80px] pointer-events-auto">
         <span className="text-xs font-bold tracking-wide uppercase text-storybook-subtle">
           {roomName}
         </span>
