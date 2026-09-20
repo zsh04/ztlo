@@ -366,9 +366,9 @@ export default function GamePage() {
   };
 
   return (
-    <main className="relative flex h-screen w-screen items-center justify-center overflow-hidden bg-storybook-bg select-none">
+    <main className="relative flex h-screen w-screen h-[100dvh] w-[100dvw] items-center justify-center overflow-hidden bg-storybook-bg select-none touch-none overscroll-none">
       {/* 16:9 Landscape Phaser 3 Canvas Viewport (1280x720 FIT centered) */}
-      <div className="absolute inset-0 flex items-center justify-center">
+      <div className="absolute inset-0 flex items-center justify-center overflow-hidden">
         <DynamicPhaserContainer
           world={worldRef.current}
           room={currentRoom}
