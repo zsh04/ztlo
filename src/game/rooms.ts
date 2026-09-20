@@ -7,6 +7,9 @@ import {
   createDoorEntity,
   createWallEntity,
   createNpcEntity,
+  createLightEmitterEntity,
+  createMirrorEntity,
+  createReceptorEntity,
 } from "../ecs/entities";
 
 /**
@@ -158,10 +161,64 @@ export const SHRINE_04_GROVE_OF_HARMONY: RoomDefinition = {
   ],
 };
 
+/**
+ * Level 1-6 Canonical Optics Specification: Chamber of Reflections
+ * Conforms to Issue #10 and docs/ENG_ZTLO_Curriculum-Progression-Shrines-1-to-5_20260919_v01.md
+ * Features Light Emitter Pedestal, Rotatable Prism Mirror (45°/135°), Solar Receptor Crystal, and Sun Door.
+ */
+export const SHRINE_05_CHAMBER_OF_REFLECTIONS: RoomDefinition = {
+  id: "shrine-05",
+  name: "Chamber of Reflections",
+  width: 8,
+  height: 6,
+  objective: "Align the sacred prism mirrors to guide radiant starlight into the solar receptor",
+  hintKey: "optics_hint",
+  entities: [
+    createPlayerEntity("player-1", 1, 4),
+    createLightEmitterEntity("emitter-1", 1, 1, "east", "#FACC15"),
+    createMirrorEntity("mirror-1", 5, 1, 45), // Initial 45° angle directs beam north; 135° directs south
+    createReceptorEntity("receptor-1", 5, 4, "door-reflections"),
+    createDoorEntity("door-reflections", 7, 2),
+
+    // Obstacle column
+    createWallEntity("wall-col-1", 3, 2),
+    createWallEntity("wall-col-2", 3, 3),
+
+    // Perimeter boundary walls
+    createWallEntity("wall-optics-t0", 0, 0),
+    createWallEntity("wall-optics-t1", 1, 0),
+    createWallEntity("wall-optics-t2", 2, 0),
+    createWallEntity("wall-optics-t3", 3, 0),
+    createWallEntity("wall-optics-t4", 4, 0),
+    createWallEntity("wall-optics-t5", 5, 0),
+    createWallEntity("wall-optics-t6", 6, 0),
+    createWallEntity("wall-optics-t7", 7, 0),
+
+    createWallEntity("wall-optics-b0", 0, 5),
+    createWallEntity("wall-optics-b1", 1, 5),
+    createWallEntity("wall-optics-b2", 2, 5),
+    createWallEntity("wall-optics-b3", 3, 5),
+    createWallEntity("wall-optics-b4", 4, 5),
+    createWallEntity("wall-optics-b5", 5, 5),
+    createWallEntity("wall-optics-b6", 6, 5),
+    createWallEntity("wall-optics-b7", 7, 5),
+
+    createWallEntity("wall-optics-l1", 0, 1),
+    createWallEntity("wall-optics-l2", 0, 2),
+    createWallEntity("wall-optics-l3", 0, 3),
+    createWallEntity("wall-optics-l4", 0, 4),
+
+    createWallEntity("wall-optics-r1", 7, 1),
+    createWallEntity("wall-optics-r3", 7, 3),
+    createWallEntity("wall-optics-r4", 7, 4),
+  ],
+};
+
 export const ALL_SHRINE_ROOMS: RoomDefinition[] = [
   SHRINE_00_EQUILIBRIUM,
   SHRINE_01_STILL_WEIGHT,
   SHRINE_02_GLACIAL_FLOW,
   SHRINE_03_HARMONY_GATES,
   SHRINE_04_GROVE_OF_HARMONY,
+  SHRINE_05_CHAMBER_OF_REFLECTIONS,
 ];

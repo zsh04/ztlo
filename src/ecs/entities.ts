@@ -8,6 +8,8 @@ import {
   MentorComponent,
   NpcComponent,
   NpcEmotionState,
+  OpticsComponent,
+  CardinalDirection,
 } from "./components";
 
 export interface Entity {
@@ -19,6 +21,7 @@ export interface Entity {
   trigger?: TriggerComponent;
   mentor?: MentorComponent;
   npc?: NpcComponent;
+  optics?: OpticsComponent;
   renderable: RenderableComponent;
 }
 
@@ -136,5 +139,77 @@ export function createNpcEntity(
       colorToken: isAnxious ? "storybook-interactable" : "storybook-plate",
       zIndex: 8,
     },
+  };
+}
+
+export function createLightEmitterEntity(
+  id: string,
+  x: number,
+  y: number,
+  direction: CardinalDirection = "east",
+  beamColor: string = "#FACC15"
+): Entity {
+  return {
+    id,
+    position: { type: "position", x, y, previousX: x, previousY: y },
+    collider: { type: "collider", isSolid: true, passableByPlayer: false },
+    optics: {
+      type: "optics",
+      opticsType: "emitter",
+      direction,
+      beamColor,
+      isLit: true,
+    },
+    renderable: { type: "renderable", shape: "emitter", colorToken: "storybook-gold", zIndex: 4 },
+  };
+}
+
+export function createMirrorEntity(
+  id: string,
+  x: number,
+  y: number,
+  angle: 45 | 135 | 225 | 315 = 45,
+  pushable: boolean = false
+): Entity {
+  const entity: Entity = {
+    id,
+    position: { type: "position", x, y, previousX: x, previousY: y },
+    collider: { type: "collider", isSolid: true, passableByPlayer: false },
+    optics: {
+      type: "optics",
+      opticsType: "mirror",
+      angle,
+    },
+    renderable: { type: "renderable", shape: "mirror", colorToken: "storybook-sky", zIndex: 4 },
+  };
+  if (pushable) {
+    entity.pushable = {
+      type: "pushable",
+      behavior: "discrete",
+      isSliding: false,
+    };
+  }
+  return entity;
+}
+
+export function createReceptorEntity(
+  id: string,
+  x: number,
+  y: number,
+  targetDoorId: string,
+  requiredBeamColor?: string
+): Entity {
+  return {
+    id,
+    position: { type: "position", x, y, previousX: x, previousY: y },
+    collider: { type: "collider", isSolid: true, passableByPlayer: false },
+    optics: {
+      type: "optics",
+      opticsType: "receptor",
+      isActivated: false,
+      targetDoorId,
+      beamColor: requiredBeamColor,
+    },
+    renderable: { type: "renderable", shape: "receptor", colorToken: "storybook-purple", zIndex: 4 },
   };
 }

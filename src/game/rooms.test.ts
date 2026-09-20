@@ -94,9 +94,9 @@ test("Pure ECS integration: solving 8x6 Shrine of Equilibrium unseals the gate",
 });
 
 test("ALL_SHRINE_ROOMS contains valid room definitions with unique IDs", () => {
-  assert.equal(ALL_SHRINE_ROOMS.length, 5);
+  assert.equal(ALL_SHRINE_ROOMS.length, 6);
   const ids = new Set(ALL_SHRINE_ROOMS.map((r) => r.id));
-  assert.equal(ids.size, 5);
+  assert.equal(ids.size, 6);
 
   for (const room of ALL_SHRINE_ROOMS) {
     assert.ok(room.width >= 8);
@@ -105,4 +105,39 @@ test("ALL_SHRINE_ROOMS contains valid room definitions with unique IDs", () => {
     assert.ok(room.entities.some((e) => e.renderable.shape === "avatar"));
     assert.ok(room.entities.some((e) => e.renderable.shape === "door"));
   }
+});
+
+test("Shrine 05 (Chamber of Reflections, 8x6): Aligning mirror activates solar receptor and unseals sun door", () => {
+  const room = ALL_SHRINE_ROOMS.find((r) => r.id === "shrine-05")!;
+  assert.ok(room);
+  assert.equal(room.width, 8);
+  assert.equal(room.height, 6);
+
+  const world = new GameWorld(room);
+  world.setEntities(JSON.parse(JSON.stringify(room.entities)));
+
+  const mirror = world.entities.get("mirror-1")!;
+  const receptor = world.entities.get("receptor-1")!;
+  const door = world.entities.get("door-reflections")!;
+
+  // Initially unaligned (mirror angle 45° reflects north into boundary wall)
+  assert.equal(mirror.optics?.angle, 45);
+  assert.equal(receptor.optics?.isActivated, false);
+  assert.equal(door.collider?.isSolid, true);
+
+  // Player rotates mirror to 135° (reflects south into receptor)
+  const rotated = world.rotateMirror("mirror-1");
+  assert.equal(rotated, true);
+  assert.equal(mirror.optics?.angle, 135);
+
+  // Receptor receives light and unseals door
+  assert.equal(receptor.optics?.isActivated, true);
+  assert.equal(door.collider?.isSolid, false);
+
+  // Undo rewinds mirror rotation and locks door again
+  assert.equal(world.canUndo(), true);
+  world.undoLastMove();
+  assert.equal(mirror.optics?.angle, 45);
+  assert.equal(receptor.optics?.isActivated, false);
+  assert.equal(door.collider?.isSolid, true);
 });
