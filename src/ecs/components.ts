@@ -9,6 +9,8 @@ export type MentorState =
   | "success_affirmation"
   | "corner_trap";
 
+export type NpcEmotionState = "anxious" | "sad" | "calm" | "joyful";
+
 export interface Component {
   type: string;
 }
@@ -60,9 +62,23 @@ export interface TriggerComponent extends Component {
   activatesTargetId: string;
 }
 
+export interface NpcComponent extends Component {
+  type: "npc";
+  name: string;
+  emotion: NpcEmotionState;
+  auraColor: string; // e.g. "#F59E0B" (anxious amber) -> "#38BDF8" / "#FDE047" (calm/golden)
+  soothingMechanic: "co_breathing" | "gift_offering";
+  breathCountRequired?: number;
+  currentBreathCount?: number;
+  isSoothed: boolean;
+  dialogPrompt: string;
+  soothedDialog: string;
+  unblocksTargetId?: string;
+}
+
 export interface RenderableComponent extends Component {
   type: "renderable";
-  shape: "avatar" | "stone" | "ice" | "plate" | "wall" | "door";
+  shape: "avatar" | "stone" | "ice" | "plate" | "wall" | "door" | "npc";
   colorToken: string;
   zIndex: number;
 }

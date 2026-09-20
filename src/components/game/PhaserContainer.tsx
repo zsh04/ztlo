@@ -3,6 +3,7 @@
 import React, { useEffect, useRef } from "react";
 import dynamic from "next/dynamic";
 import type { GameWorld } from "../../ecs/world";
+import type { Entity } from "../../ecs/entities";
 import type { GridPoint, RoomDefinition } from "../../types/game";
 import type { ShrineScene } from "../../game/scenes/ShrineScene";
 
@@ -11,6 +12,7 @@ export interface PhaserContainerProps {
   room: RoomDefinition;
   onCellTap?: (point: GridPoint, screenX: number, screenY: number) => void;
   onRoomCompleted?: () => void;
+  onNpcTap?: (npc: Entity) => void;
   className?: string;
 }
 
@@ -19,6 +21,7 @@ export const PhaserContainer: React.FC<PhaserContainerProps> = ({
   room,
   onCellTap,
   onRoomCompleted,
+  onNpcTap,
   className = "",
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -31,6 +34,9 @@ export const PhaserContainer: React.FC<PhaserContainerProps> = ({
 
   const onRoomCompletedRef = useRef(onRoomCompleted);
   onRoomCompletedRef.current = onRoomCompleted;
+
+  const onNpcTapRef = useRef(onNpcTap);
+  onNpcTapRef.current = onNpcTap;
 
   const worldRef = useRef(world);
   worldRef.current = world;
@@ -92,6 +98,9 @@ export const PhaserContainer: React.FC<PhaserContainerProps> = ({
           currentScene.onRoomCompleted = () => {
             onRoomCompletedRef.current?.();
           };
+          currentScene.onNpcTap = (npc) => {
+            onNpcTapRef.current?.(npc);
+          };
           currentScene.loadRoom(roomRef.current, worldRef.current);
         }
       });
@@ -121,6 +130,9 @@ export const PhaserContainer: React.FC<PhaserContainerProps> = ({
       };
       sceneRef.current.onRoomCompleted = () => {
         onRoomCompletedRef.current?.();
+      };
+      sceneRef.current.onNpcTap = (npc) => {
+        onNpcTapRef.current?.(npc);
       };
       sceneRef.current.loadRoom(room, world);
     }

@@ -6,6 +6,8 @@ import { GameWorld } from "../ecs/world";
 import { ALL_SHRINE_ROOMS } from "../game/rooms";
 import { HudOverlay } from "../components/ui/HudOverlay";
 import { LightOrbCompanion } from "../components/mentor/LightOrbCompanion";
+import { EmpathyModal } from "../components/npc/EmpathyModal";
+import { Entity } from "../ecs/entities";
 import { TouchFeedback } from "../components/ui/TouchFeedback";
 import { useWebLLM } from "../hooks/useWebLLM";
 import { GridPoint, TouchFeedbackEvent, RoomDefinition, SocraticDialog } from "../types/game";
@@ -39,6 +41,7 @@ export default function GamePage() {
   );
   const [isMentorOpen, setIsMentorOpen] = useState(false);
   const [canUndo, setCanUndo] = useState(false);
+  const [activeNpcModal, setActiveNpcModal] = useState<Entity | null>(null);
 
   const { generateHint: generateWebLLMHint, status: webLLMStatus } = useWebLLM({
     autoInit: true,
@@ -63,6 +66,7 @@ export default function GamePage() {
     setMentorDialog(world.getMentorDialog());
     setIsMentorOpen(world.isMentorBubbleOpen());
     setCanUndo(false);
+    setActiveNpcModal(null);
   }, [stopPlayerMovement]);
 
   const handleUndo = useCallback(() => {
@@ -75,6 +79,40 @@ export default function GamePage() {
       setCanUndo(world.canUndo());
     }
   }, [stopPlayerMovement]);
+
+
+  const handleNpcTap = useCallback((npc: Entity) => {
+    stopPlayerMovement();
+    setActiveNpcModal(npc);
+  }, [stopPlayerMovement]);
+
+  const handleCompleteBreathing = useCallback(() => {
+    if (!activeNpcModal) return;
+    const world = worldRef.current;
+    const result = world.sootheNpcWithBreathing(activeNpcModal.id);
+    if (result.success) {
+      world.evaluateTriggers();
+      setCanUndo(world.canUndo());
+      const updatedNpc = world.getNpc(activeNpcModal.id);
+      if (updatedNpc) {
+        setActiveNpcModal({ ...updatedNpc });
+      }
+    }
+  }, [activeNpcModal]);
+
+  const handleOfferGift = useCallback((gift: string) => {
+    if (!activeNpcModal) return;
+    const world = worldRef.current;
+    const result = world.sootheNpcWithGift(activeNpcModal.id, gift);
+    if (result.success) {
+      world.evaluateTriggers();
+      setCanUndo(world.canUndo());
+      const updatedNpc = world.getNpc(activeNpcModal.id);
+      if (updatedNpc) {
+        setActiveNpcModal({ ...updatedNpc });
+      }
+    }
+  }, [activeNpcModal]);
 
   const handleSelectInquiryChip = useCallback((chipId: string) => {
     stopPlayerMovement();
@@ -197,6 +235,15 @@ export default function GamePage() {
     // Check if target is adjacent and is a pushable block
     const isAdjacent =
       Math.abs(point.x - player.position.x) + Math.abs(point.y - player.position.y) === 1;
+
+    const targetNpc = world
+      .getEntityList()
+      .find((e) => e.npc && e.position.x === point.x && e.position.y === point.y);
+    if (targetNpc) {
+      stopPlayerMovement();
+      setActiveNpcModal(targetNpc);
+      return;
+    }
 
     const targetBlock = world
       .getEntityList()
@@ -374,6 +421,7 @@ export default function GamePage() {
           room={currentRoom}
           onCellTap={handleCellTap}
           onRoomCompleted={handleRoomCompleted}
+          onNpcTap={handleNpcTap}
         />
       </div>
 
@@ -402,6 +450,15 @@ export default function GamePage() {
           />
         </div>
       </div>
+
+      {/* NPC Empathy & Emotion Regulation Modal */}
+      <EmpathyModal
+        isOpen={activeNpcModal !== null}
+        npc={activeNpcModal}
+        onClose={() => setActiveNpcModal(null)}
+        onCompleteBreathing={handleCompleteBreathing}
+        onOfferGift={handleOfferGift}
+      />
 
       {/* Visual Touch Ripple Layer (zero-blocking touch pass-through) */}
       <TouchFeedback events={touchEvents} />

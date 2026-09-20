@@ -4,7 +4,8 @@ import { MovementSystem, StepResult } from "./systems/MovementSystem";
 import { PhysicsSystem } from "./systems/PhysicsSystem";
 import { TriggerSystem, TriggerEvaluationResult } from "./systems/TriggerSystem";
 import { MentorSystem } from "./systems/MentorSystem";
-import { MentorComponent } from "./components";
+import { NpcSystem, SootheResult } from "./systems/NpcSystem";
+import { MentorComponent, NpcEmotionState } from "./components";
 
 export interface EntityPositionSnapshot {
   id: string;
@@ -14,6 +15,13 @@ export interface EntityPositionSnapshot {
   previousY: number;
   isSliding?: boolean;
   slideDirection?: GridPoint;
+  isSolid?: boolean;
+  npcState?: {
+    emotion: NpcEmotionState;
+    auraColor: string;
+    isSoothed: boolean;
+    currentBreathCount?: number;
+  };
 }
 
 export interface WorldSnapshot {
@@ -67,6 +75,15 @@ export class GameWorld {
         slideDirection: e.pushable?.slideDirection
           ? { ...e.pushable.slideDirection }
           : undefined,
+        isSolid: e.collider?.isSolid,
+        npcState: e.npc
+          ? {
+              emotion: e.npc.emotion,
+              auraColor: e.npc.auraColor,
+              isSoothed: e.npc.isSoothed,
+              currentBreathCount: e.npc.currentBreathCount,
+            }
+          : undefined,
       })),
     };
   }
@@ -108,6 +125,17 @@ export class GameWorld {
           entity.movement.isMoving = false;
           entity.movement.path = [];
           entity.movement.target = null;
+        }
+
+        if (entity.collider && snap.isSolid !== undefined) {
+          entity.collider.isSolid = snap.isSolid;
+        }
+
+        if (entity.npc && snap.npcState) {
+          entity.npc.emotion = snap.npcState.emotion;
+          entity.npc.auraColor = snap.npcState.auraColor;
+          entity.npc.isSoothed = snap.npcState.isSoothed;
+          entity.npc.currentBreathCount = snap.npcState.currentBreathCount;
         }
       }
     }
@@ -244,4 +272,33 @@ export class GameWorld {
       })),
     };
   }
+  public getNpcs(): Entity[] {
+    return this.getEntityList().filter((e) => e.npc !== undefined);
+  }
+
+  public getNpc(id: string): Entity | undefined {
+    return this.entities.get(id);
+  }
+
+  public isPlayerNearNpc(npcId: string, maxDistance: number = 1.5): boolean {
+    const player = this.getPlayer();
+    const npc = this.getNpc(npcId);
+    if (!player || !npc) return false;
+    return NpcSystem.isPlayerNearNpc(player, npc, maxDistance);
+  }
+
+  public sootheNpcWithBreathing(npcId: string, cycles: number = 1): SootheResult {
+    const npc = this.getNpc(npcId);
+    if (!npc) return { success: false, soothed: false };
+    this.history.push(this.captureSnapshot());
+    return NpcSystem.sootheWithBreathing(npc, this.getEntityList(), cycles);
+  }
+
+  public sootheNpcWithGift(npcId: string, giftItem: string): SootheResult {
+    const npc = this.getNpc(npcId);
+    if (!npc) return { success: false, soothed: false };
+    this.history.push(this.captureSnapshot());
+    return NpcSystem.sootheWithGift(npc, this.getEntityList(), giftItem);
+  }
+
 }
