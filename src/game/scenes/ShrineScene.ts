@@ -9,6 +9,8 @@ import {
   gridToScreenPoint,
   SceneLayoutMetrics,
 } from "../layout";
+import type { LightOrbExpression } from "../../ecs/systems/MentorSystem";
+import type { BedtimePhase } from "../../lib/bedtime/bedtimeManager";
 
 export interface ShrineSceneInitData {
   world?: GameWorld;
@@ -17,6 +19,7 @@ export interface ShrineSceneInitData {
   onRoomCompleted?: () => void;
   onNpcTap?: (npc: Entity) => void;
   onMirrorTap?: (mirror: Entity) => void;
+  bedtimePhase?: BedtimePhase;
 }
 
 export class ShrineScene extends Phaser.Scene {
@@ -38,6 +41,17 @@ export class ShrineScene extends Phaser.Scene {
   public roomWidth: number = 8;
   public roomHeight: number = 6;
 
+  // Companion Light Orb state & visuals
+  public currentExpression: LightOrbExpression = "happy";
+  public bedtimePhase: BedtimePhase = "daylight";
+  private lastRenderedExpression?: LightOrbExpression;
+  private lastRenderedBedtimeDimmed?: boolean;
+  private lightOrbContainer?: Phaser.GameObjects.Container;
+  private orbVisualContainer?: Phaser.GameObjects.Container;
+  private orbGraphics?: Phaser.GameObjects.Graphics;
+  private orbBobTween?: Phaser.Tweens.Tween;
+  private particleEmitter?: Phaser.GameObjects.Particles.ParticleEmitter;
+
   // Visual game object tracking
   private gridContainer?: Phaser.GameObjects.Container;
   private entityContainers: Map<string, Phaser.GameObjects.Container> = new Map();
@@ -52,7 +66,6 @@ export class ShrineScene extends Phaser.Scene {
   private switchStates: Map<string, boolean> = new Map();
   private conduitGraphics?: Phaser.GameObjects.Graphics;
   private beamGraphics?: Phaser.GameObjects.Graphics;
-  private lightOrbContainer?: Phaser.GameObjects.Container;
 
   constructor(config?: Phaser.Types.Scenes.SettingsConfig) {
     super({ key: "ShrineScene", ...(config || {}) });
@@ -303,37 +316,158 @@ export class ShrineScene extends Phaser.Scene {
   }
 
   /**
-   * Builds the floating companion Light Orb near the player.
+   * Generates a procedural radial bokeh particle texture for the companion Light Orb aura trail.
+   */
+  public ensureBokehParticleTexture(): void {
+    if (this.textures.exists("ztlo_bokeh_particle")) return;
+
+    const g = this.make.graphics({ x: 0, y: 0 });
+    // Smooth radial bokeh starlight layers with exponential falloff
+    g.fillStyle(0xFFFFFF, 1);
+    g.fillCircle(16, 16, 3.5);
+
+    g.fillStyle(0xFDE68A, 0.7);
+    g.fillCircle(16, 16, 7.5);
+
+    g.fillStyle(0xFBBF24, 0.38);
+    g.fillCircle(16, 16, 11.5);
+
+    g.fillStyle(0xF59E0B, 0.12);
+    g.fillCircle(16, 16, 16);
+
+    g.generateTexture("ztlo_bokeh_particle", 32, 32);
+    g.destroy();
+  }
+
+  public isBedtimeTwilight(): boolean {
+    return this.bedtimePhase === "twilight" || this.bedtimePhase === "bedtime";
+  }
+
+  /**
+   * Builds the floating companion Light Orb near the player with procedural bokeh particle trail.
    */
   public buildCompanionOrb(): void {
     if (this.lightOrbContainer) {
       this.lightOrbContainer.destroy(true);
+      this.lightOrbContainer = undefined;
     }
+    if (this.particleEmitter) {
+      this.particleEmitter.destroy();
+      this.particleEmitter = undefined;
+    }
+
+    this.ensureBokehParticleTexture();
 
     const player = this.world.getPlayer();
     const startGridX = player ? player.position.x : 1;
     const startGridY = player ? Math.max(0, player.position.y - 1) : 1;
 
     const orbPos = gridToScreenPoint(startGridX, startGridY, this.layoutMetrics);
-    const orbX = orbPos.x;
-    const orbY = orbPos.y - 12;
+    const orbX = orbPos.x + 18;
+    const orbY = orbPos.y - 14;
 
     this.lightOrbContainer = this.add.container(orbX, orbY);
     this.lightOrbContainer.setDepth(15);
 
-    const graphics = this.add.graphics();
-    this.lightOrbContainer.add(graphics);
-    this.renderLightOrbGraphic(graphics, this.tileSize);
+    const isBedtime = this.isBedtimeTwilight();
 
-    // Sinusoidal floating tween
-    this.tweens.add({
-      targets: this.lightOrbContainer,
-      y: orbY - 14,
+    // Procedural radial bokeh particle trail following the Light Orb
+    this.particleEmitter = this.add.particles(orbX, orbY, "ztlo_bokeh_particle", {
+      lifespan: { min: 600, max: 1100 },
+      speed: { min: 8, max: 24 },
+      angle: { min: 0, max: 360 },
+      scale: { start: 0.65, end: 0.05, ease: "Sine.easeOut" },
+      alpha: isBedtime ? { start: 0.28, end: 0 } : { start: 0.65, end: 0 },
+      tint: isBedtime
+        ? [0xC4B5FD, 0xA78BFA, 0xFDE68A, 0xDDD6FE]
+        : [0xFDE68A, 0xF59E0B, 0xFFFFFF, 0xFBBF24],
+      blendMode: Phaser.BlendModes.ADD,
+      frequency: 140,
+      quantity: 1,
+    });
+    this.particleEmitter.setDepth(14);
+    this.particleEmitter.startFollow(this.lightOrbContainer);
+
+    // Inner visual container so translation and sinusoidal bobbing don't conflict
+    this.orbVisualContainer = this.add.container(0, 0);
+    this.lightOrbContainer.add(this.orbVisualContainer);
+
+    this.currentExpression = this.world
+      ? this.world.getMentorExpression(this.bedtimePhase)
+      : this.currentExpression;
+    this.lastRenderedExpression = this.currentExpression;
+    this.lastRenderedBedtimeDimmed = isBedtime;
+
+    this.renderCompanionVisualContents();
+
+    // Gentle sinusoidal bobbing tween on inner visual container
+    this.orbBobTween = this.tweens.add({
+      targets: this.orbVisualContainer,
+      y: -8,
       duration: 1800,
       yoyo: true,
       repeat: -1,
       ease: "Sine.easeInOut",
     });
+  }
+
+  /**
+   * Renders visual contents of the Light Orb (aura + vector graphic face).
+   */
+  private renderCompanionVisualContents(): void {
+    if (!this.orbVisualContainer) return;
+    this.orbVisualContainer.removeAll(true);
+
+    const isBedtime = this.isBedtimeTwilight();
+    this.orbGraphics = this.add.graphics();
+    this.orbVisualContainer.add(this.orbGraphics);
+    this.renderLightOrbGraphic(this.orbGraphics, this.tileSize, this.currentExpression, isBedtime);
+  }
+
+  /**
+   * Updates Light Orb visual representation and particle trail to match current expression & phase.
+   */
+  public updateLightOrbVisuals(): void {
+    this.renderCompanionVisualContents();
+
+    const isBedtime = this.isBedtimeTwilight();
+    if (this.particleEmitter) {
+      if (isBedtime) {
+        this.particleEmitter.setAlpha(0.28);
+        this.particleEmitter.particleTint = 0xC4B5FD;
+      } else {
+        this.particleEmitter.setAlpha(0.65);
+        this.particleEmitter.particleTint = 0xFDE68A;
+      }
+    }
+  }
+
+  public setCompanionExpression(expression: LightOrbExpression): void {
+    if (this.currentExpression === expression) return;
+    this.currentExpression = expression;
+    this.lastRenderedExpression = expression;
+    this.updateLightOrbVisuals();
+  }
+
+  public setBedtimePhase(phase: BedtimePhase): void {
+    if (this.bedtimePhase === phase) return;
+    this.bedtimePhase = phase;
+    if (this.isBedtimeTwilight()) {
+      this.currentExpression = "sleepy";
+    }
+    this.updateLightOrbVisuals();
+  }
+
+  public getCompanionExpression(): LightOrbExpression {
+    return this.currentExpression;
+  }
+
+  public getParticleEmitter(): Phaser.GameObjects.Particles.ParticleEmitter | undefined {
+    return this.particleEmitter;
+  }
+
+  public getLightOrbContainer(): Phaser.GameObjects.Container | undefined {
+    return this.lightOrbContainer;
   }
 
   /**
@@ -428,12 +562,13 @@ export class ShrineScene extends Phaser.Scene {
 
         this.entityTweens.set(entity.id, tween);
 
-        // Update Light Orb position to follow Zyra gently
+        // Update Light Orb position to follow Zyra gently in 2D
         if (entity.renderable.shape === "avatar" && this.lightOrbContainer) {
           this.tweens.add({
             targets: this.lightOrbContainer,
-            x: pos.x + 16,
-            duration: 400,
+            x: pos.x + 18,
+            y: pos.y - 14,
+            duration: 420,
             ease: "Quad.easeOut",
           });
         }
@@ -1286,28 +1421,145 @@ export class ShrineScene extends Phaser.Scene {
     }
   }
 
-  private renderLightOrbGraphic(g: Phaser.GameObjects.Graphics, size: number): void {
+  public renderLightOrbGraphic(
+    g: Phaser.GameObjects.Graphics,
+    size: number,
+    expression: LightOrbExpression = "happy",
+    isBedtimeDimmed: boolean = false
+  ): void {
     const radius = size * 0.22;
+    const strokeColor = isBedtimeDimmed ? 0x6B21A8 : 0x78350F;
 
-    // Radiant outer glow
-    g.fillStyle(0xFDE68A, 0.45);
-    g.fillCircle(0, 0, radius * 1.5);
+    if (isBedtimeDimmed) {
+      // Dimmed, soothing nightlight glow mode for the 15-minute Bedtime Twilight phase
+      // Reduce glow opacity and shift to gentle lavender/amber nightlight aura
+      g.fillStyle(0xC4B5FD, 0.22); // Outer lavender glow with reduced opacity
+      g.fillCircle(0, 0, radius * 1.45);
 
-    // Warm inner glowing core
-    g.fillStyle(0xFEF08A, 1);
-    g.lineStyle(2, 0xF59E0B, 0.9);
-    g.fillCircle(0, 0, radius);
-    g.strokeCircle(0, 0, radius);
+      g.fillStyle(0xFEF3C7, 0.32); // Gentle warm amber mid aura
+      g.fillCircle(0, 0, radius * 1.18);
 
-    // Friendly eyes
-    g.fillStyle(0x78350F, 1);
-    g.fillCircle(-radius * 0.35, -radius * 0.15, 2);
-    g.fillCircle(radius * 0.35, -radius * 0.15, 2);
+      // Gentle nightlight core
+      g.fillStyle(0xFBF7EE, 0.88);
+      g.lineStyle(2, 0xA78BFA, 0.65);
+      g.fillCircle(0, 0, radius);
+      g.strokeCircle(0, 0, radius);
+    } else {
+      // Daylight radiant outer glow
+      g.fillStyle(0xFDE68A, 0.45);
+      g.fillCircle(0, 0, radius * 1.5);
 
-    // Gentle smile arc
-    g.lineStyle(1.8, 0x78350F, 1);
-    g.beginPath();
-    g.arc(0, 0, radius * 0.45, Phaser.Math.DegToRad(30), Phaser.Math.DegToRad(150), false);
-    g.strokePath();
+      // Warm inner glowing core
+      g.fillStyle(0xFEF08A, 1);
+      g.lineStyle(2, 0xF59E0B, 0.9);
+      g.fillCircle(0, 0, radius);
+      g.strokeCircle(0, 0, radius);
+    }
+
+    // Render facial expressions: happy, thinking, curious, sleepy
+    switch (expression) {
+      case "happy": {
+        // Cheerful eyes with bright starlight catchlight
+        g.fillStyle(strokeColor, 1);
+        g.fillCircle(-radius * 0.35, -radius * 0.15, 2.2);
+        g.fillCircle(radius * 0.35, -radius * 0.15, 2.2);
+
+        g.fillStyle(0xFFFFFF, 0.9);
+        g.fillCircle(-radius * 0.35 - 0.7, -radius * 0.15 - 0.7, 0.8);
+        g.fillCircle(radius * 0.35 - 0.7, -radius * 0.15 - 0.7, 0.8);
+
+        // Rosy blush
+        g.fillStyle(0xFB7185, 0.28);
+        g.fillCircle(-radius * 0.48, radius * 0.08, 2.2);
+        g.fillCircle(radius * 0.48, radius * 0.08, 2.2);
+
+        // Cheerful warm smile arc
+        g.lineStyle(1.8, strokeColor, 1);
+        g.beginPath();
+        g.arc(0, 0, radius * 0.45, Phaser.Math.DegToRad(30), Phaser.Math.DegToRad(150), false);
+        g.strokePath();
+        break;
+      }
+
+      case "thinking": {
+        // Pondering eyes gazing upward-right
+        g.fillStyle(strokeColor, 1);
+        g.fillCircle(-radius * 0.35, -radius * 0.18, 1.9);
+        g.fillCircle(radius * 0.36 + 0.8, -radius * 0.24, 2.3);
+
+        g.fillStyle(0xFFFFFF, 0.9);
+        g.fillCircle(-radius * 0.35 - 0.6, -radius * 0.18 - 0.6, 0.7);
+        g.fillCircle(radius * 0.36 + 0.4, -radius * 0.24 - 0.7, 0.8);
+
+        // Inquisitive pondering eyebrow
+        g.lineStyle(1.2, strokeColor, 0.9);
+        g.beginPath();
+        g.arc(
+          radius * 0.36 + 0.8,
+          -radius * 0.42,
+          radius * 0.18,
+          Phaser.Math.DegToRad(190),
+          Phaser.Math.DegToRad(350),
+          false
+        );
+        g.strokePath();
+
+        // Thoughtful "o" mouth
+        g.fillStyle(strokeColor, 1);
+        g.fillCircle(0, radius * 0.22, 1.8);
+        break;
+      }
+
+      case "curious": {
+        // Wide curious wonder eyes with double starlight reflections
+        g.fillStyle(strokeColor, 1);
+        g.fillCircle(-radius * 0.35, -radius * 0.15, 2.7);
+        g.fillCircle(radius * 0.35, -radius * 0.15, 2.7);
+
+        // Primary sparkle
+        g.fillStyle(0xFFFFFF, 1);
+        g.fillCircle(-radius * 0.35 - 0.8, -radius * 0.15 - 0.8, 1.1);
+        g.fillCircle(radius * 0.35 - 0.8, -radius * 0.15 - 0.8, 1.1);
+        // Secondary sub-sparkle
+        g.fillCircle(-radius * 0.35 + 0.7, -radius * 0.15 + 0.7, 0.6);
+        g.fillCircle(radius * 0.35 + 0.7, -radius * 0.15 + 0.7, 0.6);
+
+        // Wonder blush
+        g.fillStyle(0xFBBF24, 0.35);
+        g.fillCircle(-radius * 0.5, radius * 0.1, 2);
+        g.fillCircle(radius * 0.5, radius * 0.1, 2);
+
+        // Gentle open curious smile
+        g.lineStyle(1.8, strokeColor, 1);
+        g.beginPath();
+        g.arc(0, radius * 0.12, radius * 0.32, Phaser.Math.DegToRad(20), Phaser.Math.DegToRad(160), false);
+        g.strokePath();
+        break;
+      }
+
+      case "sleepy": {
+        // Peaceful closed resting eye arcs (u u)
+        g.lineStyle(1.8, strokeColor, 0.85);
+        g.beginPath();
+        g.arc(-radius * 0.35, -radius * 0.1, radius * 0.2, Phaser.Math.DegToRad(200), Phaser.Math.DegToRad(340), false);
+        g.strokePath();
+
+        g.beginPath();
+        g.arc(radius * 0.35, -radius * 0.1, radius * 0.2, Phaser.Math.DegToRad(200), Phaser.Math.DegToRad(340), false);
+        g.strokePath();
+
+        // Lavender bedtime blush
+        g.fillStyle(0xC084FC, 0.32);
+        g.fillCircle(-radius * 0.48, radius * 0.1, 2.4);
+        g.fillCircle(radius * 0.48, radius * 0.1, 2.4);
+
+        // Peaceful resting smile
+        g.lineStyle(1.6, strokeColor, 0.85);
+        g.beginPath();
+        g.arc(0, radius * 0.2, radius * 0.22, Phaser.Math.DegToRad(30), Phaser.Math.DegToRad(150), false);
+        g.strokePath();
+        break;
+      }
+    }
   }
 }

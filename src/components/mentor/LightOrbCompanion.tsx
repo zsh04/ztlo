@@ -4,7 +4,13 @@ import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Volume2, VolumeX, Mic } from "lucide-react";
 import { SocraticDialog } from "../../types/game";
-import { SOCRATIC_INQUIRY_CHIPS } from "../../ecs/systems/MentorSystem";
+import {
+  SOCRATIC_INQUIRY_CHIPS,
+  determineLightOrbExpression,
+  LightOrbExpression,
+} from "../../ecs/systems/MentorSystem";
+import type { MentorState } from "../../ecs/components";
+import type { BedtimePhase } from "../../lib/bedtime/bedtimeManager";
 import {
   speakText,
   stopSpeech,
@@ -13,7 +19,7 @@ import {
   isSpeechSynthesisSupported,
 } from "../../lib/speech/webSpeech";
 
-interface LightOrbCompanionProps {
+export interface LightOrbCompanionProps {
   dialog: SocraticDialog;
   inactiveSeconds: number;
   isOpen?: boolean;
@@ -23,6 +29,10 @@ interface LightOrbCompanionProps {
   onVoiceQuery?: (transcript: string) => void;
   onUndo?: () => void;
   canUndo?: boolean;
+  expression?: LightOrbExpression;
+  bedtimePhase?: BedtimePhase;
+  isBedtimeDimmed?: boolean;
+  mentorState?: MentorState;
 }
 
 const CHIP_ICONS: Record<string, string> = {
@@ -41,6 +51,10 @@ export const LightOrbCompanion: React.FC<LightOrbCompanionProps> = ({
   onVoiceQuery,
   onUndo,
   canUndo = true,
+  expression,
+  bedtimePhase = "daylight",
+  isBedtimeDimmed = false,
+  mentorState,
 }) => {
   const [internalOpen, setInternalOpen] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
@@ -52,6 +66,18 @@ export const LightOrbCompanion: React.FC<LightOrbCompanionProps> = ({
 
   // Synchronize controlled vs uncontrolled open state
   const isDialogOpen = isOpen !== undefined ? isOpen : internalOpen;
+
+  const isBedtimeTwilight =
+    bedtimePhase === "twilight" || bedtimePhase === "bedtime" || Boolean(isBedtimeDimmed);
+
+  const resolvedExpression: LightOrbExpression =
+    expression ||
+    determineLightOrbExpression({
+      mentorState,
+      promptType: dialog.promptType,
+      isBedtime: isBedtimeTwilight,
+      inactiveSeconds,
+    });
 
   const isCornerTrap =
     dialog.text.includes("corner is tight") || dialog.text.includes("rewind one step");
@@ -188,11 +214,21 @@ export const LightOrbCompanion: React.FC<LightOrbCompanionProps> = ({
           type="button"
           onClick={handleTap}
           aria-label="Light Orb Mentor"
-          className="w-20 h-20 min-w-[80px] min-h-[80px] rounded-full bg-gradient-to-tr from-amber-300 via-yellow-200 to-white shadow-xl flex items-center justify-center cursor-pointer border-3 border-amber-200/80 focus:outline-none focus:ring-4 focus:ring-amber-300/50 select-none pointer-events-auto"
+          data-expression={resolvedExpression}
+          data-bedtime={isBedtimeTwilight ? (bedtimePhase === "bedtime" ? "bedtime" : "twilight") : "daylight"}
+          className={`w-20 h-20 min-w-[80px] min-h-[80px] rounded-full flex items-center justify-center cursor-pointer border-3 select-none pointer-events-auto transition-colors duration-500 ${
+            isBedtimeTwilight
+              ? "opacity-85 bg-gradient-to-tr from-indigo-200/90 via-purple-100 to-amber-100/90 shadow-lg border-purple-200/80 focus:outline-none focus:ring-4 focus:ring-purple-300/40"
+              : "bg-gradient-to-tr from-amber-300 via-yellow-200 to-white shadow-xl border-amber-200/80 focus:outline-none focus:ring-4 focus:ring-amber-300/50"
+          }`}
           animate={{
             y: [0, -8, 0],
             scale: isPulsing ? [1, 1.12, 1] : [1, 1.03, 1],
-            boxShadow: isPulsing
+            boxShadow: isBedtimeTwilight
+              ? isPulsing
+                ? "0 0 18px rgba(167, 139, 250, 0.5)"
+                : "0 0 10px rgba(196, 181, 253, 0.3)"
+              : isPulsing
               ? "0 0 28px rgba(251, 191, 36, 0.85)"
               : "0 0 14px rgba(251, 191, 36, 0.45)",
           }}
@@ -204,16 +240,114 @@ export const LightOrbCompanion: React.FC<LightOrbCompanionProps> = ({
           whileTap={{ scale: 0.92 }}
         >
           <svg width="48" height="48" viewBox="0 0 40 40" fill="none">
-            <circle cx="20" cy="20" r="14" fill="#FFFFFF" fillOpacity="0.9" />
-            {/* Gentle smiling face on the orb */}
-            <circle cx="15" cy="18" r="1.8" fill="#78350F" />
-            <circle cx="25" cy="18" r="1.8" fill="#78350F" />
-            <path
-              d="M16 23C17.5 25 22.5 25 24 23"
-              stroke="#78350F"
-              strokeWidth="1.8"
-              strokeLinecap="round"
+            <circle
+              cx="20"
+              cy="20"
+              r="14"
+              fill={isBedtimeTwilight ? "#FBF7EE" : "#FFFFFF"}
+              fillOpacity={isBedtimeTwilight ? 0.85 : 0.9}
             />
+
+            {/* Dynamic Facial Expressions */}
+            {resolvedExpression === "happy" && (
+              <>
+                {/* Cheerful eyes with bright starlight catchlight */}
+                <circle cx="15" cy="18" r="2" fill="#78350F" />
+                <circle cx="14.3" cy="17.3" r="0.7" fill="#FFFFFF" />
+                <circle cx="25" cy="18" r="2" fill="#78350F" />
+                <circle cx="24.3" cy="17.3" r="0.7" fill="#FFFFFF" />
+                {/* Rosy blush cheeks */}
+                <circle cx="12" cy="21" r="1.8" fill="#FB7185" fillOpacity="0.45" />
+                <circle cx="28" cy="21" r="1.8" fill="#FB7185" fillOpacity="0.45" />
+                {/* Warm cheerful smile */}
+                <path
+                  d="M15 22C16.5 25.5 23.5 25.5 25 22"
+                  stroke="#78350F"
+                  strokeWidth="1.8"
+                  strokeLinecap="round"
+                />
+              </>
+            )}
+
+            {resolvedExpression === "thinking" && (
+              <>
+                {/* Pondering eyes gazing upward right */}
+                <circle cx="15" cy="18" r="1.8" fill="#78350F" />
+                <circle cx="14.3" cy="17.4" r="0.6" fill="#FFFFFF" />
+                <circle cx="25.5" cy="16.5" r="2.1" fill="#78350F" />
+                <circle cx="26.1" cy="15.9" r="0.7" fill="#FFFFFF" />
+                {/* Inquisitive eyebrow */}
+                <path
+                  d="M23.5 13.8C24.8 13.2 27 13.8 28 14.5"
+                  stroke="#78350F"
+                  strokeWidth="1.2"
+                  strokeLinecap="round"
+                />
+                {/* Pondering "o" mouth */}
+                <circle cx="20" cy="23.5" r="1.6" fill="#78350F" />
+              </>
+            )}
+
+            {resolvedExpression === "curious" && (
+              <>
+                {/* Wide curious wonder eyes with double starlight reflections */}
+                <circle cx="15" cy="17.5" r="2.6" fill="#78350F" />
+                <circle cx="14" cy="16.5" r="0.9" fill="#FFFFFF" />
+                <circle cx="15.8" cy="18.5" r="0.5" fill="#FFFFFF" />
+                <circle cx="25" cy="17.5" r="2.6" fill="#78350F" />
+                <circle cx="24" cy="16.5" r="0.9" fill="#FFFFFF" />
+                <circle cx="25.8" cy="18.5" r="0.5" fill="#FFFFFF" />
+                {/* Golden wonder blush */}
+                <circle cx="11.5" cy="21.5" r="1.5" fill="#FBBF24" fillOpacity="0.5" />
+                <circle cx="28.5" cy="21.5" r="1.5" fill="#FBBF24" fillOpacity="0.5" />
+                {/* Soft open curious smile */}
+                <path
+                  d="M16.5 22.5C17.5 25 22.5 25 23.5 22.5"
+                  stroke="#78350F"
+                  strokeWidth="1.8"
+                  strokeLinecap="round"
+                />
+              </>
+            )}
+
+            {resolvedExpression === "sleepy" && (
+              <>
+                {/* Peaceful closed resting eye arcs */}
+                <path
+                  d="M13 18C14 20 16 20 17 18"
+                  stroke={isBedtimeTwilight ? "#6B21A8" : "#78350F"}
+                  strokeWidth="1.8"
+                  strokeLinecap="round"
+                />
+                <path
+                  d="M23 18C24 20 26 20 27 18"
+                  stroke={isBedtimeTwilight ? "#6B21A8" : "#78350F"}
+                  strokeWidth="1.8"
+                  strokeLinecap="round"
+                />
+                {/* Soothing lavender blush */}
+                <circle cx="12" cy="21" r="2" fill="#C084FC" fillOpacity="0.4" />
+                <circle cx="28" cy="21" r="2" fill="#C084FC" fillOpacity="0.4" />
+                {/* Gentle peaceful sleeping smile */}
+                <path
+                  d="M18 23C19 24 21 24 22 23"
+                  stroke={isBedtimeTwilight ? "#6B21A8" : "#78350F"}
+                  strokeWidth="1.6"
+                  strokeLinecap="round"
+                />
+                {/* Soft floating bedtime 'z' */}
+                <text
+                  x="27"
+                  y="14"
+                  fontSize="8"
+                  fontWeight="bold"
+                  fill={isBedtimeTwilight ? "#A855F7" : "#F59E0B"}
+                  fillOpacity="0.75"
+                >
+                  z
+                </text>
+              </>
+            )}
           </svg>
         </motion.button>
 

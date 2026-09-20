@@ -4,7 +4,11 @@ import { GridPoint, RoomDefinition, SocraticDialog } from "../types/game";
 import { MovementSystem, StepResult } from "./systems/MovementSystem";
 import { PhysicsSystem } from "./systems/PhysicsSystem";
 import { TriggerSystem, TriggerEvaluationResult } from "./systems/TriggerSystem";
-import { MentorSystem } from "./systems/MentorSystem";
+import {
+  MentorSystem,
+  determineLightOrbExpression,
+  LightOrbExpression,
+} from "./systems/MentorSystem";
 import { NpcSystem, SootheResult } from "./systems/NpcSystem";
 import { OpticsSystem, BeamPath, OpticsEvaluationResult } from "./systems/OpticsSystem";
 import { LogicSystem, LogicEvaluationResult } from "./systems/LogicSystem";
@@ -48,6 +52,8 @@ export class GameWorld {
   public objective: string;
   public mentor: MentorComponent;
   public history: WorldSnapshot[];
+  public lastMentorAction: "push_success" | "praise" | null = null;
+  public lastMentorActionExpiry: number = 0;
   private cachedOpticsResult?: OpticsEvaluationResult;
 
   constructor(room: RoomDefinition) {
@@ -239,6 +245,9 @@ export class GameWorld {
       player
     );
     if (result.success && result.newPath.length > 0) {
+      this.lastMentorAction = "push_success";
+      this.lastMentorActionExpiry = Date.now() + 4000;
+      this.recordMentorSuccessfulPush();
       this.history.push(snapshot);
       this.evaluateTriggers();
       this.evaluateOptics();
@@ -387,4 +396,49 @@ export class GameWorld {
     return rotated;
   }
 
+  /**
+   * Evaluates if the player is currently within 1 tile of any puzzle element
+   * (blocks, plates, mirrors, receptors, emitters, logic gates, switches).
+   */
+  public isPlayerNearPuzzleElement(): boolean {
+    const player = this.getPlayer();
+    if (!player) return false;
+    const puzzleShapes = new Set([
+      "stone",
+      "ice",
+      "plate",
+      "mirror",
+      "receptor",
+      "emitter",
+      "gate",
+      "switch",
+    ]);
+    return this.getEntityList().some((e) => {
+      if (!puzzleShapes.has(e.renderable.shape)) return false;
+      const dx = Math.abs(e.position.x - player.position.x);
+      const dy = Math.abs(e.position.y - player.position.y);
+      return dx <= 1 && dy <= 1 && (dx + dy > 0);
+    });
+  }
+
+  /**
+   * Computes dynamic companion Light Orb facial expression based on world state,
+   * mentor emotional state, player proximity to puzzle elements, and bedtime phase.
+   */
+  public getMentorExpression(
+    bedtimePhase?: "daylight" | "twilight" | "bedtime"
+  ): LightOrbExpression {
+    const isPushRecent =
+      this.lastMentorAction === "push_success" &&
+      Date.now() < this.lastMentorActionExpiry;
+
+    return determineLightOrbExpression({
+      mentorState: this.mentor.state,
+      promptType: this.mentor.currentDialog.promptType,
+      bedtimePhase,
+      isNearPuzzleElement: this.isPlayerNearPuzzleElement(),
+      inactiveSeconds: this.mentor.idleSeconds,
+      lastAction: isPushRecent ? "push_success" : null,
+    });
+  }
 }

@@ -2,6 +2,80 @@ import { Entity } from "../entities";
 import { MentorComponent, MentorState } from "../components";
 import { SocraticDialog } from "../../types/game";
 
+export type LightOrbExpression = "happy" | "thinking" | "curious" | "sleepy";
+
+export interface DetermineExpressionOptions {
+  mentorState?: MentorState | string;
+  promptType?: "neutral" | "encourage" | "socratic_hint" | "praise" | string;
+  dialog?: SocraticDialog;
+  isBedtime?: boolean;
+  isBedtimeDimmed?: boolean;
+  bedtimePhase?: "daylight" | "twilight" | "bedtime";
+  isNearPuzzleElement?: boolean;
+  inactiveSeconds?: number;
+  lastAction?: "push_success" | "praise" | null;
+  isRecentSuccessfulPush?: boolean;
+}
+
+/**
+ * Deterministic mapping of game, mentor, and bedtime states to Light Orb companion facial expressions:
+ * - happy: on successful push or praise
+ * - thinking: when pondering or during Socratic question prompts
+ * - curious: when player is idle near a puzzle element or mirror
+ * - sleepy: when bedtime twilight phase is active
+ */
+export function determineLightOrbExpression(options: DetermineExpressionOptions): LightOrbExpression {
+  // 1. Bedtime twilight phase is active -> sleepy
+  if (
+    options.isBedtime ||
+    options.isBedtimeDimmed ||
+    options.bedtimePhase === "twilight" ||
+    options.bedtimePhase === "bedtime"
+  ) {
+    return "sleepy";
+  }
+
+  // 2. Successful push or praise -> happy
+  if (
+    options.isRecentSuccessfulPush ||
+    options.lastAction === "push_success" ||
+    options.lastAction === "praise" ||
+    options.mentorState === "success_affirmation" ||
+    options.mentorState === "room_cleared" ||
+    options.promptType === "encourage" ||
+    options.promptType === "praise" ||
+    (options.dialog?.promptType as string) === "praise" ||
+    options.dialog?.promptType === "encourage"
+  ) {
+    return "happy";
+  }
+
+  // 3. Socratic question prompts or pondering -> thinking
+  if (
+    options.promptType === "socratic_hint" ||
+    options.dialog?.promptType === "socratic_hint" ||
+    (options.dialog?.text && options.dialog.text.includes("?")) ||
+    options.mentorState === "direct_hint_request" ||
+    options.mentorState === "corner_trap" ||
+    options.mentorState === "block_corner_trap" ||
+    options.mentorState === "block_failed_push" ||
+    options.mentorState === "idle_nudge"
+  ) {
+    return "thinking";
+  }
+
+  // 4. Idle near a puzzle element or mirror -> curious
+  if (
+    options.mentorState === "plate_curiosity" ||
+    (options.isNearPuzzleElement && (options.inactiveSeconds === undefined || options.inactiveSeconds >= 2))
+  ) {
+    return "curious";
+  }
+
+  // Default friendly baseline
+  return "happy";
+}
+
 export interface InquiryChip {
   id: string;
   label: string;
