@@ -19,24 +19,50 @@
   box-sizing: border-box;
 }
 
+html {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100%;
+  height: 100%;
+  width: 100dvw;
+  height: 100dvh;
+  overflow: hidden;
+  overscroll-behavior: none;
+  -webkit-overflow-scrolling: auto;
+  touch-action: none;
+  -webkit-touch-callout: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
 html,
-body {
+body,
+main,
+#root {
   margin: 0;
   padding: 0;
   width: 100%;
+  width: 100dvw;
+  height: 100%;
+  height: 100dvh;
   min-height: 100%;
   overflow: hidden;
   overscroll-behavior: none;
+  -webkit-overflow-scrolling: auto;
+  touch-action: none;
+  -webkit-touch-callout: none;
+  user-select: none;
+  -webkit-user-select: none;
   background-color: var(--background);
   color: var(--foreground);
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   -webkit-text-size-adjust: 100%;
-  touch-action: none;
 }
 
 body {
-  min-height: 100vh;
-  min-height: 100svh;
   position: relative;
   display: flex;
   align-items: center;
@@ -49,6 +75,15 @@ body {
 button,
 [role="button"] {
   touch-action: manipulation;
+}
+
+/* Prevent double-tap-to-zoom, pinch-to-zoom, and callouts on the canvas */
+#ztlo-phaser-canvas-container,
+#ztlo-phaser-canvas-container canvas {
+  touch-action: none !important;
+  -webkit-touch-callout: none !important;
+  user-select: none !important;
+  -webkit-user-select: none !important;
 }
 
 /* Ensure smooth hardware-accelerated animations for Framer Motion */
