@@ -48,6 +48,11 @@ const PEDAGOGICAL_FOCUS_MAP: Record<
     description: "Social-emotional learning through soothing interactions and synchronous pacing.",
     subconsciousMechanic: "Interactive co-breathing rhythm transitions NPC state and unseals barrier.",
   },
+  "shrine-05": {
+    coreConcept: "Optics & Angular Reflection",
+    description: "Manipulating angles of incidence and reflection to guide radiant beams across physical obstacles.",
+    subconsciousMechanic: "Rotating prism mirrors to redirect starlight beam into the solar receptor.",
+  },
 };
 
 export async function GET() {
