@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 160" width="160" height="160" role="img" aria-label="Wall Cap - Bottom Foundation Plinth">
+  <defs>
+    <linearGradient id="plinthGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#94A3B8"/>
+      <stop offset="60%" stop-color="#64748B"/>
+      <stop offset="100%" stop-color="#475569"/>
+    </linearGradient>
+    <linearGradient id="floorLeadIn" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#CBD5E1"/>
+      <stop offset="100%" stop-color="#F1F5F9"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Upper Wall Face -->
+  <rect width="160" height="96" fill="url(#plinthGrad)"/>
+  <path d="M 80 0 L 80 96" stroke="#334155" stroke-width="2"/>
+
+  <!-- Base Plinth Bevel Footing -->
+  <polygon points="0,96 160,96 160,118 0,118" fill="#475569"/>
+  <polygon points="0,96 160,96 160,102 0,102" fill="#64748B"/>
+  <polygon points="0,118 160,118 160,126 0,126" fill="#334155"/>
+
+  <!-- Transition Into Sanctuary Floor Flagstone -->
+  <rect x="0" y="126" width="160" height="34" fill="url(#floorLeadIn)"/>
+  <!-- Mortar Seam Line -->
+  <path d="M 0 126 L 160 126" stroke="#94A3B8" stroke-width="2"/>
+</svg>

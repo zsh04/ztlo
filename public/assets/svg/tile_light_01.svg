@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 160" width="160" height="160" role="img" aria-label="Limestone Paver - Light Clean">
+  <defs>
+    <linearGradient id="mortarGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#E2E8F0"/>
+      <stop offset="100%" stop-color="#CBD5E1"/>
+    </linearGradient>
+    <linearGradient id="stoneSurface" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#FFFFFF"/>
+      <stop offset="30%" stop-color="#F8FAFC"/>
+      <stop offset="100%" stop-color="#F1F5F9"/>
+    </linearGradient>
+    <linearGradient id="bevelLight" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.8"/>
+      <stop offset="100%" stop-color="#FFFFFF" stop-opacity="0"/>
+    </linearGradient>
+    <linearGradient id="bevelShadow" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#64748B" stop-opacity="0"/>
+      <stop offset="100%" stop-color="#64748B" stop-opacity="0.25"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Mortar Joint Base Bed -->
+  <rect width="160" height="160" fill="url(#mortarGrad)"/>
+
+  <!-- Main Beveled Limestone Paver (4px inset) -->
+  <rect x="4" y="4" width="152" height="152" rx="6" fill="url(#stoneSurface)"/>
+
+  <!-- Top & Left Light Bevel -->
+  <path d="M 4 10 Q 4 4 10 4 L 150 4 Q 156 4 156 10 L 150 10 L 10 10 L 10 150 L 4 156 Z" fill="url(#bevelLight)"/>
+
+  <!-- Bottom & Right Ambient Occlusion Shadow -->
+  <path d="M 4 156 L 10 150 L 150 150 L 150 10 L 156 4 Q 156 156 150 156 Z" fill="url(#bevelShadow)"/>
+
+  <!-- Hand-Hewn Chisel Texture Grooves -->
+  <g stroke="#94A3B8" stroke-width="1.2" stroke-linecap="round" opacity="0.35">
+    <path d="M 28 36 L 54 34"/>
+    <path d="M 112 42 L 138 40"/>
+    <path d="M 34 120 L 68 122"/>
+    <path d="M 98 114 L 126 112"/>
+    <path d="M 72 74 L 88 74"/>
+  </g>
+
+  <!-- Subtle Ancient Sanctuary Inscribed Swirl in Center -->
+  <path d="M 76 80 A 4 4 0 0 1 84 80 A 8 8 0 0 1 76 88 A 12 12 0 0 1 68 76" 
+        stroke="#CBD5E1" stroke-width="1.8" stroke-linecap="round" fill="none" opacity="0.5"/>
+</svg>

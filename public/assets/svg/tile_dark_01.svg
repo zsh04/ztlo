@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 160" width="160" height="160" role="img" aria-label="Limestone Paver - Dark Geometric Relief">
+  <defs>
+    <linearGradient id="darkStoneMortar" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#94A3B8"/>
+      <stop offset="100%" stop-color="#64748B"/>
+    </linearGradient>
+    <linearGradient id="darkStoneSurface" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#E2E8F0"/>
+      <stop offset="40%" stop-color="#CBD5E1"/>
+      <stop offset="100%" stop-color="#94A3B8"/>
+    </linearGradient>
+    <linearGradient id="reliefGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#F1F5F9"/>
+      <stop offset="100%" stop-color="#94A3B8"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Mortar Joint Bed -->
+  <rect width="160" height="160" fill="url(#darkStoneMortar)"/>
+
+  <!-- Sage Limestone Flagstone -->
+  <rect x="4" y="4" width="152" height="152" rx="6" fill="url(#darkStoneSurface)"/>
+
+  <!-- Bevel Rim -->
+  <path d="M 4 4 L 156 4 L 150 10 L 10 10 L 10 150 L 4 156 Z" fill="#FFFFFF" opacity="0.5"/>
+  <path d="M 156 4 L 156 156 L 4 156 L 10 150 L 150 150 L 150 10 Z" fill="#334155" opacity="0.3"/>
+
+  <!-- Architectural Monument Valley Stepped Diamond Relief -->
+  <g transform="translate(80, 80)">
+    <!-- Outer Inset Stepped Diamond -->
+    <polygon points="0,-48 48,0 0,48 -48,0" fill="#94A3B8" opacity="0.4"/>
+    <polygon points="0,-44 44,0 0,44 -44,0" fill="url(#reliefGrad)"/>
+    <!-- Inner Stepped Diamond -->
+    <polygon points="0,-28 28,0 0,28 -28,0" fill="#64748B" opacity="0.35"/>
+    <polygon points="0,-24 24,0 0,24 -24,0" fill="#E2E8F0"/>
+    <!-- Central Core Keystone -->
+    <polygon points="0,-10 10,0 0,10 -10,0" fill="#475569"/>
+    <circle cx="0" cy="0" r="3" fill="#F8FAFC"/>
+  </g>
+
+  <!-- Corner Masonry Pins -->
+  <circle cx="22" cy="22" r="2.5" fill="#64748B" opacity="0.6"/>
+  <circle cx="138" cy="22" r="2.5" fill="#64748B" opacity="0.6"/>
+  <circle cx="22" cy="138" r="2.5" fill="#64748B" opacity="0.6"/>
+  <circle cx="138" cy="138" r="2.5" fill="#64748B" opacity="0.6"/>
+</svg>

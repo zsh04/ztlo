@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ZTLO — Storybook Art Asset Gallery (Issues #49 & #51)</title>
+  <style>
+    :root {
+      --bg: #F0F4F8;
+      --surface: #FFFFFF;
+      --text: #102A43;
+      --muted: #627D98;
+      --border: #D9E2EC;
+      --teal: #0284C7;
+      --coral: #F97316;
+      --gold: #FBBF24;
+      --cyan: #06B6D4;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      padding: 32px 24px;
+      line-height: 1.5;
+    }
+    header {
+      max-width: 1200px;
+      margin: 0 auto 32px;
+      padding-bottom: 20px;
+      border-bottom: 2px solid var(--border);
+    }
+    h1 {
+      font-size: 28px;
+      font-weight: 800;
+      color: var(--teal);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .badge {
+      font-size: 13px;
+      padding: 4px 10px;
+      border-radius: 9999px;
+      background: #E0F2FE;
+      color: #0369A1;
+      font-weight: 600;
+    }
+    p.subtitle {
+      font-size: 16px;
+      color: var(--muted);
+      margin-top: 6px;
+    }
+    main {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 40px;
+    }
+    section {
+      background: var(--surface);
+      border-radius: 16px;
+      padding: 24px;
+      box-shadow: 0 4px 16px rgba(15, 23, 42, 0.05);
+      border: 1px solid var(--border);
+    }
+    h2 {
+      font-size: 20px;
+      font-weight: 700;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .anim-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 28px;
+      align-items: flex-start;
+    }
+    .anim-player {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+      background: #F8FAFC;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px 24px;
+      min-width: 200px;
+    }
+    .anim-viewport {
+      width: 160px;
+      height: 160px;
+      background: #F1F5F9;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      border: 1px solid #CBD5E1;
+    }
+    .anim-viewport img {
+      width: 160px;
+      height: 160px;
+    }
+    .anim-viewport.orb img {
+      width: 96px;
+      height: 96px;
+    }
+    .anim-title {
+      font-weight: 700;
+      font-size: 15px;
+      color: var(--text);
+    }
+    .anim-meta {
+      font-size: 12px;
+      color: var(--muted);
+    }
+    .grid-gallery {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+      gap: 16px;
+    }
+    .card {
+      background: #F8FAFC;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 10px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      text-align: center;
+    }
+    .card img {
+      width: 100px;
+      height: 100px;
+      background: #FFFFFF;
+      border-radius: 6px;
+      border: 1px solid #E2E8F0;
+      object-fit: contain;
+    }
+    .card span {
+      font-size: 11px;
+      font-family: monospace;
+      color: var(--muted);
+      word-break: break-all;
+    }
+    .tile-assembler {
+      display: grid;
+      grid-template-columns: repeat(4, 80px);
+      grid-template-rows: repeat(4, 80px);
+      gap: 0;
+      margin: 16px 0;
+      border: 2px solid #64748B;
+      border-radius: 8px;
+      overflow: hidden;
+      width: fit-content;
+    }
+    .tile-assembler img {
+      width: 80px;
+      height: 80px;
+      display: block;
+    }
+    .palette-strip {
+      display: flex;
+      gap: 12px;
+      margin-top: 12px;
+      flex-wrap: wrap;
+    }
+    .palette-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      background: #F1F5F9;
+      padding: 4px 8px;
+      border-radius: 6px;
+    }
+    .swatch {
+      width: 16px;
+      height: 16px;
+      border-radius: 4px;
+      border: 1px solid rgba(0,0,0,0.1);
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Project ZTLO — Master Storybook Sprite & Tile Atlas <span class="badge">Retina @2x Vector (SVG)</span></h1>
+    <p class="subtitle">Validating GitHub Issues #49 (Zyra Character Sprites) & #51 (Ancient Sanctuary Limestone Tiles) · Ghibli / Monument Valley Aesthetic</p>
+    <div class="palette-strip">
+      <div class="palette-item"><div class="swatch" style="background:#0284C7"></div> Cloak: #0284C7</div>
+      <div class="palette-item"><div class="swatch" style="background:#F97316"></div> Scarf: #F97316</div>
+      <div class="palette-item"><div class="swatch" style="background:#FED7AA"></div> Skin: #FED7AA</div>
+      <div class="palette-item"><div class="swatch" style="background:#1E293B"></div> Hair: #1E293B</div>
+      <div class="palette-item"><div class="swatch" style="background:#FBBF24"></div> Feather: #FBBF24</div>
+      <div class="palette-item"><div class="swatch" style="background:#06B6D4"></div> Conduit: #06B6D4</div>
+      <div class="palette-item"><div class="swatch" style="background:#F1F5F9"></div> Limestone: #F1F5F9</div>
+      <div class="palette-item"><div class="swatch" style="background:#10B981"></div> Clover/Moss: #10B981</div>
+    </div>
+  </header>
+
+  <main>
+    <!-- 1. LIVE ANIMATION SEQUENCES -->
+    <section>
+      <h2>Active Animation Kinematics (Phaser-Synchronized FPS Loops) <span class="badge">60 FPS Hardware Batch</span></h2>
+      <div class="anim-row">
+        <!-- Idle -->
+        <div class="anim-player">
+          <div class="anim-viewport">
+            <img id="view-idle" src="assets/svg/zyra_idle_01.svg" alt="Zyra Idle">
+          </div>
+          <div class="anim-title">zyra-idle</div>
+          <div class="anim-meta">6 frames @ 8 FPS (breathing, blink)</div>
+        </div>
+
+        <!-- Walk -->
+        <div class="anim-player">
+          <div class="anim-viewport">
+            <img id="view-walk" src="assets/svg/zyra_walk_01.svg" alt="Zyra Walk">
+          </div>
+          <div class="anim-title">zyra-walk</div>
+          <div class="anim-meta">8 frames @ 12 FPS (stride cycle)</div>
+        </div>
+
+        <!-- Push -->
+        <div class="anim-player">
+          <div class="anim-viewport">
+            <img id="view-push" src="assets/svg/zyra_push_01.svg" alt="Zyra Push">
+          </div>
+          <div class="anim-title">zyra-push</div>
+          <div class="anim-meta">6 frames @ 12 FPS (braced effort)</div>
+        </div>
+
+        <!-- Celebrate -->
+        <div class="anim-player">
+          <div class="anim-viewport">
+            <img id="view-celeb" src="assets/svg/zyra_celebrate_01.svg" alt="Zyra Celebrate">
+          </div>
+          <div class="anim-title">zyra-celebrate</div>
+          <div class="anim-meta">8 frames @ 12 FPS (joyful victory leap)</div>
+        </div>
+
+        <!-- Sleep -->
+        <div class="anim-player">
+          <div class="anim-viewport">
+            <img id="view-sleep" src="assets/svg/zyra_sleep_01.svg" alt="Zyra Sleep">
+          </div>
+          <div class="anim-title">zyra-sleep</div>
+          <div class="anim-meta">4 frames @ 4 FPS (bedtime off-ramp)</div>
+        </div>
+
+        <!-- Orb Floating -->
+        <div class="anim-player">
+          <div class="anim-viewport orb" style="background: radial-gradient(circle, #1E1B4B 0%, #0F172A 100%);">
+            <img id="view-orb" src="assets/svg/orb_face_happy.svg" alt="Light Orb" style="animation: orbBob 3.6s ease-in-out infinite;">
+          </div>
+          <div class="anim-title">Light Orb Companion</div>
+          <div class="anim-meta">0.28 Hz Sinusoidal Float + Emotion</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 2. ENVIRONMENT & CONDUIT TRACKS COMPOSITION -->
+    <section>
+      <h2>Ancient Sanctuary Limestone Assembler & Conduits (Shrines 00–06)</h2>
+      <p style="color:var(--muted); margin-bottom:12px; font-size:14px;">Tiled 4×4 chamber floor mockup demonstrating limestone mortar bevels, perimeter coping caps, and bioluminescent energy routing circuit:</p>
+      
+      <div class="tile-assembler">
+        <!-- Row 1: Wall Caps -->
+        <img src="assets/svg/wall_cap_corner.svg" alt="Corner">
+        <img src="assets/svg/wall_cap_top.svg" alt="Top">
+        <img src="assets/svg/wall_cap_moss.svg" alt="Moss Cap">
+        <img src="assets/svg/wall_cap_corner.svg" style="transform: scaleX(-1);" alt="Corner">
+
+        <!-- Row 2: Floor + Conduit -->
+        <img src="assets/svg/tile_light_01.svg" alt="Light Floor">
+        <img src="assets/svg/conduit_straight.svg" alt="Conduit">
+        <img src="assets/svg/tile_dark_01.svg" alt="Dark Floor">
+        <img src="assets/svg/tile_light_02.svg" alt="Clover Floor">
+
+        <!-- Row 3: Conduits & Switches -->
+        <img src="assets/svg/conduit_corner.svg" style="transform: rotate(90deg);" alt="Elbow">
+        <img src="assets/svg/conduit_cross.svg" alt="Cross">
+        <img src="assets/svg/conduit_switch_i.svg" alt="Switch I">
+        <img src="assets/svg/tile_dark_02.svg" alt="Mossy Floor">
+
+        <!-- Row 4: Wall Bottom + Portal -->
+        <img src="assets/svg/wall_cap_bottom.svg" alt="Bottom">
+        <img src="assets/svg/portal_archway_unsealed.svg" alt="Portal">
+        <img src="assets/svg/wall_cap_bottom.svg" alt="Bottom">
+        <img src="assets/svg/wall_cap_bottom.svg" alt="Bottom">
+      </div>
+    </section>
+
+    <!-- 3. COMPLETE ATOM CATALOG -->
+    <section>
+      <h2>Master Asset Sheet (All 52 Independent Standalone SVGs)</h2>
+      
+      <h3 style="font-size:15px; margin: 16px 0 8px; color:var(--teal);">Hero: Zyra Character Frames (160×160)</h3>
+      <div class="grid-gallery" id="zyra-gallery"></div>
+
+      <h3 style="font-size:15px; margin: 24px 0 8px; color:var(--gold);">Companion: Light Orb Expressive Faces (96×96)</h3>
+      <div class="grid-gallery" id="orb-gallery"></div>
+
+      <h3 style="font-size:15px; margin: 24px 0 8px; color:var(--cyan);">Environment: Limestone Tiles & Wall Caps (160×160)</h3>
+      <div class="grid-gallery" id="env-gallery"></div>
+
+      <h3 style="font-size:15px; margin: 24px 0 8px; color:#6366F1;">Sanctuary: Energy Conduits & Portal (160×160)</h3>
+      <div class="grid-gallery" id="conduit-gallery"></div>
+    </section>
+  </main>
+
+  <style>
+    @keyframes orbBob {
+      0%, 100% { transform: translateY(0px) scale(1); }
+      50% { transform: translateY(-10px) scale(1.05); }
+    }
+  </style>
+
+  <script>
+    // Frame animation loops
+    const idleFrames = Array.from({length: 6}, (_, i) => `assets/svg/zyra_idle_${String(i+1).padStart(2, '0')}.svg`);
+    const walkFrames = Array.from({length: 8}, (_, i) => `assets/svg/zyra_walk_${String(i+1).padStart(2, '0')}.svg`);
+    const pushFrames = Array.from({length: 6}, (_, i) => `assets/svg/zyra_push_${String(i+1).padStart(2, '0')}.svg`);
+    const celebFrames = Array.from({length: 8}, (_, i) => `assets/svg/zyra_celebrate_${String(i+1).padStart(2, '0')}.svg`);
+    const sleepFrames = Array.from({length: 4}, (_, i) => `assets/svg/zyra_sleep_${String(i+1).padStart(2, '0')}.svg`);
+    const orbFrames = [
+      'assets/svg/orb_face_happy.svg',
+      'assets/svg/orb_face_curious.svg',
+      'assets/svg/orb_face_thinking.svg',
+      'assets/svg/orb_face_sleepy.svg'
+    ];
+
+    function createLooper(elId, frames, fps) {
+      let idx = 0;
+      const el = document.getElementById(elId);
+      setInterval(() => {
+        idx = (idx + 1) % frames.length;
+        el.src = frames[idx];
+      }, 1000 / fps);
+    }
+
+    createLooper('view-idle', idleFrames, 8);
+    createLooper('view-walk', walkFrames, 12);
+    createLooper('view-push', pushFrames, 12);
+    createLooper('view-celeb', celebFrames, 12);
+    createLooper('view-sleep', sleepFrames, 4);
+    createLooper('view-orb', orbFrames, 0.5); // mood change every 2s
+
+    // Populate catalog
+    function addCards(containerId, fileList) {
+      const container = document.getElementById(containerId);
+      fileList.forEach(fn => {
+        const card = document.createElement('div');
+        card.className = 'card';
+        card.innerHTML = `<img src="assets/svg/${fn}" alt="${fn}"><span>${fn}</span>`;
+        container.appendChild(card);
+      });
+    }
+
+    const allZyra = [
+      ...idleFrames.map(p => p.split('/').pop()),
+      ...walkFrames.map(p => p.split('/').pop()),
+      ...pushFrames.map(p => p.split('/').pop()),
+      ...celebFrames.map(p => p.split('/').pop()),
+      ...sleepFrames.map(p => p.split('/').pop())
+    ];
+    addCards('zyra-gallery', allZyra);
+
+    const allOrb = orbFrames.map(p => p.split('/').pop());
+    addCards('orb-gallery', allOrb);
+
+    const allEnv = [
+      'tile_light_01.svg', 'tile_light_02.svg', 'tile_dark_01.svg', 'tile_dark_02.svg',
+      'wall_cap_top.svg', 'wall_cap_bottom.svg', 'wall_cap_corner.svg', 'wall_cap_moss.svg'
+    ];
+    addCards('env-gallery', allEnv);
+
+    const allConduits = [
+      'conduit_straight.svg', 'conduit_corner.svg', 'conduit_t_junction.svg', 'conduit_cross.svg',
+      'conduit_switch_i.svg', 'conduit_switch_ii.svg', 'conduit_switch_iii.svg', 'portal_archway_unsealed.svg'
+    ];
+    addCards('conduit-gallery', allConduits);
+  </script>
+</body>
+</html>

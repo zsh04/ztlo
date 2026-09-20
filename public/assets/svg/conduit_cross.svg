@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 160" width="160" height="160" role="img" aria-label="Energy Conduit - 4-Way Cross Junction">
+
+  <defs>
+    <!-- Radiant Starlight Conduit Glow Gradients -->
+    <linearGradient id="cyanConduitGlow" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#0891B2" stop-opacity="0.2"/>
+      <stop offset="35%" stop-color="#06B6D4" stop-opacity="0.8"/>
+      <stop offset="50%" stop-color="#E0F2FE"/>
+      <stop offset="65%" stop-color="#06B6D4" stop-opacity="0.8"/>
+      <stop offset="100%" stop-color="#0891B2" stop-opacity="0.2"/>
+    </linearGradient>
+    <radialGradient id="portalCore" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#FFFFFF"/>
+      <stop offset="25%" stop-color="#E0F2FE"/>
+      <stop offset="50%" stop-color="#38BDF8"/>
+      <stop offset="75%" stop-color="#818CF8"/>
+      <stop offset="100%" stop-color="#1E1B4B"/>
+    </radialGradient>
+  </defs>
+    
+
+  <!-- Base Limestone Paver Bed -->
+  <rect width="160" height="160" fill="#94A3B8"/>
+  <rect x="4" y="4" width="152" height="152" rx="6" fill="#CBD5E1"/>
+  <!-- Paver Inset Bevel -->
+  <path d="M 4 4 L 156 4 L 150 10 L 10 10 L 10 150 L 4 156 Z" fill="#FFFFFF" opacity="0.6"/>
+  <path d="M 156 4 L 156 156 L 4 156 L 10 150 L 150 150 L 150 10 Z" fill="#475569" opacity="0.3"/>
+    
+  <!-- Recessed 4-Way Cross Channel -->
+  <rect x="66" y="0" width="28" height="160" fill="#334155"/>
+  <rect x="0" y="66" width="160" height="28" fill="#334155"/>
+
+  <!-- Glowing Conduit Cross Tracks -->
+  <path d="M 80 0 L 80 160 M 0 80 L 160 80" stroke="#06B6D4" stroke-width="16" fill="none"/>
+  <path d="M 80 0 L 80 160 M 0 80 L 160 80" stroke="#E0F2FE" stroke-width="9" fill="none" opacity="0.7"/>
+  <path d="M 80 0 L 80 160 M 0 80 L 160 80" stroke="#FFFFFF" stroke-width="5" fill="none"/>
+
+  <!-- Radiant Central Ring Junction -->
+  <circle cx="80" cy="80" r="18" fill="#0891B2" opacity="0.8"/>
+  <circle cx="80" cy="80" r="12" fill="#22D3EE"/>
+  <circle cx="80" cy="80" r="6" fill="#FFFFFF"/>
+</svg>
