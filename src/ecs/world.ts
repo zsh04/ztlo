@@ -7,6 +7,7 @@ import { TriggerSystem, TriggerEvaluationResult } from "./systems/TriggerSystem"
 import { MentorSystem } from "./systems/MentorSystem";
 import { NpcSystem, SootheResult } from "./systems/NpcSystem";
 import { OpticsSystem, BeamPath, OpticsEvaluationResult } from "./systems/OpticsSystem";
+import { LogicSystem, LogicEvaluationResult } from "./systems/LogicSystem";
 import { MentorComponent, NpcEmotionState } from "./components";
 
 export interface EntityPositionSnapshot {
@@ -28,6 +29,10 @@ export interface EntityPositionSnapshot {
     angle?: 45 | 135 | 225 | 315;
     isActivated?: boolean;
     isLit?: boolean;
+  };
+  logicGateState?: {
+    currentSequence: string[];
+    isSatisfied: boolean;
   };
 }
 
@@ -91,6 +96,12 @@ export class GameWorld {
               angle: e.optics.angle,
               isActivated: e.optics.isActivated,
               isLit: e.optics.isLit,
+            }
+          : undefined,
+        logicGateState: e.logicGate
+          ? {
+              currentSequence: [...e.logicGate.currentSequence],
+              isSatisfied: e.logicGate.isSatisfied,
             }
           : undefined,
         npcState: e.npc
@@ -160,6 +171,11 @@ export class GameWorld {
           entity.optics.isActivated = snap.opticsState.isActivated;
           entity.optics.isLit = snap.opticsState.isLit;
         }
+
+        if (entity.logicGate && snap.logicGateState) {
+          entity.logicGate.currentSequence = [...snap.logicGateState.currentSequence];
+          entity.logicGate.isSatisfied = snap.logicGateState.isSatisfied;
+        }
       }
     }
 
@@ -195,7 +211,12 @@ export class GameWorld {
     if (!player) {
       return { moved: false, finished: true, currentPos: { x: 0, y: 0 } };
     }
-    return MovementSystem.step(player, this.width, this.height, this.getEntityList());
+    const res = MovementSystem.step(player, this.width, this.height, this.getEntityList());
+    if (res.moved) {
+      this.evaluateTriggers();
+      this.evaluateOptics();
+    }
+    return res;
   }
 
   public cancelPlayerMovement(): void {
@@ -226,7 +247,22 @@ export class GameWorld {
   }
 
   public evaluateTriggers(): TriggerEvaluationResult {
-    return TriggerSystem.evaluate(this.getEntityList());
+    const triggerRes = TriggerSystem.evaluate(this.getEntityList());
+    const logicRes = LogicSystem.evaluate(this.getEntityList());
+    for (const d of logicRes.doorsUnlocked) {
+      if (!triggerRes.doorsUnlocked.includes(d)) {
+        triggerRes.doorsUnlocked.push(d);
+      }
+    }
+    return triggerRes;
+  }
+
+  public evaluateLogic(): LogicEvaluationResult {
+    return LogicSystem.evaluate(this.getEntityList());
+  }
+
+  public getLogicGates(): Entity[] {
+    return this.getEntityList().filter((e) => e.logicGate !== undefined);
   }
 
   public tickMentor(dtSeconds: number = 1): SocraticDialog {

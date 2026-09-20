@@ -48,6 +48,9 @@ export class ShrineScene extends Phaser.Scene {
   private npcSoothedStates: Map<string, boolean> = new Map();
   private mirrorAngles: Map<string, number> = new Map();
   private receptorStates: Map<string, boolean> = new Map();
+  private gateStates: Map<string, boolean> = new Map();
+  private switchStates: Map<string, boolean> = new Map();
+  private conduitGraphics?: Phaser.GameObjects.Graphics;
   private beamGraphics?: Phaser.GameObjects.Graphics;
   private lightOrbContainer?: Phaser.GameObjects.Container;
 
@@ -76,8 +79,10 @@ export class ShrineScene extends Phaser.Scene {
   }
 
   public create(): void {
+    this.conduitGraphics = this.add.graphics();
+    this.conduitGraphics.setDepth(1);
     this.beamGraphics = this.add.graphics();
-    this.beamGraphics.setDepth(5);
+    this.beamGraphics.setDepth(12);
     this.calculateLayout();
     this.buildGrid();
     this.buildEntities();
@@ -275,6 +280,18 @@ export class ShrineScene extends Phaser.Scene {
         const isRecActivated = entity.optics?.isActivated ?? false;
         this.receptorStates.set(entity.id, isRecActivated);
         this.renderReceptorGraphic(graphics, this.tileSize, isRecActivated);
+        break;
+
+      case "gate":
+        const isSatisfied = entity.logicGate?.isSatisfied ?? false;
+        this.gateStates.set(entity.id, isSatisfied);
+        this.renderGateGraphic(graphics, this.tileSize, isSatisfied);
+        break;
+
+      case "switch":
+        const isDepSw = entity.trigger?.isDepressed ?? false;
+        this.switchStates.set(entity.id, isDepSw);
+        this.renderFloorSwitchGraphic(graphics, this.tileSize, entity, isDepSw);
         break;
 
     }
@@ -547,8 +564,59 @@ export class ShrineScene extends Phaser.Scene {
           }
         }
       }
+
+      // Handle Gate visual state changes
+      if (entity.renderable.shape === "gate" && entity.logicGate) {
+        const lastSatisfied = this.gateStates.get(entity.id);
+        const currentSatisfied = entity.logicGate.isSatisfied;
+
+        if (lastSatisfied !== currentSatisfied) {
+          this.gateStates.set(entity.id, currentSatisfied);
+          const graphics = container.getAt(0) as Phaser.GameObjects.Graphics;
+          if (graphics) {
+            graphics.clear();
+            this.renderGateGraphic(graphics, this.tileSize, currentSatisfied);
+          }
+
+          if (currentSatisfied) {
+            this.tweens.add({
+              targets: container,
+              scaleX: 1.2,
+              scaleY: 1.2,
+              duration: 250,
+              yoyo: true,
+              ease: "Back.easeOut",
+            });
+          }
+        }
+      }
+
+      // Handle Floor Switch visual state changes
+      if (entity.renderable.shape === "switch" && entity.trigger) {
+        const lastDepressed = this.switchStates.get(entity.id);
+        const currentDepressed = entity.trigger.isDepressed;
+
+        if (lastDepressed !== currentDepressed) {
+          this.switchStates.set(entity.id, currentDepressed);
+          const graphics = container.getAt(0) as Phaser.GameObjects.Graphics;
+          if (graphics) {
+            graphics.clear();
+            this.renderFloorSwitchGraphic(graphics, this.tileSize, entity, currentDepressed);
+          }
+
+          this.tweens.add({
+            targets: container,
+            scaleX: currentDepressed ? 0.94 : 1.05,
+            scaleY: currentDepressed ? 0.94 : 1.05,
+            duration: 150,
+            yoyo: true,
+            ease: "Quad.easeInOut",
+          });
+        }
+      }
     }
 
+    this.renderFloorConduits();
     this.renderOpticsBeams();
   }
 
@@ -583,6 +651,8 @@ export class ShrineScene extends Phaser.Scene {
     this.buildGrid();
     this.buildEntities();
     this.buildCompanionOrb();
+    this.renderFloorConduits();
+    this.renderOpticsBeams();
   }
 
   // ==========================================
@@ -842,6 +912,192 @@ export class ShrineScene extends Phaser.Scene {
     }
   }
 
+
+
+  public renderFloorConduits(): void {
+    if (!this.conduitGraphics) return;
+    this.conduitGraphics.clear();
+
+    const gates = this.world.getLogicGates();
+    if (!gates || gates.length === 0) return;
+
+    for (const gateEntity of gates) {
+      const gate = gateEntity.logicGate;
+      if (!gate) continue;
+
+      const isSatisfied = gate.isSatisfied;
+      const tiles = gate.conduitTiles;
+
+      if (tiles && tiles.length > 1) {
+        const screenPoints = tiles.map((t) =>
+          gridToScreenPoint(t.x, t.y, this.layoutMetrics)
+        );
+
+        if (isSatisfied) {
+          // Active glowing cyan conduit circuit
+          this.conduitGraphics.lineStyle(8, 0x06B6D4, 0.45);
+          this.conduitGraphics.beginPath();
+          this.conduitGraphics.moveTo(screenPoints[0].x, screenPoints[0].y);
+          for (let i = 1; i < screenPoints.length; i++) {
+            this.conduitGraphics.lineTo(screenPoints[i].x, screenPoints[i].y);
+          }
+          this.conduitGraphics.strokePath();
+
+          this.conduitGraphics.lineStyle(4, 0x22D3EE, 0.8);
+          this.conduitGraphics.beginPath();
+          this.conduitGraphics.moveTo(screenPoints[0].x, screenPoints[0].y);
+          for (let i = 1; i < screenPoints.length; i++) {
+            this.conduitGraphics.lineTo(screenPoints[i].x, screenPoints[i].y);
+          }
+          this.conduitGraphics.strokePath();
+
+          this.conduitGraphics.lineStyle(2, 0xFFFFFF, 0.95);
+          this.conduitGraphics.beginPath();
+          this.conduitGraphics.moveTo(screenPoints[0].x, screenPoints[0].y);
+          for (let i = 1; i < screenPoints.length; i++) {
+            this.conduitGraphics.lineTo(screenPoints[i].x, screenPoints[i].y);
+          }
+          this.conduitGraphics.strokePath();
+
+          // Solder node dots
+          for (const pt of screenPoints) {
+            this.conduitGraphics.fillStyle(0xFFFFFF, 0.95);
+            this.conduitGraphics.fillCircle(pt.x, pt.y, 4);
+          }
+        } else {
+          // Dormant soft slate conduit
+          this.conduitGraphics.lineStyle(3, 0x64748B, 0.35);
+          this.conduitGraphics.beginPath();
+          this.conduitGraphics.moveTo(screenPoints[0].x, screenPoints[0].y);
+          for (let i = 1; i < screenPoints.length; i++) {
+            this.conduitGraphics.lineTo(screenPoints[i].x, screenPoints[i].y);
+          }
+          this.conduitGraphics.strokePath();
+
+          // Dormant node dots
+          for (const pt of screenPoints) {
+            this.conduitGraphics.fillStyle(0x64748B, 0.4);
+            this.conduitGraphics.fillCircle(pt.x, pt.y, 3);
+          }
+        }
+      }
+    }
+  }
+
+  private renderGateGraphic(g: Phaser.GameObjects.Graphics, size: number, isSatisfied: boolean): void {
+    const s = size * 0.76;
+    const half = s / 2;
+
+    // Ground shadow
+    g.fillStyle(0x000000, 0.2);
+    g.fillEllipse(0, half * 0.85, s * 0.8, s * 0.25);
+
+    if (isSatisfied) {
+      // Radiant Cyan Nexus
+      g.fillStyle(0x06B6D4, 0.35);
+      g.fillCircle(0, 0, half * 1.25);
+
+      g.fillStyle(0x0891B2, 1);
+      g.lineStyle(2.5, 0x22D3EE, 1);
+      g.beginPath();
+      g.moveTo(0, -half * 0.85);
+      g.lineTo(half * 0.85, 0);
+      g.lineTo(0, half * 0.85);
+      g.lineTo(-half * 0.85, 0);
+      g.closePath();
+      g.fillPath();
+      g.strokePath();
+
+      // Inner glowing core
+      g.fillStyle(0x67E8F9, 1);
+      g.fillCircle(0, 0, half * 0.4);
+
+      g.fillStyle(0xFFFFFF, 0.95);
+      g.fillCircle(0, 0, half * 0.2);
+    } else {
+      // Dormant Logic Pedestal
+      g.fillStyle(0x334155, 1);
+      g.lineStyle(2.5, 0x1E293B, 1);
+      g.beginPath();
+      g.moveTo(0, -half * 0.85);
+      g.lineTo(half * 0.85, 0);
+      g.lineTo(0, half * 0.85);
+      g.lineTo(-half * 0.85, 0);
+      g.closePath();
+      g.fillPath();
+      g.strokePath();
+
+      // Inactive glyph
+      g.lineStyle(2, 0x64748B, 0.7);
+      g.strokeCircle(0, 0, half * 0.35);
+    }
+  }
+
+  private renderFloorSwitchGraphic(
+    g: Phaser.GameObjects.Graphics,
+    size: number,
+    entity: Entity,
+    isDepressed: boolean
+  ): void {
+    const s = size * 0.78;
+    const half = s / 2;
+
+    // Determine sequence dot count from ID (e.g. switch-1 -> 1, switch-2 -> 2, switch-3 -> 3)
+    let dotCount = 1;
+    if (entity.id.includes("2")) dotCount = 2;
+    else if (entity.id.includes("3")) dotCount = 3;
+
+    if (isDepressed) {
+      // Active State
+      g.fillStyle(0xF59E0B, 0.3);
+      g.fillCircle(0, 0, half * 1.15);
+
+      g.fillStyle(0xD97706, 1);
+      g.lineStyle(3, 0xFBBF24, 1);
+      g.fillRoundedRect(-half, -half, s, s, 14);
+      g.strokeRoundedRect(-half, -half, s, s, 14);
+
+      // Inner rune ring
+      g.lineStyle(2, 0xFEF3C7, 1);
+      g.strokeCircle(0, 0, half * 0.55);
+
+      // Rune Dots in Center
+      g.fillStyle(0xFFFFFF, 0.95);
+      if (dotCount === 1) {
+        g.fillCircle(0, 0, 4);
+      } else if (dotCount === 2) {
+        g.fillCircle(-half * 0.25, 0, 3.5);
+        g.fillCircle(half * 0.25, 0, 3.5);
+      } else if (dotCount === 3) {
+        g.fillCircle(-half * 0.3, 0, 3);
+        g.fillCircle(0, 0, 3);
+        g.fillCircle(half * 0.3, 0, 3);
+      }
+    } else {
+      // Inactive Storybook Slate/Amber Switch
+      g.fillStyle(0xFEF3C7, 1); // Soft parchment amber
+      g.lineStyle(3, 0xD97706, 1);
+      g.fillRoundedRect(-half, -half, s, s, 14);
+      g.strokeRoundedRect(-half, -half, s, s, 14);
+
+      // Inner target circle
+      g.lineStyle(2, 0xF59E0B, 0.7);
+      g.strokeCircle(0, 0, half * 0.55);
+
+      // Rune Dots
+      g.fillStyle(0xB45309, 1);
+      if (dotCount === 1) {
+        g.fillCircle(0, 0, 3.5);
+      } else if (dotCount === 2) {
+        g.fillCircle(-half * 0.25, 0, 3);
+        g.fillCircle(half * 0.25, 0, 3);
+      } else if (dotCount === 3) {
+        g.fillCircle(-half * 0.3, 0, 2.5);
+        g.fillCircle(0, 0, 2.5);
+        g.fillCircle(half * 0.3, 0, 2.5);
+      }
+    }
+  }
 
   public renderOpticsBeams(): void {
     if (!this.beamGraphics) return;
