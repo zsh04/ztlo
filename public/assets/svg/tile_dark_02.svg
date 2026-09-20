@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 160" width="160" height="160" role="img" aria-label="Limestone Paver - Dark Mossy Variant">
+  <defs>
+    <linearGradient id="darkStoneSurface3" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#E2E8F0"/>
+      <stop offset="50%" stop-color="#CBD5E1"/>
+      <stop offset="100%" stop-color="#94A3B8"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Mortar Joint Bed -->
+  <rect width="160" height="160" fill="#64748B"/>
+
+  <!-- Sage Limestone Flagstone -->
+  <rect x="4" y="4" width="152" height="152" rx="6" fill="url(#darkStoneSurface3)"/>
+
+  <!-- Bevel Rim -->
+  <path d="M 4 4 L 156 4 L 150 10 L 10 10 L 10 150 L 4 156 Z" fill="#FFFFFF" opacity="0.5"/>
+  <path d="M 156 4 L 156 156 L 4 156 L 10 150 L 150 150 L 150 10 Z" fill="#334155" opacity="0.3"/>
+
+  <!-- Surface Weathering Lines -->
+  <path d="M 32 38 L 84 36 M 104 124 L 140 120" stroke="#64748B" stroke-width="1.4" stroke-linecap="round" opacity="0.35"/>
+
+  <!-- Creeping Sanctuary Moss Along Left Seam -->
+  <g>
+    <!-- Base Moss Patches (#047857, #059669) -->
+    <path d="M 4 16 Q 16 24 12 38 Q 20 48 10 64 Q 18 78 8 96 Q 14 114 4 126 Z" fill="#047857"/>
+    <path d="M 4 20 Q 14 26 10 36 Q 16 46 8 60 Q 15 76 6 92 Q 11 110 4 122 Z" fill="#059669"/>
+    <!-- Lush Leaves / Fronds (#10B981) -->
+    <circle cx="12" cy="30" r="4.5" fill="#10B981"/>
+    <circle cx="15" cy="44" r="5" fill="#10B981"/>
+    <circle cx="11" cy="58" r="4" fill="#34D399"/>
+    <circle cx="14" cy="72" r="5.5" fill="#10B981"/>
+    <circle cx="10" cy="88" r="4.5" fill="#34D399"/>
+    <circle cx="12" cy="104" r="5" fill="#10B981"/>
+    <!-- Lichen Golden Spores (#FBBF24) -->
+    <circle cx="16" cy="34" r="1.5" fill="#FBBF24"/>
+    <circle cx="18" cy="76" r="1.8" fill="#FBBF24"/>
+    <circle cx="14" cy="94" r="1.5" fill="#FBBF24"/>
+  </g>
+</svg>

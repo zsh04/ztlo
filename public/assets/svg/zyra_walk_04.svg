@@ -1,0 +1,162 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 160" width="160" height="160" role="img" aria-label="Zyra - Walk 4/8">
+  <defs>
+    <!-- Cerulean Cloak Gradients -->
+    <linearGradient id="cloakGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#38BDF8"/>
+      <stop offset="25%" stop-color="#0284C7"/>
+      <stop offset="100%" stop-color="#0369A1"/>
+    </linearGradient>
+    <linearGradient id="cloakShadowGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0284C7"/>
+      <stop offset="100%" stop-color="#075985"/>
+    </linearGradient>
+    <!-- Coral Scarf Gradients -->
+    <linearGradient id="scarfGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FB923C"/>
+      <stop offset="30%" stop-color="#F97316"/>
+      <stop offset="100%" stop-color="#EA580C"/>
+    </linearGradient>
+    <!-- Ground Ambient Shadow -->
+    <radialGradient id="groundShadow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#0F172A" stop-opacity="0.25"/>
+      <stop offset="70%" stop-color="#0F172A" stop-opacity="0.10"/>
+      <stop offset="100%" stop-color="#0F172A" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <!-- Ground Contact Shadow (80px playfield footprint) -->
+  <ellipse cx="80.0" cy="141.0" rx="29.9" ry="7.8" fill="url(#groundShadow)"/>
+
+  <!-- Main Character Group -->
+  <g transform="rotate(3.5 80.0 92.2)">
+    <!-- Back Hair Volume -->
+    <path d="M 56.0 58.2 C 52.0 76.2 58.0 88.2 66.0 92.2 
+             C 80.0 94.2 94.0 92.2 102.0 88.2 
+             C 108.0 76.2 104.0 58.2 Z" fill="#0F172A"/>
+
+    <!-- Left Leg & Boot -->
+    <g transform="rotate(-22.0 68.0 102.2)">
+      <path d="M 64.0 102.2 L 65.0 132.0 L 71.0 132.0 L 72.0 102.2 Z" fill="#475569"/>
+      <!-- Explorer Boot Left -->
+      <path d="M 63.0 132.0 Q 63.0 138.0 60.0 140.0 L 73.0 140.0 Q 74.0 135.0 72.0 132.0 Z" fill="#334155"/>
+      <path d="M 60.0 139.0 L 74.0 139.0 L 73.0 141.0 L 61.0 141.0 Z" fill="#1E293B"/>
+    </g>
+
+    <!-- Right Leg & Boot -->
+    <g transform="rotate(22.0 92.0 102.2)">
+      <path d="M 88.0 102.2 L 89.0 132.0 L 95.0 132.0 L 96.0 102.2 Z" fill="#475569"/>
+      <!-- Explorer Boot Right -->
+      <path d="M 88.0 132.0 Q 86.0 135.0 87.0 140.0 L 100.0 140.0 Q 97.0 138.0 97.0 132.0 Z" fill="#334155"/>
+      <path d="M 87.0 139.0 L 100.0 139.0 L 99.0 141.0 L 88.0 141.0 Z" fill="#1E293B"/>
+    </g>
+
+    <!-- Cerulean Cloak Underlayer -->
+    <g transform="rotate(-3.5 80.0 82.2)">
+      <!-- Back Hem Flap -->
+      <path d="M 54.0 96.2 Q 80.0 100.2 106.0 96.2 
+               L 108.0 116.2 Q 80.0 120.2 52.0 116.2 Z" 
+            fill="url(#cloakShadowGrad)"/>
+
+      <!-- Primary Ghibli Poncho / Cloak (#0284C7 cerulean teal) -->
+      <path d="M 64.0 78.2 
+               C 56.0 84.2 50.0 98.2 52.0 114.2 
+               Q 54.0 118.2 60.0 117.2 
+               C 70.0 115.2 90.0 115.2 100.0 117.2 
+               Q 106.0 118.2 108.0 114.2 
+               C 110.0 98.2 104.0 84.2 96.0 78.2 Z" 
+            fill="url(#cloakGrad)"/>
+
+      <!-- Cloak Fold Highlights & Seam Detailing -->
+      <path d="M 66.0 82.2 Q 58.0 102.2 64.0 116.2" 
+            stroke="#38BDF8" stroke-width="1.8" stroke-linecap="round" fill="none" opacity="0.6"/>
+      <path d="M 80.0 86.2 L 80.0 115.2" 
+            stroke="#0369A1" stroke-width="2.0" stroke-linecap="round" fill="none" opacity="0.7"/>
+      <path d="M 94.0 82.2 Q 102.0 102.2 96.0 116.2" 
+            stroke="#0369A1" stroke-width="1.8" stroke-linecap="round" fill="none" opacity="0.8"/>
+    </g>
+
+    <!-- Arms Layer -->
+    
+        <!-- Dynamic Running Arms Swing -->
+        <path d="M 66.0 86.2 Q 55.8 98.2 60.0 104.2" 
+              stroke="#0369A1" stroke-width="8" stroke-linecap="round" fill="none" />
+        <circle cx="60.0" cy="105.2" r="4.5" fill="#FED7AA" />
+        <path d="M 94.0 86.2 Q 104.2 98.2 100.0 104.2" 
+              stroke="#0284C7" stroke-width="8" stroke-linecap="round" fill="none" />
+        <circle cx="100.0" cy="105.2" r="4.5" fill="#FED7AA" />
+        
+
+    <!-- Trailing Scarf Ribbon (Back fold) -->
+    <g transform="rotate(5.0 90.0 68.2)">
+      <path d="M 90.0 68.2 
+               Q 104.0 74.2 114.0 84.2 
+               Q 106.0 88.2 94.0 76.2 Z" 
+            fill="#EA580C"/>
+      <path d="M 94.0 72.2 
+               Q 110.0 80.2 118.0 90.2 
+               Q 112.0 96.2 96.0 78.2 Z" 
+            fill="url(#scarfGrad)"/>
+      <path d="M 114.0 89.2 L 117.0 91.2" stroke="#FED7AA" stroke-width="1.5" stroke-linecap="round"/>
+    </g>
+
+    <!-- Head / Face (Warm Soft Peach #FED7AA) -->
+    <circle cx="80.0" cy="52.2" r="19" fill="#FED7AA"/>
+    <!-- Subtle Rosy Cheeks -->
+    <ellipse cx="69.0" cy="58.2" rx="4.5" ry="2.6" fill="#FDA4AF" opacity="0.75"/>
+    <ellipse cx="91.0" cy="58.2" rx="4.5" ry="2.6" fill="#FDA4AF" opacity="0.75"/>
+    <!-- Tiny Cute Nose -->
+    <circle cx="80.0" cy="57.2" r="0.9" fill="#FDBA74"/>
+
+    <!-- Eyes Layer -->
+    
+        <!-- Left Eye -->
+        <ellipse cx="73.0" cy="52.2" rx="3.2" ry="4.2" fill="#0F172A" />
+        <circle cx="71.8" cy="51.0" r="1.4" fill="#FFFFFF" />
+        <circle cx="74.0" cy="53.8" r="0.6" fill="#FFFFFF" />
+        <!-- Right Eye -->
+        <ellipse cx="87.0" cy="52.2" rx="3.2" ry="4.2" fill="#0F172A" />
+        <circle cx="85.8" cy="51.0" r="1.4" fill="#FFFFFF" />
+        <circle cx="88.0" cy="53.8" r="0.6" fill="#FFFFFF" />
+        
+
+    <!-- Mouth Layer -->
+    
+        <!-- Gentle Storybook Smile -->
+        <path d="M 76.0 61.2 Q 80.0 65.2 84.0 61.2" stroke="#78350F" stroke-width="2.0" stroke-linecap="round" fill="none" />
+        
+
+    <!-- Front Storybook Hair Bangs (Soft Navy #1E293B) -->
+    <path d="M 60.0 50.2 
+             C 58.0 36.2 66.0 29.2 80.0 29.2 
+             C 94.0 29.2 102.0 36.2 100.0 50.2 
+             C 96.0 40.2 90.0 44.2 84.0 44.2 
+             C 78.0 44.2 72.0 38.2 68.0 44.2 
+             C 65.0 48.2 62.0 46.2 60.0 50.2 Z" 
+          fill="#1E293B"/>
+
+    <!-- Explorer Feather & Headband (#FBBF24 golden feather) -->
+    <path d="M 61.0 44.2 Q 80.0 34.2 99.0 44.2" 
+          stroke="#0D9488" stroke-width="3" stroke-linecap="round" fill="none"/>
+    <!-- Feather Pin -->
+    <path d="M 96.0 42.2 
+             C 102.0 30.2 106.0 22.2 108.0 18.2 
+             C 104.0 24.2 100.0 32.2 96.0 42.2 Z" 
+          fill="#FBBF24"/>
+    <path d="M 97.0 40.2 L 107.0 20.2" 
+          stroke="#F59E0B" stroke-width="1.2" stroke-linecap="round"/>
+    <circle cx="96.0" cy="43.2" r="2.2" fill="#0D9488"/>
+
+    <!-- Warm Coral Scarf (#F97316 Front Wrap) -->
+    <path d="M 62.0 65.2 
+             C 66.0 62.2 94.0 62.2 98.0 65.2 
+             C 100.0 71.2 96.0 75.2 86.0 76.2 
+             C 74.0 76.2 64.0 73.2 62.0 65.2 Z" 
+          fill="url(#scarfGrad)"/>
+    <!-- Scarf Front Knot -->
+    <ellipse cx="88.0" cy="70.2" rx="4.5" ry="4" fill="#EA580C"/>
+    <ellipse cx="88.0" cy="69.2" rx="3.5" ry="3" fill="#F97316"/>
+  </g>
+
+  <!-- Optional FX (Sparkles/Sweat) -->
+  
+</svg>
