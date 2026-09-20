@@ -44,6 +44,7 @@ export interface HintContext {
   lastAction?: string;
   entities?: Entity[];
   userQuery?: string;
+  roomState?: string;
 }
 
 // ==========================================
@@ -156,6 +157,10 @@ export function buildUserPrompt(context?: HintContext, userQuery?: string): stri
 
   if (context?.lastAction) {
     parts.push(`Recent event: ${context.lastAction}`);
+  }
+
+  if (context?.roomState) {
+    parts.push(`Room State: ${context.roomState}`);
   }
 
   const contextStr = parts.length > 0 ? `[Context: ${parts.join(" | ")}] ` : "";

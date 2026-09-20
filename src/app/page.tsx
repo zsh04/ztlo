@@ -80,7 +80,6 @@ export default function GamePage() {
     }
   }, [stopPlayerMovement]);
 
-
   const handleNpcTap = useCallback((npc: Entity) => {
     stopPlayerMovement();
     setActiveNpcModal(npc);
@@ -114,14 +113,40 @@ export default function GamePage() {
     }
   }, [activeNpcModal]);
 
-  const handleSelectInquiryChip = useCallback((chipId: string) => {
+  const handleSelectInquiryChip = useCallback(async (chipId: string) => {
     stopPlayerMovement();
     const world = worldRef.current;
     const result = world.answerInquiryChip(chipId);
     setMentorDialog(result.dialog);
     setIsMentorOpen(true);
     setCanUndo(world.canUndo());
-  }, [stopPlayerMovement]);
+
+    if (webLLMStatus === "ready") {
+      try {
+        const roomState = world.serializeForMentor();
+        const llmHint = await generateWebLLMHint(
+          {
+            entities: world.getEntityList(),
+            roomId: currentRoom.id,
+            roomName: currentRoom.name,
+            objective: currentRoom.objective,
+            roomState: roomState.rawText,
+          },
+          `Inquiry: ${chipId}`
+        );
+        if (llmHint) {
+          setMentorDialog((prev) => ({
+            ...prev,
+            speaker: "Light Orb",
+            text: llmHint,
+            promptType: "socratic_hint",
+          }));
+        }
+      } catch {
+        // Transparently retain deterministic result
+      }
+    }
+  }, [currentRoom, generateWebLLMHint, stopPlayerMovement, webLLMStatus]);
 
   const handleVoiceQuery = useCallback(async (transcript: string) => {
     stopPlayerMovement();
@@ -133,12 +158,14 @@ export default function GamePage() {
 
     if (webLLMStatus === "ready") {
       try {
+        const roomState = world.serializeForMentor();
         const llmHint = await generateWebLLMHint(
           {
             entities: world.getEntityList(),
             roomId: currentRoom.id,
             roomName: currentRoom.name,
             objective: currentRoom.objective,
+            roomState: roomState.rawText,
           },
           transcript
         );
@@ -386,11 +413,13 @@ export default function GamePage() {
 
       if (webLLMStatus === "ready") {
         try {
+          const roomState = world.serializeForMentor();
           const llmHint = await generateWebLLMHint({
             entities: world.getEntityList(),
             roomId: currentRoom.id,
             roomName: currentRoom.name,
             objective: currentRoom.objective,
+            roomState: roomState.rawText,
           });
           if (llmHint) {
             setMentorDialog((prev) => ({

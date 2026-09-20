@@ -1,3 +1,4 @@
+import { serializeRoomState, SerializedRoomState } from "../lib/ai/prompts/stateSerializer";
 import { Entity } from "./entities";
 import { GridPoint, RoomDefinition, SocraticDialog } from "../types/game";
 import { MovementSystem, StepResult } from "./systems/MovementSystem";
@@ -259,18 +260,14 @@ export class GameWorld {
     MentorSystem.setBubbleOpen(this.mentor, open);
   }
 
-  public serializeForMentor(): Record<string, unknown> {
-    const player = this.getPlayer();
-    return {
-      roomId: this.currentRoomId,
-      playerPos: player ? { x: player.position.x, y: player.position.y } : null,
-      entities: this.getEntityList().map((e) => ({
-        id: e.id,
-        type: e.renderable.shape,
-        pos: { x: e.position.x, y: e.position.y },
-        isDepressed: e.trigger?.isDepressed,
-      })),
-    };
+  public serializeForMentor(): SerializedRoomState {
+    return serializeRoomState(
+      this.getEntityList(),
+      this.width,
+      this.height,
+      this.currentRoomId,
+      this.objective
+    );
   }
   public getNpcs(): Entity[] {
     return this.getEntityList().filter((e) => e.npc !== undefined);
