@@ -102,6 +102,9 @@ export const PhaserContainer: React.FC<PhaserContainerProps> = ({
 
       localGame = new Phaser.Game(config);
       gameRef.current = localGame;
+      if (typeof window !== "undefined") {
+        (window as any).__phaserGame = localGame;
+      }
 
       // When the scene is ready, pass initial world & callbacks
       localGame.events.once("ready", () => {

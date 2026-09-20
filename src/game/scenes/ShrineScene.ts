@@ -66,6 +66,9 @@ export class ShrineScene extends Phaser.Scene {
   private switchStates: Map<string, boolean> = new Map();
   private conduitGraphics?: Phaser.GameObjects.Graphics;
   private beamGraphics?: Phaser.GameObjects.Graphics;
+  private backgroundSprite?: Phaser.GameObjects.Image;
+  private sunbeamGraphics?: Phaser.GameObjects.Graphics;
+  private moteParticles?: Phaser.GameObjects.Particles.ParticleEmitter;
 
   constructor(config?: Phaser.Types.Scenes.SettingsConfig) {
     super({ key: "ShrineScene", ...(config || {}) });
@@ -92,18 +95,24 @@ export class ShrineScene extends Phaser.Scene {
   }
 
   public preload(): void {
+    if (!this.textures.exists("temple_sanctuary_bg")) {
+      this.load.image(
+        "temple_sanctuary_bg",
+        "/assets/backgrounds/temple_sanctuary_bg.webp"
+      );
+    }
     if (!this.textures.exists("atlas-global-entities")) {
       this.load.atlas(
         "atlas-global-entities",
-        "/assets/atlases/atlas-global-entities.webp",
-        "/assets/atlases/atlas-global-entities.json"
+        "/assets/atlases/atlas-global-entities.webp?v=storybook1",
+        "/assets/atlases/atlas-global-entities.json?v=storybook1"
       );
     }
     if (!this.textures.exists("atlas-shrine-environment")) {
       this.load.atlas(
         "atlas-shrine-environment",
-        "/assets/atlases/atlas-shrine-environment.webp",
-        "/assets/atlases/atlas-shrine-environment.json"
+        "/assets/atlases/atlas-shrine-environment.webp?v=storybook1",
+        "/assets/atlases/atlas-shrine-environment.json?v=storybook1"
       );
     }
   }
@@ -224,33 +233,43 @@ export class ShrineScene extends Phaser.Scene {
 
     this.load.on("complete", () => {
       this.registerAnimations();
+      this.buildAtmosphere();
       this.buildGrid();
       this.buildEntities();
       this.buildCompanionOrb();
     });
 
     if (
-      (!this.textures.exists("atlas-global-entities") || !this.textures.exists("atlas-shrine-environment")) &&
+      (!this.textures.exists("temple_sanctuary_bg") ||
+        !this.textures.exists("atlas-global-entities") ||
+        !this.textures.exists("atlas-shrine-environment")) &&
       !this.load.isLoading()
     ) {
+      if (!this.textures.exists("temple_sanctuary_bg")) {
+        this.load.image(
+          "temple_sanctuary_bg",
+          "/assets/backgrounds/temple_sanctuary_bg.webp"
+        );
+      }
       if (!this.textures.exists("atlas-global-entities")) {
         this.load.atlas(
           "atlas-global-entities",
-          "/assets/atlases/atlas-global-entities.webp",
-          "/assets/atlases/atlas-global-entities.json"
+          "/assets/atlases/atlas-global-entities.webp?v=storybook1",
+          "/assets/atlases/atlas-global-entities.json?v=storybook1"
         );
       }
       if (!this.textures.exists("atlas-shrine-environment")) {
         this.load.atlas(
           "atlas-shrine-environment",
-          "/assets/atlases/atlas-shrine-environment.webp",
-          "/assets/atlases/atlas-shrine-environment.json"
+          "/assets/atlases/atlas-shrine-environment.webp?v=storybook1",
+          "/assets/atlases/atlas-shrine-environment.json?v=storybook1"
         );
       }
       this.load.start();
     }
 
     this.calculateLayout();
+    this.buildAtmosphere();
     this.buildGrid();
     this.buildEntities();
     this.buildCompanionOrb();
@@ -259,6 +278,111 @@ export class ShrineScene extends Phaser.Scene {
 
   public update(): void {
     this.syncEntitiesWithECS();
+  }
+
+  /**
+   * Builds the hand-painted temple sanctuary backdrop, volumetric golden sunbeams,
+   * and gentle floating dust motes.
+   */
+  public buildAtmosphere(): void {
+    if (this.backgroundSprite) {
+      this.backgroundSprite.destroy();
+      this.backgroundSprite = undefined;
+    }
+    if (this.sunbeamGraphics) {
+      this.sunbeamGraphics.destroy();
+      this.sunbeamGraphics = undefined;
+    }
+    if (this.moteParticles) {
+      this.moteParticles.destroy();
+      this.moteParticles = undefined;
+    }
+
+    // 1. Hand-painted Temple Sanctuary Backdrop
+    if (this.textures.exists("temple_sanctuary_bg")) {
+      this.backgroundSprite = this.add.image(
+        ShrineScene.CANVAS_WIDTH / 2,
+        ShrineScene.CANVAS_HEIGHT / 2,
+        "temple_sanctuary_bg"
+      );
+      this.backgroundSprite.setDisplaySize(ShrineScene.CANVAS_WIDTH, ShrineScene.CANVAS_HEIGHT);
+      this.backgroundSprite.setDepth(-20);
+    }
+
+    // 2. Volumetric Golden Sunbeams
+    this.sunbeamGraphics = this.add.graphics();
+    this.sunbeamGraphics.setDepth(-5);
+
+    // Diagonal polygon beams angling from top-left canopy down toward right
+    this.sunbeamGraphics.fillStyle(0xFDE68A, 0.14);
+    this.sunbeamGraphics.beginPath();
+    this.sunbeamGraphics.moveTo(120, 0);
+    this.sunbeamGraphics.lineTo(260, 0);
+    this.sunbeamGraphics.lineTo(700, 720);
+    this.sunbeamGraphics.lineTo(500, 720);
+    this.sunbeamGraphics.closePath();
+    this.sunbeamGraphics.fillPath();
+
+    this.sunbeamGraphics.fillStyle(0xFEF08A, 0.16);
+    this.sunbeamGraphics.beginPath();
+    this.sunbeamGraphics.moveTo(340, 0);
+    this.sunbeamGraphics.lineTo(520, 0);
+    this.sunbeamGraphics.lineTo(1040, 720);
+    this.sunbeamGraphics.lineTo(800, 720);
+    this.sunbeamGraphics.closePath();
+    this.sunbeamGraphics.fillPath();
+
+    this.sunbeamGraphics.fillStyle(0xFDE68A, 0.12);
+    this.sunbeamGraphics.beginPath();
+    this.sunbeamGraphics.moveTo(640, 0);
+    this.sunbeamGraphics.lineTo(800, 0);
+    this.sunbeamGraphics.lineTo(1280, 560);
+    this.sunbeamGraphics.lineTo(1280, 380);
+    this.sunbeamGraphics.lineTo(1140, 720);
+    this.sunbeamGraphics.closePath();
+    this.sunbeamGraphics.fillPath();
+
+    // Subtle breathing animation on sunbeam intensity
+    this.tweens.add({
+      targets: this.sunbeamGraphics,
+      alpha: 0.65,
+      duration: 4200,
+      yoyo: true,
+      repeat: -1,
+      ease: "Sine.easeInOut",
+    });
+
+    // 3. Floating Sunlit Dust Motes
+    this.ensureMoteParticleTexture();
+    if (this.textures.exists("ztlo_dust_mote")) {
+      const isBedtime = this.isBedtimeTwilight();
+      this.moteParticles = this.add.particles(0, 0, "ztlo_dust_mote", {
+        x: { min: 0, max: ShrineScene.CANVAS_WIDTH },
+        y: { min: 0, max: ShrineScene.CANVAS_HEIGHT },
+        lifespan: { min: 4000, max: 7000 },
+        speedX: { min: 6, max: 18 },
+        speedY: { min: 8, max: 22 },
+        scale: { start: 0.8, end: 0.1, ease: "Sine.easeOut" },
+        alpha: isBedtime ? { start: 0.2, end: 0 } : { start: 0.5, end: 0 },
+        tint: isBedtime ? [0xC4B5FD, 0xA78BFA, 0xE0E7FF] : [0xFDE68A, 0xFFFBEB, 0xFBBF24],
+        blendMode: Phaser.BlendModes.ADD,
+        frequency: 280,
+        quantity: 1,
+      });
+      this.moteParticles.setDepth(18);
+    }
+  }
+
+  private ensureMoteParticleTexture(): void {
+    if (!this.textures.exists("ztlo_dust_mote")) {
+      const g = this.make.graphics({ x: 0, y: 0 });
+      g.fillStyle(0xFFFFFF, 0.9);
+      g.fillCircle(4, 4, 3);
+      g.fillStyle(0xFFFFFF, 0.4);
+      g.fillCircle(4, 4, 4);
+      g.generateTexture("ztlo_dust_mote", 8, 8);
+      g.destroy();
+    }
   }
 
   /**
@@ -297,19 +421,19 @@ export class ShrineScene extends Phaser.Scene {
     const totalHeight = this.roomHeight * this.tileSize;
     const framePadding = 16;
 
-    // Chamber outer frame with drop shadow effect
-    graphics.fillStyle(0xCBD5E1, 0.4);
+    // Chamber outer frame with drop shadow effect onto temple sanctuary
+    graphics.fillStyle(0x0f172a, 0.28);
     graphics.fillRoundedRect(
-      this.gridOffsetX - framePadding + 4,
-      this.gridOffsetY - framePadding + 6,
+      this.gridOffsetX - framePadding + 6,
+      this.gridOffsetY - framePadding + 10,
       totalWidth + framePadding * 2,
       totalHeight + framePadding * 2,
       28
     );
 
     // Chamber main platform background
-    graphics.fillStyle(0xE2E8F0, 0.95);
-    graphics.lineStyle(3, 0xBCCCDC, 0.8);
+    graphics.fillStyle(0xE2E8F0, 0.94);
+    graphics.lineStyle(3, 0xBCCCDC, 0.9);
     graphics.fillRoundedRect(
       this.gridOffsetX - framePadding,
       this.gridOffsetY - framePadding,
@@ -394,6 +518,8 @@ export class ShrineScene extends Phaser.Scene {
 
     switch (entity.renderable.shape) {
       case "avatar": {
+        const shadow = this.add.ellipse(0, s * 0.38, s * 0.65, s * 0.22, 0x0f172a, 0.32);
+        container.add(shadow);
         if (this.hasFrame("atlas-global-entities", "zyra-idle-01")) {
           const sprite = this.add.sprite(0, 0, "atlas-global-entities", "zyra-idle-01");
           sprite.setDisplaySize(s, s);
@@ -421,6 +547,8 @@ export class ShrineScene extends Phaser.Scene {
       }
 
       case "stone": {
+        const shadow = this.add.ellipse(0, s * 0.36, s * 0.72, s * 0.24, 0x0f172a, 0.3);
+        container.add(shadow);
         if (this.hasFrame("atlas-global-entities", "stone-block")) {
           const sprite = this.add.sprite(0, 0, "atlas-global-entities", "stone-block");
           sprite.setDisplaySize(s, s);
@@ -436,6 +564,8 @@ export class ShrineScene extends Phaser.Scene {
       }
 
       case "ice": {
+        const shadow = this.add.ellipse(0, s * 0.36, s * 0.72, s * 0.24, 0x0f172a, 0.3);
+        container.add(shadow);
         if (this.hasFrame("atlas-global-entities", "ice-block")) {
           const sprite = this.add.sprite(0, 0, "atlas-global-entities", "ice-block");
           sprite.setDisplaySize(s, s);
@@ -469,6 +599,8 @@ export class ShrineScene extends Phaser.Scene {
       }
 
       case "door": {
+        const shadow = this.add.ellipse(0, s * 0.38, s * 0.8, s * 0.22, 0x0f172a, 0.3);
+        container.add(shadow);
         const isOpen = entity.collider ? !entity.collider.isSolid : false;
         this.doorStates.set(entity.id, isOpen);
         const frameKey = isOpen ? "door-open" : "door-sealed";
@@ -502,6 +634,8 @@ export class ShrineScene extends Phaser.Scene {
       }
 
       case "npc": {
+        const shadow = this.add.ellipse(0, s * 0.36, s * 0.65, s * 0.22, 0x0f172a, 0.28);
+        container.add(shadow);
         const isSoothed = entity.npc?.isSoothed || false;
         this.npcSoothedStates.set(entity.id, isSoothed);
         const initialFrame = isSoothed ? "sprout-breathe-01" : "sprout-anxious-01";
@@ -685,6 +819,10 @@ export class ShrineScene extends Phaser.Scene {
 
     this.lightOrbContainer = this.add.container(orbX, orbY);
     this.lightOrbContainer.setDepth(15);
+
+    // Soft grounded directional drop shadow under floating Light Orb
+    const orbShadow = this.add.ellipse(0, 24, 28, 10, 0x0f172a, 0.22);
+    this.lightOrbContainer.add(orbShadow);
 
     const isBedtime = this.isBedtimeTwilight();
 

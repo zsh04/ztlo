@@ -21,6 +21,12 @@ const __dirname = path.dirname(__filename);
 const ROOT_DIR = path.resolve(__dirname, "..");
 const OUTPUT_DIR = path.resolve(ROOT_DIR, "public/assets/atlases");
 const SVG_SOURCE_DIR = path.resolve(ROOT_DIR, "public/assets/svg");
+const STORYBOOK_SPRITES_DIR = path.resolve(ROOT_DIR, "public/assets/sprites/storybook");
+
+function getStorybookFrame(filename) {
+  const p = path.join(STORYBOOK_SPRITES_DIR, filename);
+  return fs.existsSync(p) ? p : null;
+}
 
 // Ensure output directory exists
 if (!fs.existsSync(OUTPUT_DIR)) {
@@ -711,72 +717,84 @@ function getGlobalEntitiesFrames() {
   for (let i = 0; i < 6; i++) {
     const num = i + 1;
     const pad = String(num).padStart(2, "0");
+    const imagePath = getStorybookFrame(`zyra-idle-${pad}.png`);
     frames.push({
       name: `zyra-idle-${i}`,
       aliases: [`zyra-idle-${pad}`, `zyra-idle-${num}`].concat(i === 0 ? ["zyra-idle"] : []),
       width: 80,
       height: 80,
-      svg: createZyraIdleSvg(i),
+      imagePath,
+      svg: imagePath ? null : createZyraIdleSvg(i),
     });
   }
 
   for (let i = 0; i < 8; i++) {
     const num = i + 1;
     const pad = String(num).padStart(2, "0");
+    const imagePath = getStorybookFrame(`zyra-walk-${pad}.png`);
     frames.push({
       name: `zyra-walk-${i}`,
       aliases: [`zyra-walk-${pad}`, `zyra-walk-${num}`].concat(i === 0 ? ["zyra-walk"] : []),
       width: 80,
       height: 80,
-      svg: createZyraWalkSvg(i),
+      imagePath,
+      svg: imagePath ? null : createZyraWalkSvg(i),
     });
   }
 
   for (let i = 0; i < 8; i++) {
     const num = i + 1;
     const pad = String(num).padStart(2, "0");
+    const imagePath = getStorybookFrame(`zyra-walk-${pad}.png`);
     frames.push({
       name: `zyra-walk-up-${i}`,
       aliases: [`zyra-walk-up-${pad}`, `zyra-walk-up-${num}`].concat(i === 0 ? ["zyra-walk-up"] : []),
       width: 80,
       height: 80,
-      svg: createZyraWalkUpSvg(i),
+      imagePath,
+      svg: imagePath ? null : createZyraWalkUpSvg(i),
     });
   }
 
   for (let i = 0; i < 8; i++) {
     const num = i + 1;
     const pad = String(num).padStart(2, "0");
+    const imagePath = getStorybookFrame(`zyra-walk-${pad}.png`);
     frames.push({
       name: `zyra-walk-down-${i}`,
       aliases: [`zyra-walk-down-${pad}`, `zyra-walk-down-${num}`].concat(i === 0 ? ["zyra-walk-down"] : []),
       width: 80,
       height: 80,
-      svg: createZyraWalkDownSvg(i),
+      imagePath,
+      svg: imagePath ? null : createZyraWalkDownSvg(i),
     });
   }
 
   for (let i = 0; i < 6; i++) {
     const num = i + 1;
     const pad = String(num).padStart(2, "0");
+    const imagePath = getStorybookFrame(`zyra-push-${pad}.png`);
     frames.push({
       name: `zyra-push-${i}`,
       aliases: [`zyra-push-${pad}`, `zyra-push-${num}`].concat(i === 0 ? ["zyra-push"] : []),
       width: 80,
       height: 80,
-      svg: createZyraPushSvg(i),
+      imagePath,
+      svg: imagePath ? null : createZyraPushSvg(i),
     });
   }
 
   for (let i = 0; i < 8; i++) {
     const num = i + 1;
     const pad = String(num).padStart(2, "0");
+    const imagePath = getStorybookFrame(`zyra-celebrate-${pad}.png`);
     frames.push({
       name: `zyra-celebrate-${i}`,
       aliases: [`zyra-celebrate-${pad}`, `zyra-celebrate-${num}`].concat(i === 0 ? ["zyra-celebrate"] : []),
       width: 80,
       height: 80,
-      svg: createZyraCelebrateSvg(i),
+      imagePath,
+      svg: imagePath ? null : createZyraCelebrateSvg(i),
     });
   }
 
@@ -842,34 +860,42 @@ function getGlobalEntitiesFrames() {
   }
 
   // Kinetic Blocks
+  const stone0Img = getStorybookFrame("stone-block-0.png");
+  const stone1Img = getStorybookFrame("stone-block-1.png");
   frames.push({
     name: "stone-block-0",
     aliases: ["stone-block"],
     width: 80,
     height: 80,
-    svg: createStoneBlockSvg(false),
+    imagePath: stone0Img,
+    svg: stone0Img ? null : createStoneBlockSvg(false),
   });
   frames.push({
     name: "stone-block-1",
     aliases: ["stone-block-active"],
     width: 80,
     height: 80,
-    svg: createStoneBlockSvg(true),
+    imagePath: stone1Img,
+    svg: stone1Img ? null : createStoneBlockSvg(true),
   });
 
+  const ice0Img = getStorybookFrame("ice-block-0.png");
+  const ice1Img = getStorybookFrame("ice-block-1.png");
   frames.push({
     name: "ice-block-0",
     aliases: ["ice-block"],
     width: 80,
     height: 80,
-    svg: createIceBlockSvg(false),
+    imagePath: ice0Img,
+    svg: ice0Img ? null : createIceBlockSvg(false),
   });
   frames.push({
     name: "ice-block-1",
     aliases: ["ice-block-sliding"],
     width: 80,
     height: 80,
-    svg: createIceBlockSvg(true),
+    imagePath: ice1Img,
+    svg: ice1Img ? null : createIceBlockSvg(true),
   });
 
   // FX Particles (48x48)
@@ -920,19 +946,23 @@ function getShrineEnvironmentFrames() {
   const frames = [];
 
   // Pavers
+  const tileLightImg = getStorybookFrame("tile-floor-light.png");
+  const tileDarkImg = getStorybookFrame("tile-floor-dark.png");
   frames.push({
     name: "tile-floor-light",
     aliases: ["tile-floor-light-0"],
     width: 80,
     height: 80,
-    svg: createFloorTileSvg(false),
+    imagePath: tileLightImg,
+    svg: tileLightImg ? null : createFloorTileSvg(false),
   });
   frames.push({
     name: "tile-floor-dark",
     aliases: ["tile-floor-dark-0"],
     width: 80,
     height: 80,
-    svg: createFloorTileSvg(true),
+    imagePath: tileDarkImg,
+    svg: tileDarkImg ? null : createFloorTileSvg(true),
   });
 
   // Wall caps
@@ -964,19 +994,23 @@ function getShrineEnvironmentFrames() {
   });
 
   // Pressure plates
+  const plateDormantImg = getStorybookFrame("plate-dormant.png");
+  const plateActiveImg = getStorybookFrame("plate-active.png");
   frames.push({
     name: "plate-dormant",
     aliases: ["plate-dormant-0"],
     width: 80,
     height: 80,
-    svg: createPressurePlateSvg(false),
+    imagePath: plateDormantImg,
+    svg: plateDormantImg ? null : createPressurePlateSvg(false),
   });
   frames.push({
     name: "plate-active",
     aliases: ["plate-active-0"],
     width: 80,
     height: 80,
-    svg: createPressurePlateSvg(true),
+    imagePath: plateActiveImg,
+    svg: plateActiveImg ? null : createPressurePlateSvg(true),
   });
 
   // Switches (I, II, III)
@@ -998,19 +1032,23 @@ function getShrineEnvironmentFrames() {
   });
 
   // Portals & Gates
+  const doorSealedImg = getStorybookFrame("door-sealed.png");
+  const doorOpenImg = getStorybookFrame("door-open.png");
   frames.push({
     name: "door-sealed",
     aliases: ["door-sealed-0"],
     width: 80,
     height: 80,
-    svg: createDoorSvg(false),
+    imagePath: doorSealedImg,
+    svg: doorSealedImg ? null : createDoorSvg(false),
   });
   frames.push({
     name: "door-open",
     aliases: ["door-open-0"],
     width: 80,
     height: 80,
-    svg: createDoorSvg(true),
+    imagePath: doorOpenImg,
+    svg: doorOpenImg ? null : createDoorSvg(true),
   });
 
   // Optics
@@ -1125,11 +1163,26 @@ async function buildAtlasSheet({
   }
 
   if (sharpModule) {
-    const compositeLayers = packedFrames.map((f) => ({
-      input: Buffer.from(f.svg.trim()),
-      top: f.y,
-      left: f.x,
-    }));
+    const compositeLayers = await Promise.all(
+      packedFrames.map(async (f) => {
+        let inputBuffer;
+        if (f.imagePath && fs.existsSync(f.imagePath)) {
+          inputBuffer = await sharpModule(f.imagePath)
+            .resize(f.width, f.height, { fit: "contain", background: { r: 0, g: 0, b: 0, alpha: 0 } })
+            .png()
+            .toBuffer();
+        } else if (f.svg) {
+          inputBuffer = Buffer.from(f.svg.trim());
+        } else {
+          throw new Error(`Frame "${f.name}" has neither imagePath nor svg`);
+        }
+        return {
+          input: inputBuffer,
+          top: f.y,
+          left: f.x,
+        };
+      })
+    );
 
     const webpBuffer = await sharpModule({
       create: {

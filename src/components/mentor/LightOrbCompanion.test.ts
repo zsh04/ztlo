@@ -43,9 +43,9 @@ test("LightOrbCompanion: Open state renders backdrop and interactive dialog ball
     })
   );
 
-  // Full-screen backdrop must be present for 1-tap outside dismissal
-  assert.match(html, /fixed inset-0/, "Must include full-screen backdrop overlay");
-  assert.match(html, /pointer-events-auto/, "Backdrop must intercept taps to trigger dismissal");
+  // Must NOT include full-screen blocking backdrop so player can still tap canvas
+  assert.equal(html.includes("fixed inset-0"), false, "Must not include full-screen blocking backdrop overlay");
+  assert.match(html, /pointer-events-auto/, "Dialog balloon must intercept taps");
 
   // Mentor text must be visible
   assert.match(html, /Look closely at the floor!/);

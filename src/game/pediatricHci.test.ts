@@ -152,7 +152,7 @@ test("Pediatric HCI: Pointer events isolation ensures zero interference with Pha
     "No backdrop must exist when closed"
   );
 
-  // Open dialog: backdrop has fixed inset-0 and pointer-events-auto
+  // Open dialog: dialog card has pointer-events-auto, but no blocking fixed inset-0 screen-wide backdrop
   const openHtml = renderToString(
     React.createElement(LightOrbCompanion, {
       dialog: {
@@ -165,9 +165,14 @@ test("Pediatric HCI: Pointer events isolation ensures zero interference with Pha
     })
   );
 
+  assert.equal(
+    openHtml.includes("fixed inset-0"),
+    false,
+    "No full-screen blocking backdrop allowed so player can still tap canvas"
+  );
   assert.match(
     openHtml,
-    /fixed inset-0[^>]*pointer-events-auto/,
-    "Backdrop must capture pointer events when dialog is open"
+    /pointer-events-auto/,
+    "Dialog balloon must capture its own pointer events"
   );
 });

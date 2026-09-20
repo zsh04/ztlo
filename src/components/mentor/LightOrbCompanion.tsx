@@ -360,11 +360,11 @@ export const LightOrbCompanion: React.FC<LightOrbCompanionProps> = ({
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: -10, scale: 0.95 }}
               transition={{ duration: 0.22, ease: "easeOut" }}
-              className="mt-3 w-80 sm:w-96 max-w-[90vw] max-h-[82vh] overflow-y-auto p-4 bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl border-2 border-storybook-muted text-storybook-text text-sm font-medium relative flex flex-col gap-3 pointer-events-auto z-40"
+              className="mt-3 w-80 sm:w-96 max-w-[90vw] max-h-[82vh] overflow-y-auto p-4 bg-[#FDFBF7]/95 backdrop-blur-md rounded-2xl shadow-2xl border-2 border-[#E2D9C8] text-slate-800 text-sm font-medium relative flex flex-col gap-3 pointer-events-auto z-40"
             >
               {/* Header with speaker badge, audio mute toggle, and close button */}
-              <div className="flex items-center justify-between pb-2 border-b border-storybook-muted/50">
-                <span className="text-xs font-bold uppercase tracking-wider text-amber-600 flex items-center gap-1.5">
+              <div className="flex items-center justify-between pb-2 border-b border-[#E2D9C8]/60">
+                <span className="text-xs font-bold uppercase tracking-wider text-amber-700 flex items-center gap-1.5">
                   <span className="inline-block w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
                   {dialog.speaker}
                 </span>
@@ -386,7 +386,7 @@ export const LightOrbCompanion: React.FC<LightOrbCompanionProps> = ({
                     type="button"
                     onClick={handleClose}
                     aria-label="Close thought"
-                    className="w-12 h-12 min-w-[48px] min-h-[48px] bg-slate-100 hover:bg-slate-200 active:scale-95 rounded-full flex items-center justify-center text-slate-700 font-bold transition-colors cursor-pointer text-lg shadow-sm"
+                    className="w-12 h-12 min-w-[48px] min-h-[48px] bg-amber-100/60 hover:bg-amber-200/60 active:scale-95 rounded-full flex items-center justify-center text-amber-900 font-bold transition-colors cursor-pointer text-lg shadow-sm"
                   >
                     ✕
                   </button>
@@ -394,7 +394,7 @@ export const LightOrbCompanion: React.FC<LightOrbCompanionProps> = ({
               </div>
 
               {/* Current Mentor Message */}
-              <p className="leading-relaxed text-slate-800 text-sm select-text bg-amber-50/60 p-3 rounded-xl border border-amber-100">
+              <p className="leading-relaxed text-slate-800 text-sm select-text bg-amber-50/70 p-3.5 rounded-xl border border-amber-200/60 shadow-sm">
                 {dialog.text}
               </p>
 

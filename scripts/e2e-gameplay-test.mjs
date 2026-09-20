@@ -68,7 +68,19 @@ async function run() {
 
   await send("Page.enable");
   await send("Runtime.enable");
+  await send("Network.enable");
+  await send("Network.setCacheDisabled", { cacheDisabled: true });
+  await send("Network.clearBrowserCache");
   await send("Page.navigate", { url: "http://localhost:3000" });
+
+  console.log("Resetting localStorage for fresh daylight session...");
+  await new Promise((r) => setTimeout(r, 1000));
+  await send("Runtime.evaluate", {
+    expression: `(() => {
+      localStorage.clear();
+      location.reload();
+    })()`,
+  });
 
   console.log("Waiting 3s for game engine initialization...");
   await new Promise((r) => setTimeout(r, 3000));
