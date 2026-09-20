@@ -31,17 +31,30 @@
 
 ## 🏗️ Technical Architecture
 
-### Phase 1 (Current Prototype)
-- **Framework:** Next.js 15 (React 19), TypeScript
-- **Rendering & Layout:** CSS Grid, CSS Transform / Framer Motion, absolute positioning
-- **State & Logic:** Entity-Component-System (ECS) architecture (`/src/ecs`)
-- **Navigation & Pathfinding:** Discrete A* shortest-path solver (`/src/lib/pathfinding.ts`, `MovementSystem.ts`) avoiding dynamic colliders with Fitts's Law touch ripples ($\ge 80\text{px}$)
-- **Interactive Tablet Mockup:** Prototype preview available at `/mockup` and `public/mockup.html`
-- **Offline Mentor:** Deterministic Socratic state machine ("Light Orb Companion")
+| Layer | Technology | Details |
+| :--- | :--- | :--- |
+| **Framework** | Next.js 15 (React 19), TypeScript | App Router, Edge Middleware for CSP & Cross-Origin Isolation |
+| **Game Engine** | Phaser 3.80 + React HUD overlay | 60fps canvas rendering, React for dialogue modals & dashboard |
+| **State & Logic** | Pure ECS (`/src/ecs`) | Components, Systems (Movement, Optics, Logic), World manager |
+| **AI Mentor** | WebLLM (`@mlc-ai/web-llm`) + SmolLM2-360M | Offline in-browser LLM via Web Worker; deterministic fallback |
+| **Pathfinding** | A* solver (`/src/lib/pathfinding.ts`) | Dynamic collider avoidance, Fitts's Law touch targets ≥80px |
+| **Audio** | Web Audio API procedural synthesis | Step, stone thud, ice chime, gate chord, night chime — zero asset files |
+| **PWA / Offline** | Service Worker + CacheStorage precache | Full offline capability, landscape manifest, iPad viewport lock |
+| **Curriculum API** | REST endpoints (`/api/health`, `/api/curriculum`, `/api/telemetry`) | 6-shrine pedagogical metadata, session telemetry |
+| **Parent Dashboard** | `/dashboard` route with `ParentGate` | Arithmetic challenge gate, mastery progress, COPPA/FERPA zero-PII |
+| **Screen-Time** | `BedtimeManager` + `TwilightOverlay` | 15-min session limit, twilight dusk transition, gentle off-ramp |
 
-### Phase 2 (Target Architecture)
-- **Engine Migration:** Phaser 3 + React overlay (React for HUD & dialogue modals, Phaser for 60fps canvas rendering and physics)
-- **Local AI Mentor:** In-browser WebLLM (`@mlc-ai/web-llm`) running quantized local models (e.g. `SmolLM2-360M-Instruct`) completely offline on device.
+### Shrine Curriculum (7 Shrines)
+
+| # | Shrine | Grid | Core Mechanic | Learning Outcome |
+| :-- | :--- | :--- | :--- | :--- |
+| 00 | Shrine of Equilibrium | 8×6 | Stone push → pressure plate | Spatial causality, discrete impulse |
+| 01 | Shrine of Still Weight | 16×9 | Heavy stone across wide room | Gravitational inertia, mass |
+| 02 | Shrine of Glacial Flow | 16×9 | Frictionless ice slide | Momentum conservation, friction contrast |
+| 03 | Shrine of Harmony Gates | 16×9 | Dual-switch circuit (stone + ice) | Boolean AND logic, parallel constraints |
+| 04 | Shrine of Empathy | 8×6 | NPC mood aura + co-breathing | Emotion regulation, Theory of Mind |
+| 05 | Chamber of Reflections | 8×6 | Rotatable mirrors + light beams | Optics, reflection angles, trajectory |
+| 06 | Chamber of Logic | 8×6 | Sequential switch gates + conduits | Pattern sequencing, ordered operations |
 
 ---
 
@@ -74,16 +87,33 @@ npm run build
 ---
 
 ## 🗺️ Project Milestones & Roadmap
-See [GitHub Milestones](https://github.com/zsh04/ztlo/milestones) and [Issues](https://github.com/zsh04/ztlo/issues) for active roadmap tracking:
-1. **Phase 1: Prototype (Completed — 100%)**
+
+All four phases are **100% complete** with 130 passing tests, 0 lint errors, and 0 type errors.
+
+1. **Phase 1: Prototype (Completed ✅)**
    - [x] Scaffold touch-first responsive viewport (PR #15 / PR #16)
    - [x] NavMesh / A* tap-to-move pathfinding with touch ripples (PR #17)
    - [x] Grid physics entities: `StoneBlock`, `IceBlock`, `PressurePlate` (PR #20)
    - [x] Socratic Light Orb mentor V1 state machine (PR #23)
-   - [x] iPad touch-friction validation gate (Issue #5 / PR #25)
-2. **Phase 2: Engine & AI Migration (Active)** — Phaser 3 integration + local WebLLM companion.
-3. **Phase 3: Curriculum & NPC Empathy** — Mood auras, empathy mapping, optics reflection puzzles.
-4. **Phase 4: Production & PWA Packaging** — Offline asset pre-caching, full tablet optimization.
+   - [x] iPad touch-friction validation gate (PR #25)
+2. **Phase 2: Engine & AI Migration (Completed ✅)**
+   - [x] Phaser 3 canvas engine with React HUD overlay (PR #28)
+   - [x] WebLLM in-browser AI companion with SmolLM2-360M (PR #34)
+   - [x] ECS-to-WebLLM prompt serializer & Socratic scaffolding (PR #38)
+   - [x] Gentle undo/rewind system (PR #29)
+   - [x] Pre-defined Socratic inquiry chips (PR #33)
+   - [x] Native Web Speech TTS/STT (PR #33)
+3. **Phase 3: Curriculum & NPC Empathy (Completed ✅)**
+   - [x] NPC Emotion Regulation & Guided Co-Breathing — Shrine 04 (PR #36)
+   - [x] Optics Puzzle — Light Beam Reflection & Rotatable Mirrors — Shrine 05 (PR #39)
+   - [x] Sequential Logic Switch Gates & Glowing Conduits — Shrine 06 (PR #42)
+4. **Phase 4: Production, PWA & Polish (Completed ✅)**
+   - [x] PWA CacheStorage precache, Edge CSP, REST APIs (PR #37)
+   - [x] iPad full-screen viewport lock & landscape manifest (PR #35)
+   - [x] Bedtime Twilight Transition & 15-min screen-time off-ramp (PR #43)
+   - [x] Parent / Educator Curriculum Mastery Dashboard (PR #44)
+
+See [GitHub Milestones](https://github.com/zsh04/ztlo/milestones) and [Closed Issues](https://github.com/zsh04/ztlo/issues?q=is%3Aissue+is%3Aclosed) for the full audit trail.
 
 ---
 
