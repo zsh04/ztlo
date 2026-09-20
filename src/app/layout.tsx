@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
+import { PwaRegister } from "@/components/pwa/PwaRegister";
 
 export const metadata: Metadata = {
   title: "Zyra & The Light Orb",
@@ -38,6 +39,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className="w-screen h-screen overflow-hidden bg-storybook-bg antialiased select-none">
+        <PwaRegister />
         {children}
       </body>
     </html>
