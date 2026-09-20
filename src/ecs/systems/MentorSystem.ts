@@ -77,30 +77,38 @@ export class MentorSystem {
       return mentor.currentDialog;
     }
 
-    // If the child explicitly closed the bubble, suppress auto-opening during idle ticks
-    // or existing corner traps until player moves, pushes, or directly taps the Light Orb.
-    if (mentor.userDismissed) {
-      return mentor.currentDialog;
+    const isCornerTrapped = MentorSystem.isAnyBlockCornerTrapped(entities, roomWidth, roomHeight);
+
+    // Clear corner trap state once block is rewound or moved out of the corner
+    if (mentor.state === "corner_trap" && !isCornerTrapped) {
+      mentor.state = "idle_observing";
+      mentor.userDismissed = false;
+      mentor.currentDialog = {
+        speaker: "Light Orb",
+        text: "I am floating right beside you, Zyra. Take your time to look around!",
+        promptType: "neutral",
+      };
     }
 
     // 2. Corner Entrapment Deadlock Detection
-    if (MentorSystem.isAnyBlockCornerTrapped(entities, roomWidth, roomHeight)) {
+    if (isCornerTrapped) {
       mentor.state = "corner_trap";
       mentor.currentDialog = {
         speaker: "Light Orb",
         text: "Oops, that corner is tight! Would you like to rewind one step together?",
         promptType: "socratic_hint",
       };
-      mentor.isBubbleOpen = true;
+      if (!mentor.userDismissed) {
+        mentor.isBubbleOpen = true;
+      }
       return mentor.currentDialog;
-    } else if (mentor.state === "corner_trap") {
-      // Clear corner trap state once block is rewound out of the corner
-      mentor.state = "idle_observing";
-      mentor.currentDialog = {
-        speaker: "Light Orb",
-        text: "I am floating right beside you, Zyra. Take your time to look around!",
-        promptType: "neutral",
-      };
+    }
+
+    // If the child explicitly closed the bubble, suppress auto-opening during idle ticks
+    // or existing corner traps until an actionable trigger occurs (e.g. pushing a block,
+    // undoing, clearing the room, or directly tapping the Light Orb).
+    if (mentor.userDismissed) {
+      return mentor.currentDialog;
     }
 
     // 2. Plate Curiosity: Zyra standing on a pressure plate >= 3 seconds
@@ -171,7 +179,12 @@ export class MentorSystem {
    */
   static recordPlayerMove(mentor: MentorComponent): void {
     mentor.idleSeconds = 0;
-    mentor.userDismissed = false;
+    // Do NOT clear userDismissed if currently in corner_trap:
+    // The child already dismissed the corner trap prompt while navigating.
+    // Dismissal is cleared once the trap is resolved or if the child taps the Light Orb.
+    if (mentor.state !== "corner_trap") {
+      mentor.userDismissed = false;
+    }
     if (mentor.state === "idle_nudge") {
       mentor.state = "idle_observing";
     }
@@ -182,6 +195,7 @@ export class MentorSystem {
    */
   static recordFailedPush(mentor: MentorComponent): void {
     mentor.unproductivePushCount += 1;
+    mentor.userDismissed = false;
   }
 
   /**

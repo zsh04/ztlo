@@ -143,7 +143,11 @@ export default function GamePage() {
     const world = worldRef.current;
     world.recordMentorPlayerMove();
     setMentorDialog(world.getMentorDialog());
-    setIsMentorOpen(world.isMentorBubbleOpen());
+    if (world.isMentorBubbleOpen() && !world.mentor.userDismissed) {
+      setIsMentorOpen(true);
+    } else if (!world.isMentorBubbleOpen()) {
+      setIsMentorOpen(false);
+    }
 
     // Visual feedback event (<16.7ms)
     setTouchEvents((prev) => [

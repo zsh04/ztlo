@@ -347,19 +347,23 @@ test("MentorSystem: User dismissal keeps dialog closed on subsequent ticks until
   MentorSystem.update(mentor, trappedEntities, 5, 16, 9);
   assert.equal(mentor.isBubbleOpen, false);
 
-  // Action occurs: Player moves -> clears dismissal flag
-  MentorSystem.recordPlayerMove(mentor);
-  assert.equal(mentor.userDismissed, false);
-
-  // Next update with corner entrapment can now alert the player
-  MentorSystem.update(mentor, trappedEntities, 1, 16, 9);
-  assert.equal(mentor.isBubbleOpen, true);
   assert.equal(mentor.state, "corner_trap");
 
-  // User closes again
-  MentorSystem.setBubbleOpen(mentor, false);
-  assert.equal(mentor.isBubbleOpen, false);
+  // Player moves: userDismissed is PRESERVED because we are in corner_trap!
+  // Moving around should NOT cause the modal to pop open again.
+  MentorSystem.recordPlayerMove(mentor);
   assert.equal(mentor.userDismissed, true);
+
+  // Subsequent tick: bubble stays closed!
+  MentorSystem.update(mentor, trappedEntities, 1, 16, 9);
+  assert.equal(mentor.isBubbleOpen, false);
+
+  // When block is moved/rewound out of the corner, the trap is resolved!
+  stoneCorner.position.x = 4;
+  stoneCorner.position.y = 4;
+  MentorSystem.update(mentor, trappedEntities, 0, 16, 9);
+  assert.equal(mentor.state, "idle_observing");
+  assert.equal(mentor.userDismissed, false);
 
   // Direct user tap on Light Orb overrides dismissal and reopens
   MentorSystem.requestDirectHint(mentor, trappedEntities);
