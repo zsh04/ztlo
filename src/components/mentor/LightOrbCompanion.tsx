@@ -1,9 +1,17 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { Volume2, VolumeX, Mic } from "lucide-react";
 import { SocraticDialog } from "../../types/game";
 import { SOCRATIC_INQUIRY_CHIPS } from "../../ecs/systems/MentorSystem";
+import {
+  speakText,
+  stopSpeech,
+  listenToChild,
+  isSpeechRecognitionSupported,
+  isSpeechSynthesisSupported,
+} from "../../lib/speech/webSpeech";
 
 interface LightOrbCompanionProps {
   dialog: SocraticDialog;
@@ -12,6 +20,7 @@ interface LightOrbCompanionProps {
   onOrbTap?: () => void;
   onCloseBubble?: () => void;
   onSelectChip?: (chipId: string) => void;
+  onVoiceQuery?: (transcript: string) => void;
   onUndo?: () => void;
   canUndo?: boolean;
 }
@@ -29,10 +38,17 @@ export const LightOrbCompanion: React.FC<LightOrbCompanionProps> = ({
   onOrbTap,
   onCloseBubble,
   onSelectChip,
+  onVoiceQuery,
   onUndo,
   canUndo = true,
 }) => {
   const [internalOpen, setInternalOpen] = useState(false);
+  const [isMuted, setIsMuted] = useState(false);
+  const [isListening, setIsListening] = useState(false);
+  const [listeningFeedback, setListeningFeedback] = useState<string | null>(null);
+
+  const lastSpokenTextRef = useRef<string>("");
+  const cancelListeningRef = useRef<(() => void) | null>(null);
 
   // Synchronize controlled vs uncontrolled open state
   const isDialogOpen = isOpen !== undefined ? isOpen : internalOpen;
@@ -40,13 +56,37 @@ export const LightOrbCompanion: React.FC<LightOrbCompanionProps> = ({
   const isCornerTrap =
     dialog.text.includes("corner is tight") || dialog.text.includes("rewind one step");
   const isPulsing =
-    inactiveSeconds >= 12 || dialog.promptType === "socratic_hint" || isCornerTrap;
+    inactiveSeconds >= 12 || dialog.promptType === "socratic_hint" || isCornerTrap || isListening;
 
   useEffect(() => {
     if (isOpen !== undefined) {
       setInternalOpen(isOpen);
     }
   }, [isOpen]);
+
+  // Cleanly speak new Socratic messages aloud via TTS when bubble is open and unmuted
+  useEffect(() => {
+    if (
+      isDialogOpen &&
+      !isMuted &&
+      isSpeechSynthesisSupported() &&
+      dialog.text &&
+      dialog.text !== lastSpokenTextRef.current
+    ) {
+      lastSpokenTextRef.current = dialog.text;
+      speakText(dialog.text);
+    }
+  }, [dialog.text, isDialogOpen, isMuted]);
+
+  // Cleanup active audio/speech when component unmounts
+  useEffect(() => {
+    return () => {
+      stopSpeech();
+      if (cancelListeningRef.current) {
+        cancelListeningRef.current();
+      }
+    };
+  }, []);
 
   const handleTap = () => {
     if (onOrbTap) {
@@ -57,10 +97,65 @@ export const LightOrbCompanion: React.FC<LightOrbCompanionProps> = ({
   };
 
   const handleClose = () => {
+    stopSpeech();
+    if (cancelListeningRef.current) {
+      cancelListeningRef.current();
+      cancelListeningRef.current = null;
+      setIsListening(false);
+    }
     if (onCloseBubble) {
       onCloseBubble();
     }
     setInternalOpen(false);
+  };
+
+  const toggleMute = () => {
+    setIsMuted((prev) => {
+      const nextMuted = !prev;
+      if (nextMuted) {
+        stopSpeech();
+      } else if (dialog.text) {
+        speakText(dialog.text);
+      }
+      return nextMuted;
+    });
+  };
+
+  const handleStartListening = () => {
+    if (isListening) {
+      if (cancelListeningRef.current) {
+        cancelListeningRef.current();
+        cancelListeningRef.current = null;
+      }
+      setIsListening(false);
+      return;
+    }
+
+    stopSpeech();
+    setIsListening(true);
+    setListeningFeedback("Listening... speak your question now!");
+
+    const cancel = listenToChild({
+      onStart: () => {
+        setIsListening(true);
+      },
+      onResult: (transcript) => {
+        setIsListening(false);
+        setListeningFeedback(`You asked: "${transcript}"`);
+        if (onVoiceQuery) {
+          onVoiceQuery(transcript);
+        }
+      },
+      onError: (err) => {
+        setIsListening(false);
+        setListeningFeedback("Could not hear clearly. Try again or tap a question below!");
+      },
+      onEnd: () => {
+        setIsListening(false);
+      },
+    });
+
+    cancelListeningRef.current = cancel;
   };
 
   const handleChipClick = (chipId: string) => {
@@ -69,8 +164,10 @@ export const LightOrbCompanion: React.FC<LightOrbCompanionProps> = ({
     }
   };
 
+  const hasSTT = isSpeechRecognitionSupported();
+
   return (
-    <div className="absolute top-4 right-4 z-40 flex flex-col items-end pointer-events-auto">
+    <div className="flex flex-col items-end pointer-events-auto">
       {/* Floating Light Orb Avatar - Fitts's Law >= 80px touch target */}
       <motion.button
         type="button"
@@ -105,7 +202,7 @@ export const LightOrbCompanion: React.FC<LightOrbCompanionProps> = ({
         </svg>
       </motion.button>
 
-      {/* Socratic Dialogue Balloon & Inquiry Sheet */}
+      {/* Socratic Dialogue Balloon & Voice Interaction Sheet */}
       <AnimatePresence>
         {isDialogOpen && (
           <motion.div
@@ -115,20 +212,35 @@ export const LightOrbCompanion: React.FC<LightOrbCompanionProps> = ({
             transition={{ duration: 0.22, ease: "easeOut" }}
             className="mt-3 w-80 sm:w-96 max-w-[90vw] max-h-[82vh] overflow-y-auto p-4 bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl border-2 border-storybook-muted text-storybook-text text-sm font-medium relative flex flex-col gap-3"
           >
-            {/* Header */}
+            {/* Header with speaker badge, audio mute toggle, and close button */}
             <div className="flex items-center justify-between pb-2 border-b border-storybook-muted/50">
               <span className="text-xs font-bold uppercase tracking-wider text-amber-600 flex items-center gap-1.5">
                 <span className="inline-block w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
                 {dialog.speaker}
               </span>
-              <button
-                type="button"
-                onClick={handleClose}
-                aria-label="Close thought"
-                className="w-10 h-10 min-w-[40px] min-h-[40px] text-slate-400 hover:text-slate-700 flex items-center justify-center rounded-lg transition-colors cursor-pointer text-base"
-              >
-                ✕
-              </button>
+
+              <div className="flex items-center gap-1">
+                {/* Voice Audio Mute / Unmute Button */}
+                <button
+                  type="button"
+                  onClick={toggleMute}
+                  aria-label={isMuted ? "Unmute Voice" : "Mute Voice"}
+                  title={isMuted ? "Unmute Voice" : "Mute Voice"}
+                  className="w-10 h-10 min-w-[40px] min-h-[40px] text-amber-700 hover:text-amber-900 hover:bg-amber-100/60 flex items-center justify-center rounded-lg transition-colors cursor-pointer"
+                >
+                  {isMuted ? <VolumeX className="w-5 h-5 text-slate-400" /> : <Volume2 className="w-5 h-5 text-amber-600" />}
+                </button>
+
+                {/* Close Button: immediately dismisses dialog */}
+                <button
+                  type="button"
+                  onClick={handleClose}
+                  aria-label="Close thought"
+                  className="w-10 h-10 min-w-[40px] min-h-[40px] text-slate-400 hover:text-slate-700 flex items-center justify-center rounded-lg transition-colors cursor-pointer text-base"
+                >
+                  ✕
+                </button>
+              </div>
             </div>
 
             {/* Current Mentor Message */}
@@ -149,10 +261,42 @@ export const LightOrbCompanion: React.FC<LightOrbCompanionProps> = ({
               </motion.button>
             )}
 
+            {/* Voice Interaction (STT) Button */}
+            {hasSTT && (
+              <div className="flex flex-col gap-1.5 pt-1">
+                <motion.button
+                  type="button"
+                  onClick={handleStartListening}
+                  whileTap={{ scale: 0.97 }}
+                  className={`w-full min-h-[56px] px-4 py-3 rounded-2xl border-2 flex items-center gap-3 transition-all cursor-pointer select-none ${
+                    isListening
+                      ? "bg-amber-100 border-amber-400 text-amber-950 shadow-md ring-4 ring-amber-300/60 animate-pulse"
+                      : "bg-gradient-to-r from-amber-50/90 to-yellow-50/90 hover:from-amber-100 hover:to-yellow-100 border-amber-200 text-amber-900 shadow-sm"
+                  }`}
+                >
+                  <div
+                    className={`w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 ${
+                      isListening ? "bg-amber-500 text-white animate-bounce" : "bg-amber-300/80 text-amber-900"
+                    }`}
+                  >
+                    <Mic className="w-5 h-5" />
+                  </div>
+                  <div className="flex flex-col text-left overflow-hidden">
+                    <span className="text-xs sm:text-sm font-bold leading-tight">
+                      {isListening ? "Listening... Speak to Zyra!" : "Talk to Light Orb"}
+                    </span>
+                    <span className="text-[11px] text-amber-700 font-medium truncate">
+                      {listeningFeedback || "Tap and ask your question aloud"}
+                    </span>
+                  </div>
+                </motion.button>
+              </div>
+            )}
+
             {/* Pre-defined Socratic Inquiry Chips */}
             <div className="flex flex-col gap-2 pt-1 border-t border-storybook-muted/40">
               <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 px-1">
-                Ask the Light Orb
+                Or Tap a Question
               </span>
               <div className="flex flex-col gap-2">
                 {SOCRATIC_INQUIRY_CHIPS.map((chip) => (

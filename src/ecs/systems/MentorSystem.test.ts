@@ -320,3 +320,106 @@ test("GameWorld: answerInquiryChip step_back triggers gentle undo", () => {
   assert.equal(stone.position.x, 3);
   assert.equal(world.canUndo(), false);
 });
+
+test("MentorSystem: User dismissal keeps dialog closed on subsequent ticks until new action", () => {
+  const mentor = MentorSystem.createInitialState();
+  const player = createPlayerEntity("player-1", 1, 1);
+  const entities = [player];
+
+  // 15 seconds idle: triggers idle nudge and opens bubble
+  MentorSystem.update(mentor, entities, 15);
+  assert.equal(mentor.isBubbleOpen, true);
+  assert.equal(mentor.state, "idle_nudge");
+
+  // User explicitly closes the thought bubble
+  MentorSystem.setBubbleOpen(mentor, false);
+  assert.equal(mentor.isBubbleOpen, false);
+  assert.equal(mentor.userDismissed, true);
+  assert.equal(mentor.idleSeconds, 0);
+
+  // Subsequent tick occurs: bubble MUST NOT auto-reopen
+  MentorSystem.update(mentor, entities, 20);
+  assert.equal(mentor.isBubbleOpen, false);
+
+  // Subsequent tick with trapped block: bubble MUST NOT auto-reopen if dismissed
+  const stoneCorner = createStoneBlockEntity("stone-1", 0, 0);
+  const trappedEntities = [player, stoneCorner];
+  MentorSystem.update(mentor, trappedEntities, 5, 16, 9);
+  assert.equal(mentor.isBubbleOpen, false);
+
+  // Action occurs: Player moves -> clears dismissal flag
+  MentorSystem.recordPlayerMove(mentor);
+  assert.equal(mentor.userDismissed, false);
+
+  // Next update with corner entrapment can now alert the player
+  MentorSystem.update(mentor, trappedEntities, 1, 16, 9);
+  assert.equal(mentor.isBubbleOpen, true);
+  assert.equal(mentor.state, "corner_trap");
+
+  // User closes again
+  MentorSystem.setBubbleOpen(mentor, false);
+  assert.equal(mentor.isBubbleOpen, false);
+  assert.equal(mentor.userDismissed, true);
+
+  // Direct user tap on Light Orb overrides dismissal and reopens
+  MentorSystem.requestDirectHint(mentor, trappedEntities);
+  assert.equal(mentor.isBubbleOpen, true);
+  assert.equal(mentor.userDismissed, false);
+});
+
+test("MentorSystem: Natural language voice query matches Socratic responses without spoilers", () => {
+  const mentor = MentorSystem.createInitialState();
+
+  // Query 1: Child says "Can we step back, I made a mistake"
+  const v1 = MentorSystem.matchVoiceQueryToSocraticResponse(mentor, "can we step back, I made a mistake");
+  assert.equal(v1.triggersUndo, true);
+  assert.ok(v1.dialog.text.includes("Let's take one step back together"));
+  assertNoImperativeSpoilers(v1.dialog.text);
+
+  // Query 2: Child says "why did the stone block stop moving"
+  const v2 = MentorSystem.matchVoiceQueryToSocraticResponse(mentor, "why did the stone block stop moving?");
+  assert.equal(v2.triggersUndo, false);
+  assert.ok(v2.dialog.text.includes("Heavy stones love the floor"));
+  assertNoImperativeSpoilers(v2.dialog.text);
+
+  // Query 3: Child says "where is the switch to open the door"
+  const v3 = MentorSystem.matchVoiceQueryToSocraticResponse(mentor, "where is the switch to open the door");
+  assert.equal(v3.triggersUndo, false);
+  assert.ok(v3.dialog.text.includes("Look closely at the floor!"));
+  assertNoImperativeSpoilers(v3.dialog.text);
+
+  // Query 4: General question "hello little orb"
+  const v4 = MentorSystem.matchVoiceQueryToSocraticResponse(mentor, "hello little orb");
+  assert.equal(v4.triggersUndo, false);
+  assert.ok(v4.dialog.text.includes("Look around the room together with me"));
+  assertNoImperativeSpoilers(v4.dialog.text);
+});
+
+test("GameWorld: answerVoiceQuery routes voice input into Socratic guidance and undo", () => {
+  const { GameWorld } = require("../world");
+  const room = {
+    id: "test-room",
+    name: "Test Room",
+    width: 16,
+    height: 9,
+    objective: "Test objective",
+    hintKey: "test",
+    entities: [],
+  };
+
+  const world = new GameWorld(room);
+  const player = createPlayerEntity("player-1", 2, 4);
+  const stone = createStoneBlockEntity("stone-1", 3, 4);
+  world.setEntities([player, stone]);
+
+  // Push stone to x=4
+  world.pushBlock("stone-1", { x: 1, y: 0 });
+  assert.equal(stone.position.x, 4);
+  assert.equal(world.canUndo(), true);
+
+  // Child speaks aloud: "I'm stuck in the corner, please rewind"
+  const res = world.answerVoiceQuery("I'm stuck in the corner, please rewind");
+  assert.equal(res.triggersUndo, true);
+  assert.equal(stone.position.x, 3);
+  assert.equal(world.canUndo(), false);
+});

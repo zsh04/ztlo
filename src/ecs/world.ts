@@ -211,6 +211,14 @@ export class GameWorld {
     return result;
   }
 
+  public answerVoiceQuery(transcript: string): { dialog: SocraticDialog; triggersUndo: boolean } {
+    const result = MentorSystem.matchVoiceQueryToSocraticResponse(this.mentor, transcript);
+    if (result.triggersUndo) {
+      this.undoLastMove();
+    }
+    return result;
+  }
+
   public getMentorDialog(): SocraticDialog {
     return this.mentor.currentDialog;
   }
